@@ -50,8 +50,8 @@ class NewProductsControllerCore extends FrontController
 		// Override default configuration values: cause the new products page must display latest products first.
 		if (!Tools::getIsset('orderway') || !Tools::getIsset('orderby'))
 		{
-      $this->orderBy = 'date_add';
-      $this->orderWay = 'DESC';
+			$this->orderBy = 'date_add';
+			$this->orderWay = 'DESC';
 		}
 
 		$nbProducts = (int)Product::getNewProducts(
@@ -61,10 +61,42 @@ class NewProductsControllerCore extends FrontController
 			true
 		);
 
+		if (Configuration::get('PS_NB_LATEST_PRODUCT'))
+		{
+			$days = Configuration::get('PS_NB_DAYS_NEW_PRODUCT');
+
+			$sql = 'SELECT COUNT( `id_product` )
+			FROM `ps_product_shop`
+			WHERE `id_shop` ='.$this->context->shop->id;
+			$pCount = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+
+			// While can't go infinite because, it wanted qty higher than product count, then change to product count
+			$count = Configuration::get('PS_NB_QTY_LATEST_PRODUCT');
+			if($count > $pCount)
+				$count = $pCount;
+
+			while ($nbProducts < $count)
+			{
+				$days++;
+				$nbProducts = (int)Product::getNewProducts(
+					$this->context->language->id,
+					(isset($this->p) ? (int)($this->p) - 1 : null),
+					(isset($this->n) ? (int)($this->n) : null),
+					true,
+					null,null,null,$days
+				);
+			}
+		}
+
 		$this->pagination($nbProducts);
 
+		if (Configuration::get('PS_NB_LATEST_PRODUCT'))
+			$newProducts = Product::getNewProducts($this->context->language->id, (int)($this->p) - 1, $this->n, false, $this->orderBy, $this->orderWay,null,$days);
+		else
+			$newProducts = Product::getNewProducts($this->context->language->id, (int)($this->p) - 1, $this->n, false, $this->orderBy, $this->orderWay);
+
 		$this->context->smarty->assign(array(
-			'products' => Product::getNewProducts($this->context->language->id, (int)($this->p) - 1, (int)($this->n), false, $this->orderBy, $this->orderWay),
+			'products' => $newProducts,
 			'add_prod_display' => Configuration::get('PS_ATTRIBUTE_CATEGORY_DISPLAY'),
 			'nbProducts' => (int)($nbProducts),
 			'homeSize' => Image::getSize(ImageType::getFormatedName('home')),

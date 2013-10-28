@@ -1989,7 +1989,7 @@ class ProductCore extends ObjectModel
 	* @return array New products
 	*/
 	public static function getNewProducts($id_lang, $page_number = 0, $nb_products = 10,
-		$count = false, $order_by = null, $order_way = null, Context $context = null)
+		$count = false, $order_by = null, $order_way = null, Context $context = null, $days = null)
 	{
 		if (!$context)
 			$context = Context::getContext();
@@ -2022,9 +2022,13 @@ class ProductCore extends ObjectModel
 			$sql = 'SELECT COUNT(p.`id_product`) AS nb
 					FROM `'._DB_PREFIX_.'product` p
 					'.Shop::addSqlAssociation('product', 'p').'
-					WHERE product_shop.`active` = 1
-					AND product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'"
-					'.($front ? ' AND product_shop.`visibility` IN ("both", "catalog")' : '').'
+					WHERE product_shop.`active` = 1';
+					if ($days)
+						$sql .= ' AND product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(int)$days.' DAY')).'"';
+					else
+						$sql .= ' AND product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'"';
+
+					$sql .= ' '.($front ? ' AND product_shop.`visibility` IN ("both", "catalog")' : '').'
 					AND p.`id_product` IN (
 						SELECT cp.`id_product`
 						FROM `'._DB_PREFIX_.'category_group` cg
@@ -2037,8 +2041,14 @@ class ProductCore extends ObjectModel
 		$sql = new DbQuery();
 		$sql->select(
 			'p.*, product_shop.*, stock.out_of_stock, IFNULL(stock.quantity, 0) as quantity, pl.`description`, pl.`description_short`, pl.`link_rewrite`, pl.`meta_description`,
-			pl.`meta_keywords`, pl.`meta_title`, pl.`name`, MAX(image_shop.`id_image`) id_image, il.`legend`, m.`name` AS manufacturer_name,
-			product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'" as new'
+			pl.`meta_keywords`, pl.`meta_title`, pl.`name`, MAX(image_shop.`id_image`) id_image, il.`legend`, m.`name` AS manufacturer_name,'
+			. 'product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'" as new'
+
+			. (Configuration::get('PS_NB_DAYS_LATEST') ?
+			', (product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_LATEST_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_LATEST_PRODUCT') : 40).' DAY')). '" 
+			AND product_shop.`date_add` < "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')). '")
+			 as latest'
+			: '')
 		);
 
 		$sql->from('product', 'p');
@@ -2055,7 +2065,12 @@ class ProductCore extends ObjectModel
 		$sql->where('product_shop.`active` = 1');
 		if ($front)
 			$sql->where('product_shop.`visibility` IN ("both", "catalog")');
-		$sql->where('product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'"');
+
+		if($days)
+			$sql->where('product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.$days.' DAY')).'"');
+		else
+			$sql->where('product_shop.`date_add` > "'.date('Y-m-d', strtotime('-'.(Configuration::get('PS_NB_DAYS_NEW_PRODUCT') ? (int)Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20).' DAY')).'"');
+
 		$sql->where('p.`id_product` IN (
 			SELECT cp.`id_product`
 			FROM `'._DB_PREFIX_.'category_group` cg

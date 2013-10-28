@@ -59,6 +59,21 @@ class AdminPPreferencesControllerCore extends AdminController
 						'cast' => 'intval',
 						'type' => 'text'
 					),
+					'PS_NB_LATEST_PRODUCT' => array(
+						'title' => $this->l('Latest Products'),
+						'desc' => $this->l('When active, new products page will be extended to always show products.'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'required' => false,
+						'type' => 'bool'
+					),
+					'PS_NB_QTY_LATEST_PRODUCT' => array(
+						'title' => $this->l('Latest products, minimum quantity'),
+						'desc' => $this->l('If New products less then this, it will increase products day by day. untill this quantity or more is reached.'),
+						'validation' => 'isUnsignedInt',
+						'cast' => 'intval',
+						'type' => 'text'
+					),
 					'PS_CART_REDIRECT' => array(
 						'title' => $this->l('Redirect after adding product to cart'),
 						'desc' => $this->l('Only for non-AJAX versions of the cart.'),
