@@ -71,6 +71,25 @@ function getPush(refresh)
 				$("#orders_notif_number_wrapper").hide();
 			}
 			
+			// Add order returns notifications to the list
+			html = "";
+			nb_notifs = 0;
+			$.each(json.order_return, function(property, value) {
+				html += "<li>" + new_order_return_msg + "<br />" + order_return_number_msg + "<strong>#" + parseInt(value.id_order_return) + "</strong><br />" + from_msg + "<strong>" + value.customer_name + "</strong><br /><a href=\"index.php?tab=AdminReturn&token=" + token_admin_returns + "&id_order_return=" + parseInt(value.id_order_return) + "\">" + see_order_return_msg + "</a></li>";
+			});
+			if (html != "")
+			{
+				$("#list_order_returns_notif").prev("p").hide();
+				$("#list_order_returns_notif").empty().append(html);
+				nb_notifs = $("#list_order_returns_notif li").length;
+				$("#order_returns_notif_value").text(nb_notifs);
+				$("#order_returns_notif_number_wrapper").show();
+			}
+			else
+			{
+				$("#order_returns_notif_number_wrapper").hide();
+			}
+
 			// Add customers notifications to the list
 			html = "";
 			nb_notifs = 0;

@@ -63,7 +63,11 @@
 		var new_msg = '{l s='A new message posted on your shop.' js=1}';
 		var excerpt_msg = '{l s='Excerpt: ' js=1}';
 		var see_msg = '{l s='Read this message' js=1}';
+		var new_order_return_msg = '{l s='A new order has been placed on your shop.' js=1}';
+		var order_return_number_msg = '{l s='Order number: ' js=1}';
+		var see_order_return_msg = '{l s='View this order' js=1}';
 		var token_admin_orders = '{getAdminToken tab='AdminOrders'}';
+		var token_admin_order_returns = '{getAdminToken tab='AdminReturn'}';
 		var token_admin_customers = '{getAdminToken tab='AdminCustomers'}';
 		var token_admin_customer_threads = '{getAdminToken tab='AdminCustomerThreads'}';
 		var currentIndex = '{$currentIndex|@addcslashes:'\''}';
@@ -117,6 +121,18 @@
 						</div>
 					</div>
 {/if}
+					<div id="order_returns_notif" class="notifs">
+							<span id="order_returns_notif_number_wrapper" class="number_wrapper">
+								<span id="order_returns_notif_value">0</span>
+							</span>
+						<div id="order_returns_notif_wrapper" class="notifs_wrapper">
+							<h3>{l s='Last return'}</h3>
+							<p class="no_notifs">{l s='No new return has been placed on your shop'}</p>
+							<ul id="list_order_returns_notif"></ul>
+							<p><a href="index.php?controller=AdminReturn&amp;token={getAdminToken tab='AdminReturn'}">{l s='Show all returns'}</a></p>
+						</div>
+					</div>
+
 {if ($show_new_customers == 1)}
 					<div id="customers_notif" class="notifs notifs_alternate">
 							<span id="customers_notif_number_wrapper" class="number_wrapper">

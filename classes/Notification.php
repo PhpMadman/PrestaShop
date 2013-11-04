@@ -30,7 +30,7 @@ class NotificationCore
 
 	public function __construct()
 	{
-		$this->types = array('order', 'customer_message', 'customer');
+		$this->types = array('order', 'customer_message', 'customer'); //, 'order_return'); // Adding this will break the functions of the notify field
 	}
 
 	/**
@@ -45,7 +45,7 @@ class NotificationCore
 
 		$notifications = array();
 		$employee_infos = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
-				SELECT id_last_order, id_last_customer_message, id_last_customer
+				SELECT id_last_order, id_last_customer_message, id_last_customer, id_last_order_return
 				FROM `'._DB_PREFIX_.'employee`
 				WHERE `id_employee` = '.(int)$cookie->id_employee);
 
@@ -60,7 +60,9 @@ class NotificationCore
 		Db::getInstance(_PS_USE_SQL_SLAVE_)->execute('ALTER TABLE `'._DB_PREFIX_.'employee`
 						ADD `id_last_order` INT(10) unsigned NOT NULL default "0"
 						ADD `id_last_customer_message` INT(10) unsigned NOT NULL default "0"
-						ADD `id_last_message` INT(10) unsigned NOT NULL default "0"');
+						ADD `id_last_message` INT(10) unsigned NOT NULL default "0"
+						ADD `id_last_order_return` INT(10) unsigned NOT NULL default "0"
+						');
 	}
 
 	/**
@@ -97,6 +99,18 @@ class NotificationCore
 					ORDER BY c.`id_customer_message` DESC
 				';
 				break;
+
+			case 'order_return':
+				$sql = '
+					SELECT ore.`id_order_return`, ore.`id_customer`, c.`firstname`, c.`lastname`
+					FROM `'._DB_PREFIX_.'order_return` as ore
+					LEFT JOIN `'._DB_PREFIX_.'customer` as c ON (c.`id_customer` = ore.`id_customer`)
+					WHERE `id_order_return` > '.(int)$id_last_element.
+					Shop::addSqlRestriction(false, 'ore').'
+					ORDER BY `id_order_return` DESC
+				';
+				break;
+
 			default:
 				$sql = '
 					SELECT t.`id_'.bqSQL($type).'`, t.*
@@ -121,6 +135,7 @@ class NotificationCore
 			
 			$json[] = array(
 				'id_order' => ((!empty($value['id_order'])) ? (int)$value['id_order'] : 0),
+				'id_order_return' => ((!empty($value['id_order_return'])) ? (int)$value['id_order_return'] : 0),
 				'id_customer' => ((!empty($value['id_customer'])) ? (int)$value['id_customer'] : 0),
 				'id_customer_message' => ((!empty($value['id_customer_message'])) ? (int)$value['id_customer_message'] : 0),
 				'id_customer_thread' => ((!empty($value['id_customer_thread'])) ? (int)$value['id_customer_thread'] : 0),
