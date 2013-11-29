@@ -1384,7 +1384,10 @@ class OrderCore extends ObjectModel
 	 *
 	 * @return String
 	 */
-	public static function generateReference()
+	 // This change is optional. This removes a warning messages about Strict Standards
+	 // Error message only seen when dev mode enabled
+	public static function generateReference($id_order,$id_shop)
+// 	public static function generateReference()
 	{
 		return strtoupper(Tools::passwdGen(9, 'NO_NUMERIC'));
 	}
