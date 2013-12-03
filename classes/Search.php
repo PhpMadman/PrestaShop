@@ -204,8 +204,8 @@ class SearchCore
 						AND sw.id_shop = '.$context->shop->id.'
 						AND sw.word LIKE
 					'.($word[0] == '-'
-						? ' \''.pSQL(Tools::substr($word, 1, PS_SEARCH_MAX_WORD_LENGTH)).'%\''
-						: '\''.pSQL(Tools::substr($word, 0, PS_SEARCH_MAX_WORD_LENGTH)).'%\''
+						? ' \'%'.pSQL(Tools::substr($word, 1, PS_SEARCH_MAX_WORD_LENGTH)).'%\''
+						: '\'%'.pSQL(Tools::substr($word, 0, PS_SEARCH_MAX_WORD_LENGTH)).'%\''
 					);
 
 				if ($word[0] != '-')
