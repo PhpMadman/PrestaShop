@@ -158,6 +158,45 @@ class OrderDetailControllerCore extends FrontController
 				if ($order->total_discounts > 0)
 					$this->context->smarty->assign('total_old', (float)($order->total_paid - $order->total_discounts));
 				$products = $order->getProducts();
+				$delivered_products = $order->getProductsDelivery();
+				$order_delivery = new OrderDelivery();
+				foreach ($delivered_products as $k => $delivery_number)
+				{
+					$shipped = $order_delivery->getShippedByNr($k, $order->id);
+					if ($shipped == 0)
+						unset($delivered_products[$k]);
+				}
+
+				$delivery_products = $order->getProductsDelivery();
+				$nondelivery_products = array();
+				foreach ($delivery_products as $delivery)
+				{
+						foreach ($delivery as $product)
+						{
+							if ($product['shipped'] == 1)
+							{
+								if (!empty($nondelivery_products[$product['product_id'].'_'.$product['product_attribute_id']]))
+									$nondelivery_products[$product['product_id'].'_'.$product['product_attribute_id']] += $product['product_quantity'];
+								else
+									$nondelivery_products[$product['product_id'].'_'.$product['product_attribute_id']] = $product['product_quantity'];
+							}
+						}
+				}
+				$undelivered_products = $order->getProducts();
+				foreach ($undelivered_products as &$un_product)
+				{
+					if (!empty($nondelivery_products))
+					{
+						if (isset($nondelivery_products[$un_product['product_id'].'_'.$un_product['product_attribute_id']]))
+						{
+							// Removed delivered products qty
+							$un_product['product_quantity'] = $un_product['product_quantity'] - $nondelivery_products[$un_product['product_id'].'_'.$un_product['product_attribute_id']];
+							// calculate new total prices
+							$un_product['total_price_tax_excl'] = $un_product['product_quantity'] * $un_product['unit_price_tax_excl'];
+							$un_product['total_price_tax_incl'] = $un_product['product_quantity'] * $un_product['unit_price_tax_incl'];
+						}
+					}
+				}
 
 				/* DEPRECATED: customizedDatas @since 1.5 */
 				$customizedDatas = Product::getAllCustomizedDatas((int)($order->id_cart));
@@ -167,6 +206,15 @@ class OrderDetailControllerCore extends FrontController
 
 				$customer = new Customer($order->id_customer);
 
+				$invoices = $order->getInvoicesCollection()->getResults();
+				// remove nonshipped invoices
+				foreach ($invoices as $kIn => $pdfinvoice)
+				{
+					$shipped = $order_delivery->getShippedByNr($pdfinvoice->delivery_number, $order->id);
+					if ($shipped == 0)
+						unset($invoices[$kIn]);
+				}
+
 				$this->context->smarty->assign(array(
 					'shop_name' => strval(Configuration::get('PS_SHOP_NAME')),
 					'order' => $order,
@@ -175,8 +223,11 @@ class OrderDetailControllerCore extends FrontController
 					'order_state' => (int)$id_order_state,
 					'invoiceAllowed' => (int)(Configuration::get('PS_INVOICE')),
 					'invoice' => (OrderState::invoiceAvailable($id_order_state) && count($order->getInvoicesCollection())),
+					'invoices' => $invoices,
 					'order_history' => $order->getHistory($this->context->language->id, false, true),
 					'products' => $products,
+					'delivered_products' => $delivered_products,
+					'undelivered_products' => $undelivered_products,
 					'discounts' => $order->getCartRules(),
 					'carrier' => $carrier,
 					'address_invoice' => $addressInvoice,

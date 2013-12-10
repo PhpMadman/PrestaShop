@@ -56,6 +56,7 @@ class IdentityControllerCore extends FrontController
 			else
 			{
 				$email = trim(Tools::getValue('email'));
+				$invoice_email = trim(Tools::getValue('invoice_email'));
 				$this->customer->birthday = (empty($_POST['years']) ? '' : (int)$_POST['years'].'-'.(int)$_POST['months'].'-'.(int)$_POST['days']);
 				if (isset($_POST['old_passwd']))
 					$_POST['old_passwd'] = trim($_POST['old_passwd']);
@@ -80,6 +81,7 @@ class IdentityControllerCore extends FrontController
 				{
 					$this->customer->id_default_group = (int)$prev_id_default_group;
 					$this->customer->firstname = Tools::ucwords($this->customer->firstname);
+					$this->customer->invoice_email = $invoice_email;
 
 					if (!isset($_POST['newsletter']))
 						$this->customer->newsletter = 0;

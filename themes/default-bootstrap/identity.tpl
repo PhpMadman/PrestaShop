@@ -62,6 +62,13 @@
                     <label for="email">{l s='E-mail address'} <sup>*</sup></label>
                     <input class="is_required validate form-control" data-validate="isEmail" type="email" name="email" id="email" value="{$smarty.post.email}" />
                 </div>
+                {if Configuration::get('PS_EDS')}
+                <div class="form-group">
+                    <label for="email">{l s='Invoice E-mail address'}</label>
+                    <input class="form-control" type="text" name="invoice_email" id="invoice_email" value="{$smarty.post.invoice_email}" />
+                    <span class="form_info">{l s='(Optional email to send an additional invoice copy to)'}</span>
+                </div>
+                {/if}
                 <div class="form-group">
                     <label>{l s='Date of Birth'}</label>
                     <div class="row">

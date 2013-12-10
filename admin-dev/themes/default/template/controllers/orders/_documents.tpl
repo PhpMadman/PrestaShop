@@ -37,6 +37,9 @@
 			<th>
 				<span class="title_box ">{l s='Amount'}</span>
 			</th>
+			{if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_EMAIL_PDF')}
+			<th></th>
+			{/if}
 			<th></th>
 		</tr>
 	</thead>
@@ -46,23 +49,38 @@
 			{if get_class($document) eq 'OrderInvoice'}
 				{if isset($document->is_delivery)}
 				<tr id="delivery_{$document->id}">
+				{elseif isset($document->is_package)}
+				<tr id="package">
 				{else}
 				<tr id="invoice_{$document->id}">
 				{/if}
 			{elseif get_class($document) eq 'OrderSlip'}
 				<tr id="orderslip_{$document->id}">
+			{elseif get_class($document) eq 'OrderDelivery'}
+				<tr id="delivery_{$document->id}">
 			{/if}
 
-					<td>{dateFormat date=$document->date_add}</td>
+					<td>
+					{if get_class($document) eq 'OrderInvoice' && isset($document->is_package)}
+						--
+					{else}
+						{dateFormat date=$document->date_add}
+					{/if}
+					</td>
 					<td>
 						{if get_class($document) eq 'OrderInvoice'}
 							{if isset($document->is_delivery)}
 								{l s='Delivery slip'}
+							{elseif isset($document->is_package)}
+								{l s='Packing slip'}
 							{else}
 								{l s='Invoice'}
+								{if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_INVOICE_DELIVERED') && $document->delivery_number > 0 } {l s='for Delivery Slip'} {$document->delivery_number}{/if}
 							{/if}
 						{elseif get_class($document) eq 'OrderSlip'}
 							{l s='Credit Slip'}
+						{elseif get_class($document) eq 'OrderDelivery'}
+							{l s='Delivery Slip'} {$document->delivery_number}
 						{/if}
 					</td>
 					<td>
@@ -70,18 +88,24 @@
 
 							{if isset($document->is_delivery)}
 							<a target="_blank" title="{l s='See the document'}" href="{$link->getAdminLink('AdminPdf')|escape:'html':'UTF-8'}&submitAction=generateDeliverySlipPDF&id_order_invoice={$document->id}">
+							{elseif isset($document->is_package)}
+							<a target="_blank" title="{l s='See the document'}" href="{$link->getAdminLink('AdminPdf')|escape:'html':'UTF-8'}&submitAction=generatePackageSlipPDF&id_order_invoice={$document->id}">
 						   	{else}
 							<a target="_blank" title="{l s='See the document'}" href="{$link->getAdminLink('AdminPdf')|escape:'html':'UTF-8'}&submitAction=generateInvoicePDF&id_order_invoice={$document->id}">
 						   {/if}
 
 						{elseif get_class($document) eq 'OrderSlip'}
 							<a target="_blank" title="{l s='See the document'}" href="{$link->getAdminLink('AdminPdf')|escape:'html':'UTF-8'}&submitAction=generateOrderSlipPDF&id_order_slip={$document->id}">
+						{elseif get_class($document) eq 'OrderDelivery'}
+							<a target="_blank" title="{l s='See the document'}" href="{$link->getAdminLink('AdminPdf')|escape:'html':'UTF-8'}&submitAction=generateDeliverySlipPDF&id_order_invoice={$document->id_order_invoice}">
 						{/if}
 
 						{if get_class($document) eq 'OrderInvoice'}
 						
 							{if isset($document->is_delivery)}
 								#{Configuration::get('PS_DELIVERY_PREFIX', $current_id_lang, null, $order->id_shop)}{'%06d'|sprintf:$document->delivery_number}
+							{elseif isset($document->is_package)}
+								#{l s='PACKSLIP'}
 							{else}
 								{$document->getInvoiceNumberFormatted($current_id_lang, $order->id_shop)}
 							{/if}
@@ -90,12 +114,18 @@
 
 							#{Configuration::get('PS_CREDIT_SLIP_PREFIX', $current_id_lang)}{'%06d'|sprintf:$document->id}
 
+						{elseif get_class($document) eq 'OrderDelivery'}
+
+							#{Configuration::get('PS_DELIVERY_PREFIX', $current_id_lang, null, $order->id_shop)}{'%06d'|sprintf:$document->id_order_invoice}-{$document->delivery_number}
+
 						{/if}
 						</a>
 					</td>
 					<td>
 					{if get_class($document) eq 'OrderInvoice'}
 						{if isset($document->is_delivery)}
+							--
+						{elseif isset($document->is_package)}
 							--
 						{else}
 							{displayPrice price=$document->total_paid_tax_incl currency=$currency->id}&nbsp;
@@ -111,11 +141,27 @@
 						{/if}
 					{elseif get_class($document) eq 'OrderSlip'}
 						{displayPrice price=$document->amount currency=$currency->id}
+					{elseif get_class($document) eq 'OrderDelivery'}
+						--
 					{/if}
 					</td>
+					{if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_EMAIL_PDF')}
+					<td class="text-right document_action">
+						<form method="post" action="{$currentIndex}&vieworder&id_order={$order->id}&token={$smarty.get.token|escape:'htmlall':'UTF-8'}">
+							<input type="hidden" name="id_order_invoice" value="{$document->id}" />
+							{if get_class($document) eq 'OrderInvoice'}
+								{if !isset($document->is_delivery) && !isset($document->is_package)}
+								<input type="image" src="../img/admin/bg_form_email.png" name="emailInvoice" value="1" title="E-mail Invoice as PDF" />
+								{/if}
+							{elseif get_class($document) eq 'OrderDelivery'}
+								<input type="image" src="../img/admin/bg_form_email.png" name="emailDelivery" value="1" title="E-mail Delivery Slip as PDF" />
+							{/if}
+						</form>
+					</td>
+					{/if}
 					<td class="text-right document_action">
 					{if get_class($document) eq 'OrderInvoice'}
-						{if !isset($document->is_delivery)}
+						{if !isset($document->is_delivery) && !isset($document->is_package)}
 
 							{if $document->getRestPaid()}
 								<a href="#" class="js-set-payment btn btn-default" data-amount="{$document->getRestPaid()}" data-id-invoice="{$document->id}" title="{l s='Set payment form'}">
@@ -139,7 +185,7 @@
 					</td>
 				</tr>
 			{if get_class($document) eq 'OrderInvoice'}
-				{if !isset($document->is_delivery)}
+				{if !isset($document->is_delivery) && !isset($document->is_package)}
 				<tr id="invoiceNote{$document->id}" style="display:none">
 					<td colspan="5">
 						<form action="{$current_index}&viewOrder&id_order={$order->id}{if isset($smarty.get.token)}&token={$smarty.get.token|escape:'html':'UTF-8'}{/if}" method="post">

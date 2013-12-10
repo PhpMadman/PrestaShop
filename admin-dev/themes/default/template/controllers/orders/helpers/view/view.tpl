@@ -169,6 +169,14 @@
 							{l s='Documents'}
 						</a>
 					</li>
+					{if Configuration::get('PS_EDS')}
+					<li>
+						<a href="#templates">
+							<i class="icon-file"></i>
+							{l s='Pdf Templates'}
+						</a>
+					</li>
+					{/if}
 				</ul>
 				<!-- Tab content -->
 				<div class="tab-content panel">
@@ -184,6 +192,7 @@
 									{/foreach}
 									</select>
 									<input type="hidden" name="id_order" value="{$order->id}" />
+									<input type="hidden" name="delivery_number" value="{$eds_delivery_number}" />
 								</div>
 								<div class="col-lg-3">
 									<button type="submit" name="submitState" class="btn btn-default">
@@ -193,7 +202,6 @@
 								</div>
 							</div>
 						</form>
-						<!-- Documents block -->
 						<!-- History of status -->
 						<table class="table history-status">
 							<tbody>
@@ -219,9 +227,41 @@
 					</div>
 					<!-- Tab documents -->
 					<div class="tab-pane" id="documents">
+						<!-- Documents block -->
 						{* Include document template *}
 						{include file='controllers/orders/_documents.tpl'}
 					</div>
+					{if Configuration::get('PS_EDS')}
+					<div class="tab-pane" id="templates">
+						<!-- Templates block -->
+						<form method="post" action="{$currentIndex}&vieworder&id_order={$order->id}&token={$smarty.get.token|escape:'htmlall':'UTF-8'}">
+						<i class="icon-file"></i> Invoice template
+						<select name="invoice_template">
+							{$select_invoice_template = $cur_invoice_template}
+							{if empty($cur_invoice_template)}
+								{$select_invoice_template = $default_invoice_template}
+							{/if}
+							{foreach from=$invoice_templates item=template}
+								<option value="{$template['value']}" {if $template['value'] == $select_invoice_template} selected {/if} >{$template['name']}</option>
+							{/foreach}
+						</select><br>
+						<i class="icon-truck"></i> Delivery template
+						<select name="delivery_template">
+							{$select_delivery_template = $cur_delivery_template}
+							{if empty($cur_delivery_template)}
+								{$select_delivery_template = $default_delivery_template}
+							{/if}
+							{foreach from=$delivery_templates item=template}
+								<option value="{$template['value']}" {if $template['value'] == $select_delivery_template} selected {/if} >{$template['name']}</option>
+							{/foreach}
+						</select><br>
+						<button type="submit" name="setTemplates" class="btn btn-default">
+							<i class="icon-file"></i>
+							{l s='Set Templates'}
+						</button>
+						</form>
+					</div>
+					{/if}
 				</div>
 				<script>
 					$('#tabOrder a').click(function (e) {
@@ -924,13 +964,13 @@
 					{* Include product line partial *}
 					{include file='controllers/orders/_product_line.tpl'}
 				{/foreach}
-				{if $can_edit}
+				{if $can_edit || Configuration::get('PS_EDS')}
 					{include file='controllers/orders/_new_product.tpl'}
 				{/if}
 				</tbody>
 			</table>
 
-			{if $can_edit}
+			{if $can_edit || Configuration::get('PS_EDS')}
 			<div class="row-margin-bottom order_action">
 			{if !$order->hasBeenDelivered()}
 				<button type="button" id="add_product" class="btn btn-default">
@@ -1108,6 +1148,197 @@
 		</div>
 	</form>
 
+<!-- Delivery Block -->
+	<form class="container-command-top-spacing" action="{$current_index}&vieworder&token={$smarty.get.token}&id_order={$order->id}" method="post" onsubmit="return orderDeleteProduct('{l s='This product cannot be returned.'}', '{l s='Quantity to cancel is greater than quantity available.'}');">
+		<input type="hidden" name="id_order" value="{$order->id}" />
+		<div style="display: none">
+			<input type="hidden" value="{$order->getWarehouseList()|implode}" id="warehouse_list" />
+		</div>
+
+		<div class="panel">
+			<h3>
+				<i class="icon-truckt"></i>
+				{l s='Delivered Products'}
+			</h3>
+
+			<script type="text/javascript">
+				function edsName2Warehouse()
+				{
+					var select = document.getElementById('edsProductName');
+					var opt = select.options[select.selectedIndex].value;
+					var Products = new Array();
+					Products['select_pname'] = '0'; /* Empty box if we select pname */
+					{foreach from=$products item=product key=k}
+						Products[{$product.product_id} + '_' + {$product.product_attribute_id}] = '{if isset($product.id_warehouse)}{$product.id_warehouse}{else}0{/if}';
+					{/foreach}
+					var wh = Products[opt];
+					document.getElementById('edsWarehouse').value = wh;
+				}
+			</script>
+			<script type="text/javascript">
+				function edsRef2WH(id)
+				{
+					document.getElementById('edsWarehouse').value = '0'; // reset value on every change
+					// that way we will get 0, if not ref is matched
+					var el = document.getElementById(id).value;
+					var Products = new Array();
+					{foreach from=$products item=product key=k}
+						{if isset($product.product_reference) && $product.product_reference != ""}
+						Products['{$product.product_reference}'] = new Array(
+							'{if isset($product.id_warehouse)}{$product.id_warehouse}{else}0{/if}');
+						{/if}
+						{if isset($product.product_ean13) && $product.product_ean13 != ""}
+							Products['{$product.product_ean13}'] = new Array(
+								'{if isset($product.id_warehouse)}{$product.id_warehouse}{else}0{/if}');
+						{/if}
+					{/foreach}
+					var wh = Products[el][0];
+					if (wh)
+						document.getElementById('edsWarehouse').value = wh;
+				}
+			</script>
+			<script type="text/javascript">
+				function ButtonText()
+				{
+					var nr = document.getElementById('edsQty').value;
+					if (nr < 0)
+						document.getElementById('edsAdd').innerHTML = 'Remove';
+					else
+						document.getElementById('edsAdd').innerHTML = 'Add'
+				}
+			</script>
+			<script type="text/javascript">
+			/* Focus and scroll down to */
+			var edsRef = '{if isset($smarty.post.edsReference)}{$smarty.post.edsReference}{/if}';
+			if (edsRef != '')
+			{
+				window.setTimeout(function ()
+				{
+					var el = document.getElementById('edsReference')
+					el.focus();
+					el.scrollIntoView(true);
+				}, 0);
+			}
+			var edsEan13 = '{if isset($smarty.post.edsEan13)}{$smarty.post.edsEan13}{/if}';
+			if (edsEan13 != '')
+			{
+				window.setTimeout(function ()
+				{
+					var el = document.getElementById('edsEan13')
+					el.focus();
+					el.scrollIntoView(true);
+				}, 0);
+			}
+			var edsProductName = '{if isset($smarty.post.edsProductName)}{$smarty.post.edsProductName}{/if}';
+			if (edsProductName != '')
+			{
+				window.setTimeout(function ()
+				{
+					var refel = document.getElementById('edsReference')
+					refel.focus();
+					var el = document.getElementById('edsProductName')
+					el.scrollIntoView(true);
+				}, 0);
+			}
+			</script>
+
+			<table class="table">
+				<thead>
+					<tr>
+						<th></th>
+						<th><span class="title_box ">{l s='Reference'}: </span></th>
+						<th><span class="title_box ">{l s='Ean 13'}: </span></th>
+						<th><span class="title_box ">{l s='Quantity'}:</span></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td>
+						<select name="edsProductName" onchange=edsName2Warehouse() id="edsProductName">
+							<option value="select_pname">--  {l s='Select productname'} --
+							{foreach from=$products item=product key=k}
+								<option value="{$product.product_id}_{$product.product_attribute_id}" >{$product.product_name}</option>
+							{/foreach}
+						</select>
+					</td>
+					<td>
+						<input type="text" name="edsReference" id="edsReference" onKeyUp="edsRef2WH('edsReference')"  value="" placeholder="Enter Reference" style="display:inline" />
+					</td>
+					<td>
+						<input type="text" name="edsEan13" id="edsEan13 onKeyPress="edsRef2WH('edsEan13')" onKeyUp="edsRef2WH('edsEan13')" value="" placeholder="Enter Ean 13" />
+					</td>
+					<td>
+						<input type="text" name="edsQty" id="edsQty" onKeyPress="ButtonText()" onKeyUp="ButtonText()"  value="1" />
+					</td>
+					<td>
+						<input type="hidden" name="edsWarehouse" id="edsWarehouse" value="0" />
+						<button type="submit" name="submitEdsAdd" id="edsAdd" value="{$eds_delivery_number}" class="btn btn-default">
+							<i class="icon-plus-sign"></i>
+							{l s='Add'}
+						</button>
+						<button type="submit" name="submitEdsAddAll" value="{$eds_delivery_number}" class="btn btn-default">
+							<i class="icon-plus-sign"></i>
+							{l s='Add all products'}
+						</button>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+
+			{capture "TaxMethod"}
+				{if ($order->getTaxCalculationMethod() == $smarty.const.PS_TAX_EXC)}
+					{l s='tax excluded.'}
+				{else}
+					{l s='tax included.'}
+				{/if}
+			{/capture}
+
+			<table class="table" id="orderDeliveryProducts">
+				<thead>
+					<tr>
+						<th></th>
+						<th><span class="title_box ">{l s='Product'}</span></th>
+						<th>
+							<span class="title_box ">{l s='Unit Price'}</span>
+							<small class="text-muted">{$smarty.capture.TaxMethod}</small>
+						</th>
+						<th><span class="title_box ">{l s='Qty'}</th>
+						{if $display_warehouse}<th><span class="title_box ">{l s='Warehouse'}</span></th>{/if}
+						<th>
+							<span class="title_box ">{l s='Total'}</span>
+							<small class="text-muted">{$smarty.capture.TaxMethod}</small>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				{foreach from=$delivered_products item=delivery_number key=k}
+				<tr>
+					<td colspan="6">{l s='Delivery'} {$k} {if $delivery_number[0]['shipped']} - Shipped {/if}</td>
+				</tr>
+					{foreach from=$delivery_number item=product}
+						{* Include customized datas partial *}
+						{include file='controllers/orders/_delivery_customized_data.tpl'}
+
+						{* Include product line partial *}
+						{include file='controllers/orders/_delivery_product_line.tpl'}
+					{/foreach}
+				{foreachelse}
+					<tr>
+						<td class="text-center" colspan="6">
+							<i class="icon-warning-sign"></i>
+							{l s='No deliveries has been made'}
+						</td>
+					</tr>
+				{/foreach}
+				</tbody>
+			</table>
+
+		</div>
+	</form>
+
+
+<!-- Message block -->
 	{if (sizeof($messages))}
 	<div class="panel">
 		<h3>

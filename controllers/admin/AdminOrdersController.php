@@ -381,6 +381,7 @@ class AdminOrdersControllerCore extends AdminController
 					$current_order_state = $order->getCurrentOrderState();
 					if ($current_order_state->id != $order_state->id)
 					{
+						$delivery_number = Tools::getValue('delivery_number');
 						// Create new OrderHistory
 						$history = new OrderHistory();
 						$history->id_order = $order->id;
@@ -389,7 +390,9 @@ class AdminOrdersControllerCore extends AdminController
 						$use_existings_payment = false;
 						if (!$order->hasInvoice())
 							$use_existings_payment = true;
-						$history->changeIdOrderState((int)$order_state->id, $order, $use_existings_payment);
+						$order_delivery = new OrderDelivery($order->id);
+						$delivery_id = $order_delivery->getIdFromNr($delivery_number, $order->id, $order->id_shop);
+						$history->changeIdOrderState((int)$order_state->id, $order, $use_existings_payment, $delivery_id);
 
 						$carrier = new Carrier($order->id_carrier, $order->id_lang);
 						$templateVars = array();
@@ -1279,6 +1282,245 @@ class AdminOrdersControllerCore extends AdminController
 			else
 				$this->errors[] = Tools::displayError('You do not have permission to edit this.');
 		}
+		elseif (Tools::isSubmit('submitEdsAdd') && isset($order))
+		{
+			if (Tools::getValue('edsQty') && Tools::getValue('edsQty') != 0 && ( Tools::getValue('edsReference') || Tools::getValue('edsEan13') || Tools::getValue('edsProductName') != 'select_pname' )) // Qty is a must
+			{
+				$products = $order->getProducts();
+				if ($edsRef = Tools::getValue('edsReference')) // first check reference
+				{
+					foreach ($products as $product)
+					{
+						if ($product['product_reference'] == $edsRef)
+						{
+							$edsProduct = $product;
+							break; // saves resources, since we only loop untill we find product
+						}
+					}
+				}
+				elseif ($edsEan13 = Tools::getValue('edsEan13')) // if no reference, see if we got ean13
+				{
+					foreach ($products as $product)
+					{
+						if ($product['product_ean13'] == $edsEan13)
+						{
+							$edsProduct = $product;
+							break;
+						}
+					}
+				}
+				elseif ($edsProdID = Tools::getValue('edsProductName')) // an last, get id from name selecter
+				{
+					list($product_id,$product_attribute_id) = explode("_",$edsProdID);
+					foreach ($products as $product)
+					{
+						if ($product['product_id'] == $product_id && $product['product_attribute_id'] == $product_attribute_id)
+						{
+							$edsProduct = $product;
+							break;
+						}
+					}
+				}
+				$delivery_number = Tools::getValue('submitEdsAdd');
+				$order_delivery = new OrderDelivery($order->id);
+				$delivery_id = $order_delivery->getIdFromNr($delivery_number, $order->id, $order->id_shop);
+				if (empty($delivery_id))
+				{
+					// the order has no delivered products on this delivery number
+					if (Tools::getValue('edsQty') < 0)
+						$this->errors[] = Tools::displayError('Product does not exist on this delivery, there for it can not be removed');
+					else
+						$order_delivery->createDelivery($delivery_number, $order, $edsProduct, Tools::getValue('edsQty'), Tools::getValue('edsWarehouse')); // creates delivery and adds delivery detail
+				}
+				else
+				{
+					$qty = $order_delivery->getProductQty($edsProduct['product_id'], $edsProduct['product_attribute_id'], $delivery_id);
+					if ($qty > 0)
+					{
+						if (Tools::getValue('edsQty') < 0)
+						{
+							$order_delivery->subtractDeliveryDetail($order,$edsProduct,Tools::getValue('edsQty'),$delivery_id);
+						}
+						else
+						{
+							$new_qty = $qty + Tools::getValue('edsQty');
+							$order_delivery->updateDeliveryDetail($order, $edsProduct, $new_qty, $delivery_id, Tools::getValue('edsWarehouse'));
+						}
+					}
+					else
+					{
+						if (Tools::getValue('edsQty') < 0)
+							$this->errors[] = Tools::displayError('Product does not exist on this delivery, there for it can not be removed');
+						else
+							$order_delivery->createDeliveryDetail($order, $edsProduct, Tools::getValue('edsQty'), $delivery_id, Tools::getValue('edsWarehouse'));
+					}
+				}
+			}
+			else
+				$this->errors[] = Tools::displayError('An error occurred when addning product to delivery');
+		}
+		elseif (Tools::isSubmit('submitEdsAddAll') && isset($order))
+		{
+			$products = $order->getProducts(); // get all ordered products
+			$order_delivery = new OrderDelivery();
+			$ids = $order_delivery->getIds($order->id, $order->id_shop); // get all delivery ids for this order
+			foreach ($ids as $id)
+			{
+				foreach ($products as &$product)
+				{
+					$qty = $order_delivery->getProductQty($product['product_id'], $product['product_attribute_id'], $id['delivery_id']); // get delivered qty
+					// set it to delivered_qty
+					if($qty)
+					{
+						if (!isset($product['delivered_qty']))
+						{
+							$product['delivered_qty'] = $qty;
+							$product['delivery_ids'] = array($id['delivery_id']); // add delivery id aswell
+						}
+						else
+						{
+							$product['delivery_ids'] = array_merge($product['delivery_ids'], array($id['delivery_id']));
+							$product['delivered_qty'] = $product['delivered_qty'] + $qty;
+						}
+						$qty = false;
+					}
+				}
+			}
+			$delivery_number = Tools::getValue('submitEdsAddAll'); // Get slip nr
+			$order_delivery = new OrderDelivery($order->id);
+			foreach ($products as $product)
+			{
+				// This needs to be retrived for every product, incease an id is created.
+				$delivery_id = $order_delivery->getIdFromNr($delivery_number, $order->id, $order->id_shop); // Get delivery id
+
+				if (!isset($product['id_warehouse']))
+					$product['id_warehouse'] = 0;
+				if (isset($product['delivered_qty']) && $product['delivered_qty'] > 0) // if delivered_qty is set and higher then 0
+				{
+					$remaning_qty = $product['product_quantity'] - $product['delivered_qty'];
+					if ($remaning_qty > 0)
+					{
+						$isOnId = false;
+						foreach ($product['delivery_ids'] as $id)
+						{
+							// find our current id in product
+							if ($id == $delivery_id)
+							{
+								$isOnId = true;
+								$current_qty = $order_delivery->getProductQty($product['product_id'], $product['product_attribute_id'], $delivery_id);
+							}
+						}
+						if ($isOnId) // if product and delivery id OK
+						{
+							// update qty
+							$new_qty = $remaning_qty + $current_qty;
+							$order_delivery->updateDeliveryDetail($order, $product, $new_qty, $delivery_id, $product['id_warehouse']);
+						}
+						else // if product does not exist on delivery id
+						{
+							if (empty($delivery_id)) // not even the delivery id exists
+								// create new delivery
+								$order_delivery->createDelivery($delivery_number, $order, $product, $remaning_qty, $product['id_warehouse']); // creates delivery and adds delivery detail
+							else // delivery exists
+								// add product to delivery
+								$order_delivery->createDeliveryDetail($order, $product, $remaning_qty, $delivery_id, $product['id_warehouse']);
+						}
+					}
+				}
+				elseif (!isset($product['delivered_qty']))
+				{
+					// if it is not set, then it's not delivered
+					if (empty($delivery_id))
+						$order_delivery->createDelivery($delivery_number, $order, $product, $product['product_quantity'], $product['id_warehouse']); // creates delivery and adds delivery detail
+					else
+						$order_delivery->createDeliveryDetail($order, $product, $product['product_quantity'], $delivery_id, $product['id_warehouse']);
+				}
+			}
+
+		}
+		elseif (Tools::isSubmit('setTemplates') && isset($order))
+		{
+			// check if we allready set an template to this order
+			$exists = Db::getInstance()->executeS('
+			SELECT id_order
+			FROM `'._DB_PREFIX_.'order_template`
+			WHERE `id_order` = '.$order->id);
+			$what = array('invoice' => Tools::getValue('invoice_template'), 'delivery-slip' => Tools::getValue('delivery_template') );
+			if (!empty($exists)) // if we allready has set an template, we must update
+			{
+				$where = '`id_order` = '.$order->id; // update @ id_order
+				Db::getInstance()->update('order_template', $what, $where);
+			}
+			else
+			{
+				// else we add id_order to what and insert it in table
+				$what = array_merge($what, array('id_order' => $order->id));
+				Db::getInstance()->insert('order_template', $what);
+			}
+		}
+		elseif (Tools::isSubmit('emailInvoice') && isset($order))
+		{
+			$context = Context::getContext();
+			$id_order_invoice = Tools::getValue('id_order_invoice');
+			$order_invoice = new OrderInvoice($id_order_invoice);
+			if (!Validate::isLoadedObject($order_invoice))
+				die(Tools::displayError('The order invoice ('.$id_order_invoice.')  cannot be found within your database.'));
+			$pdf = new PDF($order_invoice, PDF::TEMPLATE_INVOICE, $context->smarty);
+			$file_attachement['content'] = $pdf->render(false);
+			$file_attachement['name'] = Configuration::get('PS_INVOICE_PREFIX', Context::getContext()->language->id, null, $order->id_shop).sprintf('%06d', $order_invoice->number ).'-'.$order_invoice->delivery_number.'.pdf';
+			$file_attachement['mime'] = 'application/pdf';
+			$data = array(
+				'{lastname}' => $order->getCustomer()->lastname,
+				'{firstname}' => $order->getCustomer()->firstname,
+				'{order_name}' => $order->getUniqReference(),
+				'{id_order}' => (int)$order->id,
+			);
+
+			$sent = Mail::Send( (int)$order->id_lang, 'pdf_invoice', 'Invoice PDF', $data,
+						$order->getCustomer()->email,
+				$order->getCustomer()->firstname.' '.$order->getCustomer()->lastname,
+				null, null, $file_attachement, null, _PS_MAIL_DIR_, false, (int)$order->id_shop);
+
+			if($order->getCustomer()->invoice_email != '')
+			{
+				$invoice_sent = Mail::Send( (int)$order->id_lang, 'pdf_invoice', 'Invoice PDF', $data,
+							$order->getCustomer()->invoice_email,
+					$order->getCustomer()->firstname.' '.$order->getCustomer()->lastname,
+					null, null, $file_attachement, null, _PS_MAIL_DIR_, false, (int)$order->id_shop);
+			}
+
+			if ($sent > 0)
+				Tools::redirectAdmin(self::$currentIndex.'&id_order='.$order->id.'&vieworder&conf=4&token='.$this->token);
+			else
+				$this->errors[] = Tools::displayError('An error occurred while sending mail');
+		}
+		elseif (Tools::isSubmit('emailDelivery') && isset($order))
+		{
+			$context = Context::getContext();
+			$id_order_invoice = Tools::getValue('id_order_invoice');
+			$order_invoice = new OrderInvoice($id_order_invoice);
+			if (!Validate::isLoadedObject($order_invoice))
+				die(Tools::displayError('The order invoice ('.$id_order_invoice.')  cannot be found within your database.'));
+			$pdf = new PDF($order_invoice, PDF::TEMPLATE_DELIVERY_SLIP, $context->smarty);
+			$file_attachement['content'] = $pdf->render(false);
+			$file_attachement['name'] = Configuration::get('PS_DELIVERY_PREFIX', Context::getContext()->language->id, null, $order->id_shop).sprintf('%06d', $order_invoice->number).'-'.$order_invoice->delivery_number.'.pdf';
+			$file_attachement['mime'] = 'application/pdf';
+			$data = array(
+				'{lastname}' => $order->getCustomer()->lastname,
+				'{firstname}' => $order->getCustomer()->firstname,
+				'{order_name}' => $order->getUniqReference(),
+				'{id_order}' => (int)$order->id,
+			);
+
+			$sent = Mail::Send( (int)$order->id_lang, 'pdf_delivery', 'Delivery PDF', $data,
+						$order->getCustomer()->email,
+				$order->getCustomer()->firstname.' '.$order->getCustomer()->lastname,
+				null, null, $file_attachement, null, _PS_MAIL_DIR_, false, (int)$order->id_shop);
+			if ($sent > 0)
+				Tools::redirectAdmin(self::$currentIndex.'&id_order='.$order->id.'&vieworder&conf=4&token='.$this->token);
+			else
+				$this->errors[] = Tools::displayError('An error occurred while sending mail');
+		}
 
 		parent::postProcess();
 	}
@@ -1357,6 +1599,11 @@ class AdminOrdersControllerCore extends AdminController
 		$carrier = new Carrier($order->id_carrier);
 		$products = $this->getProducts($order);
 		$currency = new Currency((int)$order->id_currency);
+
+		$order_delivery = new OrderDelivery($order->id);
+		$eds_delivery_number = $order_delivery->getNextSlipNr($order);
+		$delivered_products = $this->getProductsDelivery($order);
+
 		// Carrier module call
 		$carrier_module_call = null;
 		if ($carrier->is_module)
@@ -1466,6 +1713,7 @@ class AdminOrdersControllerCore extends AdminController
 			),
 			'customerStats' => $customer->getStats(),
 			'products' => $products,
+			'delivered_products' => $delivered_products,
 			'discounts' => $order->getCartRules(),
 			'orders_total_paid_tax_incl' => $order->getOrdersTotalPaid(), // Get the sum of total_paid_tax_incl of the order with similar reference
 			'total_paid' => $order->getTotalPaid(),
@@ -1493,7 +1741,14 @@ class AdminOrdersControllerCore extends AdminController
 			'not_paid_invoices_collection' => $order->getNotPaidInvoicesCollection(),
 			'payment_methods' => $payment_methods,
 			'invoice_management_active' => Configuration::get('PS_INVOICE', null, null, $order->id_shop),
-			'display_warehouse' => (int)Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT')
+			'display_warehouse' => (int)Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT'),
+			'eds_delivery_number' => $eds_delivery_number,
+			'invoice_templates' => $this->getTemplateModels('invoice'),
+			'cur_invoice_template' => $this->getCurrentTemplate('invoice', $order),
+			'default_invoice_template' => Configuration::get('PS_INVOICE_MODEL'),
+			'delivery_templates' => $this->getTemplateModels('delivery-slip'),
+			'cur_delivery_template' => $this->getCurrentTemplate('delivery-slip', $order),
+			'default_delivery_template' => Configuration::get('PS_DELIVERY_MODEL'),
 		);
 
 		return parent::renderView();
@@ -2246,7 +2501,7 @@ class AdminOrdersControllerCore extends AdminController
 			)));
 
 		// We can't edit a delivered order
-		if ($order->hasBeenDelivered())
+		if ($order->hasBeenDelivered() && !Configuration::get('PS_EDS'))
 			die(Tools::jsonEncode(array(
 				'result' => false,
 				'error' => Tools::displayError('You cannot edit a delivered order.')
@@ -2330,7 +2585,40 @@ class AdminOrdersControllerCore extends AdminController
 
 		return $products;
 	}
-	
+
+	protected function getProductsDelivery($order)
+	{
+		// get delivered products
+		$delivered_products = $order->getProductsDelivery();
+
+		foreach ($delivered_products as &$delivery)
+		{
+			foreach ($delivery as &$product)
+			{
+				// add missing elements to table.
+				if ($product['image'] != null)
+				{
+					$name = 'product_mini_'.(int)$product['product_id'].(isset($product['product_attribute_id']) ? '_'.(int)$product['product_attribute_id'] : '').'.jpg';
+					// generate image cache, only for back office
+					$product['image_tag'] = ImageManager::thumbnail(_PS_IMG_DIR_.'p/'.$product['image']->getExistingImgPath().'.jpg', $name, 45, 'jpg');
+					if (file_exists(_PS_TMP_IMG_DIR_.$name))
+						$product['image_size'] = getimagesize(_PS_TMP_IMG_DIR_.$name);
+					else
+						$product['image_size'] = false;
+				}
+				if ($product['id_warehouse'] != 0)
+				{
+					$warehouse = new Warehouse((int)$product['id_warehouse']);
+					$product['warehouse_name'] = $warehouse->name;
+				}
+				else
+					$product['warehouse_name'] = '--';
+				}
+		}
+
+		return $delivered_products;
+	}
+
 	protected function reinjectQuantity($order_detail, $qty_cancel_product)
 	{
 		// Reinject product
@@ -2391,5 +2679,49 @@ class AdminOrdersControllerCore extends AdminController
 		$order_invoice->total_paid_tax_incl -= $value_tax_incl;
 		$order_invoice->total_paid_tax_excl -= $value_tax_excl;
 		$order_invoice->update();
+	}
+
+	protected function getTemplateModels($model)
+	{
+		$models = array(
+			array(
+				'value' => $model,
+				'name' => $model
+			)
+		);
+
+		$templates_override = $this->getTemplateModelsFromDir(_PS_THEME_DIR_.'pdf/', $model);
+		$templates_default = $this->getTemplateModelsFromDir(_PS_PDF_DIR_, $model);
+
+		foreach (array_merge($templates_default, $templates_override) as $template)
+		{
+			$template_name = basename($template, '.tpl');
+			$models[] = array('value' => $template_name, 'name' => $template_name);
+		}
+		return $models;
+	}
+
+	protected function getTemplateModelsFromDir($directory, $model)
+	{
+		$templates = false;
+
+		if (is_dir($directory))
+			$templates = glob($directory.$model.'-*.tpl');
+
+		if (!$templates)
+			$templates = array();
+
+		return $templates;
+	}
+
+	protected function getCurrentTemplate($model, $order)
+	{
+			$template = Db::getInstance()->executeS('
+			SELECT `'.$model.'`
+			FROM `'._DB_PREFIX_.'order_template`
+			WHERE `id_order` = '.$order->id);
+			if ($template)
+				$template = $template[0][$model];
+			return $template;
 	}
 }

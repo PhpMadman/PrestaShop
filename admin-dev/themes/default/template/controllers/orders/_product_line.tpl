@@ -41,7 +41,7 @@
 	</td>
 	<td>
 		<span class="product_price_show">{displayPrice price=$product_price currency=$currency->id}</span>
-		{if $can_edit}
+		{if $can_edit || Configuration::get('PS_EDS')}
 		<span class="product_price_edit" style="display:none;">
 			<input type="hidden" name="product_id_order_detail" class="edit_product_id_order_detail" value="{$product['id_order_detail']}" />
 			{if $currency->sign % 2}
@@ -58,7 +58,7 @@
 	</td>
 	<td class="productQuantity">
 		<span class="product_quantity_show{if (int)$product['product_quantity'] > 1} red bold{/if}">{$product['product_quantity']}</span>
-		{if $can_edit}
+		{if $can_edit || Configuration::get('PS_EDS')}
 		<span class="product_quantity_edit" style="display:none;">
 			<input type="text" name="product_quantity" class="edit_product_quantity" value="{$product['product_quantity']|htmlentities}"/>
 		</span>
@@ -84,16 +84,18 @@
 	{if $order->hasBeenDelivered() || $order->hasProductReturned()}
 		<td class="productQuantity">
 			{$product['product_quantity_return']}
-			{if count($product['return_history'])}
-				<span class="tooltip">
-					<span class="tooltip_label tooltip_button">+</span>
-					<div class="tooltip_content">
-					<span class="title">{l s='Return history'}</span>
-					{foreach $product['return_history'] as $return}
-						{l s='%1s - %2s - %3s' sprintf=[{dateFormat date=$return.date_add}, $return.product_quantity, $return.state]}<br />
-					{/foreach}
-					</div>
-				</span>
+			{if isset($product['return_history'])}
+				{if count($product['return_history'])}
+					<span class="tooltip">
+						<span class="tooltip_label tooltip_button">+</span>
+						<div class="tooltip_content">
+						<span class="title">{l s='Return history'}</span>
+						{foreach $product['return_history'] as $return}
+							{l s='%1s - %2s - %3s' sprintf=[{dateFormat date=$return.date_add}, $return.product_quantity, $return.state]}<br />
+						{/foreach}
+						</div>
+					</span>
+				{/if}
 			{/if}
 		</td>
 	{/if}
@@ -169,18 +171,24 @@
 	</td>
 	{if ($can_edit && !$order->hasBeenDelivered())}
 	<td class="product_invoice" colspan="2" style="display: none;">
-		{if sizeof($invoices_collection)}
-		<select name="product_invoice" class="edit_product_invoice">
-			{foreach from=$invoices_collection item=invoice}
-			<option value="{$invoice->id}" {if $invoice->id == $product['id_order_invoice']}selected="selected"{/if}>
-				#{Configuration::get('PS_INVOICE_PREFIX', $current_id_lang, null, $order->id_shop)}{'%06d'|sprintf:$invoice->number}
-			</option>
-			{/foreach}
-		</select>
-		{else}
-		&nbsp;
+		{if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_INVOICE_DELIVERED')}
+		 &nbsp;
+		 {else}
+			{if sizeof($invoices_collection)}
+			<select name="product_invoice" class="edit_product_invoice">
+				{foreach from=$invoices_collection item=invoice}
+				<option value="{$invoice->id}" {if $invoice->id == $product['id_order_invoice']}selected="selected"{/if}>
+					#{Configuration::get('PS_INVOICE_PREFIX', $current_id_lang, null, $order->id_shop)}{'%06d'|sprintf:$invoice->number}
+				</option>
+				{/foreach}
+			</select>
+			{else}
+			&nbsp;
+			{/if}
 		{/if}
 	</td>
+	{/if}
+	{if ( ($can_edit && !$order->hasBeenDelivered()) || Configuration::get('PS_EDS'))}
 	<td class="product_action">
 		{* edit/delete controls *}
 		<div class="btn-group">

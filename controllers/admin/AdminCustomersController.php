@@ -311,6 +311,12 @@ class AdminCustomersControllerCore extends AdminController
 					'required' => true
 				),
 				array(
+					'type' => 'text',
+					'label' => $this->l('Invoice Email address:'),
+					'name' => 'invoice_email',
+					'col' => '4',
+				),
+				array(
 					'type' => 'password',
 					'label' => $this->l('Password:'),
 					'name' => 'passwd',

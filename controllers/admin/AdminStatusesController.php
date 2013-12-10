@@ -360,6 +360,54 @@ class AdminStatusesControllerCore extends AdminController
 					)
 				),
 				array(
+					'type' => 'checkbox',
+					'name' => 'package',
+					'values' => array(
+						'query' => array(
+							array('id' => 'on', 'name' => $this->l('Show packing PDF'), 'val' => '1'),
+							),
+						'id' => 'id',
+						'name' => 'name'
+					),
+					'hint' => 'Extended Delivery System must be enabled',
+				),
+				array(
+					'type' => 'checkbox',
+					'name' => 'partially_shipped',
+					'values' => array(
+						'query' => array(
+							array('id' => 'on',  'name' => $this->l('Set the order as partially shipped'), 'val' => '1'),
+							),
+						'id' => 'id',
+						'name' => 'name'
+					),
+					'hint' => 'Extended Delivery System must be enabled',
+				),
+				array(
+					'type' => 'checkbox',
+					'name' => 'attach_pdf_invoice',
+					'values' => array(
+						'query' => array(
+							array('id' => 'on',  'name' => $this->l('Attach invoice pdf to email'), 'val' => '1'),
+							),
+						'id' => 'id',
+						'name' => 'name'
+					),
+					'hint' => 'Extended Delivery System must be enabled',
+				),
+				array(
+					'type' => 'checkbox',
+					'name' => 'attach_pdf_delivery',
+					'values' => array(
+						'query' => array(
+							array('id' => 'on',  'name' => $this->l('Attach delivery slip pdf to email'), 'val' => '1'),
+							),
+						'id' => 'id',
+						'name' => 'name'
+					),
+					'hint' => 'Extended Delivery System must be enabled',
+				),
+				array(
 					'type' => 'select_template',
 					'label' => $this->l('Template:'),
 					'name' => 'template',
@@ -401,7 +449,11 @@ class AdminStatusesControllerCore extends AdminController
 			'send_email_on' => $this->getFieldValue($obj, 'send_email'),
 			'shipped_on' => $this->getFieldValue($obj, 'shipped'),
 			'paid_on' => $this->getFieldValue($obj, 'paid'),
-			'delivery_on' => $this->getFieldValue($obj, 'delivery')
+			'delivery_on' => $this->getFieldValue($obj, 'delivery'),
+			'package_on' => $this->getFieldValue($obj, 'package'),
+			'partially_shipped_on' => $this->getFieldValue($obj, 'partially_shipped'),
+			'attach_pdf_delivery_on' => $this->getFieldValue($obj, 'attach_pdf_delivery'),
+			'attach_pdf_invoice_on' => $this->getFieldValue($obj, 'attach_pdf_invoice'),
 		);
 
 		return parent::renderForm();
@@ -516,6 +568,10 @@ class AdminStatusesControllerCore extends AdminController
 			$_POST['shipped'] = (int)Tools::getValue('shipped_on');
 			$_POST['paid'] = (int)Tools::getValue('paid_on');
 			$_POST['delivery'] = (int)Tools::getValue('delivery_on');
+			$_POST['package'] = (int)Tools::getValue('package_on');
+			$_POST['partially_shipped'] = (int)Tools::getValue('partially_shipped_on');
+			$_POST['attach_pdf_delivery'] = (int)Tools::getValue('attach_pdf_delivery_on');
+			$_POST['attach_pdf_invoice'] = (int)Tools::getValue('attach_pdf_invoice_on');
 			if (!$_POST['send_email'])
 			{
 				$languages = Language::getLanguages(false);

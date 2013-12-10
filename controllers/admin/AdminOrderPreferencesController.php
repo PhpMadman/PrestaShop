@@ -118,6 +118,83 @@ class AdminOrderPreferencesControllerCore extends AdminController
 					)
 				)
 			),
+			'eds' => array(
+				'title' => $this->l('Extended Delivery System 2.6'),
+				'icon' => 'tab-preferences',
+				'fields' => array(
+					'PS_EDS' => array(
+						'title' => $this->l('Enable EDS'),
+						'hint' => $this->l('Activate Extended Delivery System, with packingslip, multiple delivery slips'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'type' => 'bool',
+					),
+					'PS_EDS_IMG_PS' => array(
+						'title' => $this->l('Packingslip image'),
+						'hint' => $this->l('Add product image to packingslip'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'type' => 'bool',
+					),
+					'PS_EDS_INVOICE_DELIVERED' => array(
+						'title' => $this->l('Invoice Deliverd'),
+						'hint' => $this->l('Only invoice deliverd products, Invoices will match nr of delivery slips'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'type' => 'bool',
+					),
+					'PS_EDS_INVOICE_DUE_DATE' => array(
+						'title' => $this->l('Invoice Due Date'),
+						'hint' => $this->l('Enable Due date on invoice templates'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'type' => 'bool',
+					),
+					'PS_EDS_INVOICE_DUE_DAYS' => array(
+						'title' => $this->l('Due Date Days'),
+						'hint' => $this->l('Nr of days after invoice date, invoice should be paid'),
+						'validation' => 'isUnsignedInt',
+						'cast' => 'intval',
+						'type' => 'text',
+					),
+					'PS_INVOICE_MODEL' => array(
+						'title' => $this->l('Invoice model:'),
+						'hint' => $this->l('Choose an invoice model. This is same setting as Orders > Invoices'),
+						'type' => 'select',
+						'identifier' => 'value',
+						'list' => $this->getTemplateModels('invoice')
+					),
+					'PS_DELIVERY_MODEL' => array(
+						'title' => $this->l('Delivery model:'),
+						'hint' => $this->l('Choose an delivery model'),
+						'type' => 'select',
+						'identifier' => 'value',
+						'list' => $this->getTemplateModels('delivery-slip')
+					),
+					'PS_EDS_SAMPLE_TEXT' => array(
+						'title' => $this->l('Sample text:'),
+						'hint' => $this->l('This text will appear after the product on deliver-slip-sampleorder'),
+						'size' => 6,
+						'type' => 'textareaLang',
+						'cols' => 40,
+						'rows' => 8
+					),
+					'PS_EDS_EMAIL_PDF' => array(
+						'title' => $this->l('Email PDF'),
+						'hint' => $this->l('Adds an e-mail button for each delivery/invoice'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'type' => 'bool',
+					),
+					'PS_EDS_EMAIL_PDF_LATEST' => array(
+						'title' => $this->l('Only E-mail latest invoice/delivery'),
+						'hint' => $this->l('On statues with Attach invoice/delivery PDF enabled, only attach latest invoice/delivery, not all'),
+						'validation' => 'isBool',
+						'cast' => 'intval',
+						'type' => 'bool',
+					),
+				),
+			),
 			'gift' => array(
 				'title' =>	$this->l('Gift options'),
 				'icon' =>	'icon-gift',
@@ -168,4 +245,38 @@ class AdminOrderPreferencesControllerCore extends AdminController
 		if (Tools::getValue('PS_CONDITIONS') && (Tools::getValue('PS_CONDITIONS_CMS_ID') == 0 || !Db::getInstance()->getValue($sql)))
 			$this->errors[] = Tools::displayError('Assign a valid CMS page if you want it to be read.');
 	}
+
+	protected function getTemplateModels($model)
+	{
+		$models = array(
+			array(
+				'value' => $model,
+				'name' => $model
+			)
+		);
+
+		$templates_override = $this->getTemplateModelsFromDir(_PS_THEME_DIR_.'pdf/', $model);
+		$templates_default = $this->getTemplateModelsFromDir(_PS_PDF_DIR_, $model);
+
+		foreach (array_merge($templates_default, $templates_override) as $template)
+		{
+			$template_name = basename($template, '.tpl');
+			$models[] = array('value' => $template_name, 'name' => $template_name);
+		}
+		return $models;
+	}
+
+	protected function getTemplateModelsFromDir($directory, $model)
+	{
+		$templates = false;
+
+		if (is_dir($directory))
+			$templates = glob($directory.$model.'-*.tpl');
+
+		if (!$templates)
+			$templates = array();
+
+		return $templates;
+	}
+
 }

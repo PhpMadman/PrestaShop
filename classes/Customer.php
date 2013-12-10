@@ -59,6 +59,9 @@ class CustomerCore extends ObjectModel
 	/** @var string e-mail */
 	public $email;
 
+	/** @var string invoice e-mail */
+	public $invoice_email;
+
 	/** @var boolean Newsletter subscription */
 	public $newsletter;
 
@@ -162,6 +165,7 @@ class CustomerCore extends ObjectModel
 			'lastname' => 					array('type' => self::TYPE_STRING, 'validate' => 'isName', 'required' => true, 'size' => 32),
 			'firstname' => 					array('type' => self::TYPE_STRING, 'validate' => 'isName', 'required' => true, 'size' => 32),
 			'email' => 						array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'required' => true, 'size' => 128),
+			'invoice_email' =>				array('type' => self::TYPE_STRING, 'size' => 128),
 			'passwd' => 					array('type' => self::TYPE_STRING, 'validate' => 'isPasswd', 'required' => true, 'size' => 32),
 			'last_passwd_gen' =>			array('type' => self::TYPE_STRING, 'copy_post' => false),
 			'id_gender' => 					array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),

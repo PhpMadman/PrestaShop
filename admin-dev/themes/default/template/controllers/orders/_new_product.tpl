@@ -84,6 +84,11 @@
 				<option value="{$invoice->id}">{$invoice->getInvoiceNumberFormatted($current_id_lang)}</option>
 				{/foreach}
 			</optgroup>
+			{if (!Configuration::get('PS_EDS') || (Configuration::get('PS_EDS') && !Configuration::get('PS_EDS_INVOICE_DELIVERED')))}
+				<optgroup label="{l s='New'}">
+					<option value="0">{l s='Create a new invoice'}</option>
+				</optgroup>
+			{/if}
 			<optgroup label="{l s='New'}">
 				<option value="0">{l s='Create a new invoice'}</option>
 			</optgroup>

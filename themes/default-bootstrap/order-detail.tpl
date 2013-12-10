@@ -38,8 +38,17 @@
     <p><strong class="dark">{l s='Payment method'}</strong> <span class="color-myaccount">{$order->payment|escape:'html':'UTF-8'}</span></p>
     {if $invoice AND $invoiceAllowed}
     <p>
-        <i class="icon-file-text"></i>
-        <a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order={$order->id|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">{l s='Download your invoice as a PDF file.'}</a>
+		{if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_INVOICE_DELIVERED')}
+			{foreach $invoices item=pdfInvoice}
+				<i class="icon-file-text"></i>
+				<a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order_invoice={$pdfInvoice->number|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">
+				{l s='Invoice for Delivery Slip'} {$pdfInvoice->delivery_number}</a>
+				<br>
+			{/foreach}
+		{else}
+			<i class="icon-file-text"></i>
+			<a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order={$order->id|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">{l s='Download your invoice as a PDF file.'}</a>
+		{/if}
     </p>
     {/if}
     {if $order->recyclable}
@@ -350,6 +359,305 @@
 		</tbody>
 	</table>
 </div>
+
+{if Configuration::get('PS_EDS')}
+<h4>{l s='Delivered Products'}</h4>
+<div id="order-delivery-detail-content" class="table_block table-responsive">
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th class="first_item">{l s='Reference'}</th>
+				<th class="item">{l s='Product'}</th>
+				<th class="item">{l s='Quantity'}</th>
+				<th class="item">{l s='Unit price'}</th>
+				<th class="last_item">{l s='Total price'}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{foreach from=$delivered_products item=delivery_number name=delivery_number key=k}
+			<tr class="delivery_head">
+				<td colspan="5">
+					<label for="cb_{$delivery_product.id_order_detail|intval}">{l s='Delivery'} {$k}</label>
+				</td>
+			</tr>
+		{foreach from=$delivery_number item=delivery_product name=delivery_products}
+			{if !isset($delivery_product.deleted)}
+				{assign var='productId' value=$delivery_product.product_id}
+				{assign var='deliveryproductAttributeId' value=$delivery_product.product_attribute_id}
+				{if isset($delivery_product.customizedDatas)}
+					{assign var='deliveredproductQuantity' value=$delivery_product.product_quantity-$delivery_product.customizationQuantityTotal}
+				{else}
+					{assign var='deliveredproductQuantity' value=$delivery_product.product_quantity}
+				{/if}
+				<!-- Customized products -->
+				{if isset($delivery_product.customizedDatas)}
+					<tr class="item">
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">{if $delivery_product.product_reference}{$delivery_product.product_reference|escape:'html':'UTF-8'}{else}--{/if}</label>
+						</td>
+						<td class="bold">
+							<label for="cb_{$delivery_product.id_order_detail|intval}">{$delivery_product.product_name|escape:'html':'UTF-8'}</label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}"><span class="order_qte_span editable">{$delivery_product.customizationQuantityTotal|intval}</span></label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+								{if $group_use_tax}
+									{convertPriceWithCurrency price=$delivery_product.unit_price_tax_incl currency=$currency}
+								{else}
+									{convertPriceWithCurrency price=$delivery_product.unit_price_tax_excl currency=$currency}
+								{/if}
+							</label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+								{if isset($customizedDatas.$productId.$deliveryproductAttributeId)}
+									{if $group_use_tax}
+										{convertPriceWithCurrency price=$delivery_product.total_customization_wt currency=$currency}
+									{else}
+										{convertPriceWithCurrency price=$delivery_product.total_customization currency=$currency}
+									{/if}
+								{else}
+									{if $group_use_tax}
+										{convertPriceWithCurrency price=$delivery_product.total_price_tax_incl currency=$currency}
+									{else}
+										{convertPriceWithCurrency price=$delivery_product.total_price_tax_excl currency=$currency}
+									{/if}
+								{/if}
+							</label>
+						</td>
+					</tr>
+					{foreach $delivery_product.customizedDatas  as $customizationPerAddress}
+						{foreach $customizationPerAddress as $customizationId => $customization}
+						<tr class="alternate_item">
+							<td colspan="2">
+							{foreach from=$customization.datas key='type' item='datas'}
+								{if $type == $CUSTOMIZE_FILE}
+								<ul class="customizationUploaded">
+									{foreach from=$datas item='data'}
+										<li><img src="{$pic_dir}{$data.value}_small" alt="" class="customizationUploaded" /></li>
+									{/foreach}
+								</ul>
+								{elseif $type == $CUSTOMIZE_TEXTFIELD}
+								<ul class="typedText">{counter start=0 print=false}
+									{foreach from=$datas item='data'}
+										{assign var='customizationFieldName' value="Text #"|cat:$data.id_customization_field}
+										<li>{$data.name|default:$customizationFieldName} : {$data.value}</li>
+									{/foreach}
+								</ul>
+								{/if}
+							{/foreach}
+							</td>
+							<td>
+								<label for="cb_{$delivery_product.id_order_detail|intval}"><span class="order_qte_span editable">{$customization.quantity|intval}</span></label>
+							</td>
+							<td colspan="2"></td>
+						</tr>
+						{/foreach}
+					{/foreach}
+				{/if}
+				<!-- Classic products -->
+				{if $delivery_product.product_quantity > $delivery_product.customizationQuantityTotal}
+					<tr class="item">
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">{if $delivery_product.product_reference}{$delivery_product.product_reference|escape:'html':'UTF-8'}{else}--{/if}</label>
+						</td>
+						<td class="bold">
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+								{if $delivery_product.download_hash && $invoice && $delivery_product.display_filename != ''}
+									{if isset($is_guest) && $is_guest}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}&amp;id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html'}" title="{l s='Download this product'}">
+									{else}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}")|escape:'html'}" title="{l s='Download this product'}">
+									{/if}
+										<img src="{$img_dir}icon/download_product.gif" class="icon" alt="{l s='Download product'}" />
+										</a>
+									{if isset($is_guest) && $is_guest}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}&id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html'}" title="{l s='Download this product'}"> {$delivery_product.product_name|escape:'html':'UTF-8'}</a>
+									{else}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}")|escape:'html'}" title="{l s='Download this product'}"> {$delivery_product.product_name|escape:'html':'UTF-8'}</a>
+									{/if}
+								{else}
+									{$delivery_product.product_name|escape:'html':'UTF-8'}
+								{/if}
+							</label>
+						</td>
+						<td class="quantity">
+							<label for="cb_{$delivery_product.id_order_detail|intval}"><span class="order_qte_span editable">{$deliveredproductQuantity|intval}</span></label></td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+							{if $group_use_tax}
+								{convertPriceWithCurrency price=$delivery_product.unit_price_tax_incl currency=$currency}
+							{else}
+								{convertPriceWithCurrency price=$delivery_product.unit_price_tax_excl currency=$currency}
+							{/if}
+							</label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+							{if $group_use_tax}
+								{convertPriceWithCurrency price=$delivery_product.total_price_tax_incl currency=$currency}
+							{else}
+								{convertPriceWithCurrency price=$delivery_product.total_price_tax_excl currency=$currency}
+							{/if}
+							</label>
+						</td>
+					</tr>
+				{/if}
+			{/if}
+		{/foreach}
+		{/foreach}
+		</tbody>
+	</table>
+</div>
+
+<h4>{l s='Undelivered Products'}</h4>
+<div id="order-delivery-detail-content" class="table_block table-responsive">
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th class="first_item">{l s='Reference'}</th>
+				<th class="item">{l s='Product'}</th>
+				<th class="item">{l s='Quantity'}</th>
+				<th class="item">{l s='Unit price'}</th>
+				<th class="last_item">{l s='Total price'}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{foreach from=$undelivered_products item=delivery_product name=delivery_products}
+			{if !isset($delivery_product.deleted)}
+				{assign var='productId' value=$delivery_product.product_id}
+				{assign var='deliveryproductAttributeId' value=$delivery_product.product_attribute_id}
+				{if isset($delivery_product.customizedDatas)}
+					{assign var='deliveredproductQuantity' value=$delivery_product.product_quantity-$delivery_product.customizationQuantityTotal}
+				{else}
+					{assign var='deliveredproductQuantity' value=$delivery_product.product_quantity}
+				{/if}
+				<!-- Customized products -->
+				{if isset($delivery_product.customizedDatas)}
+					<tr class="item">
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">{if $delivery_product.product_reference}{$delivery_product.product_reference|escape:'html':'UTF-8'}{else}--{/if}</label>
+						</td>
+						<td class="bold">
+							<label for="cb_{$delivery_product.id_order_detail|intval}">{$delivery_product.product_name|escape:'html':'UTF-8'}</label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}"><span class="order_qte_span editable">{$delivery_product.customizationQuantityTotal|intval}</span></label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+								{if $group_use_tax}
+									{convertPriceWithCurrency price=$delivery_product.unit_price_tax_incl currency=$currency}
+								{else}
+									{convertPriceWithCurrency price=$delivery_product.unit_price_tax_excl currency=$currency}
+								{/if}
+							</label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+								{if isset($customizedDatas.$productId.$deliveryproductAttributeId)}
+									{if $group_use_tax}
+										{convertPriceWithCurrency price=$delivery_product.total_customization_wt currency=$currency}
+									{else}
+										{convertPriceWithCurrency price=$delivery_product.total_customization currency=$currency}
+									{/if}
+								{else}
+									{if $group_use_tax}
+										{convertPriceWithCurrency price=$delivery_product.total_price_tax_incl currency=$currency}
+									{else}
+										{convertPriceWithCurrency price=$delivery_product.total_price_tax_excl currency=$currency}
+									{/if}
+								{/if}
+							</label>
+						</td>
+					</tr>
+					{foreach $delivery_product.customizedDatas  as $customizationPerAddress}
+						{foreach $customizationPerAddress as $customizationId => $customization}
+						<tr class="alternate_item">
+							<td colspan="2">
+							{foreach from=$customization.datas key='type' item='datas'}
+								{if $type == $CUSTOMIZE_FILE}
+								<ul class="customizationUploaded">
+									{foreach from=$datas item='data'}
+										<li><img src="{$pic_dir}{$data.value}_small" alt="" class="customizationUploaded" /></li>
+									{/foreach}
+								</ul>
+								{elseif $type == $CUSTOMIZE_TEXTFIELD}
+								<ul class="typedText">{counter start=0 print=false}
+									{foreach from=$datas item='data'}
+										{assign var='customizationFieldName' value="Text #"|cat:$data.id_customization_field}
+										<li>{$data.name|default:$customizationFieldName} : {$data.value}</li>
+									{/foreach}
+								</ul>
+								{/if}
+							{/foreach}
+							</td>
+							<td>
+								<label for="cb_{$delivery_product.id_order_detail|intval}"><span class="order_qte_span editable">{$customization.quantity|intval}</span></label>
+							</td>
+							<td colspan="2"></td>
+						</tr>
+						{/foreach}
+					{/foreach}
+				{/if}
+				<!-- Classic products -->
+				{if $delivery_product.product_quantity > $delivery_product.customizationQuantityTotal}
+					<tr class="item">
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">{if $delivery_product.product_reference}{$delivery_product.product_reference|escape:'html':'UTF-8'}{else}--{/if}</label>
+						</td>
+						<td class="bold">
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+								{if $delivery_product.download_hash && $invoice && $delivery_product.display_filename != ''}
+									{if isset($is_guest) && $is_guest}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}&amp;id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html'}" title="{l s='Download this product'}">
+									{else}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}")|escape:'html'}" title="{l s='Download this product'}">
+									{/if}
+										<img src="{$img_dir}icon/download_product.gif" class="icon" alt="{l s='Download product'}" />
+										</a>
+									{if isset($is_guest) && $is_guest}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}&id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html'}" title="{l s='Download this product'}"> {$delivery_product.product_name|escape:'html':'UTF-8'}</a>
+									{else}
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$delivery_product.filename|escape:'html':'UTF-8'}-{$delivery_product.download_hash|escape:'html':'UTF-8'}")|escape:'html'}" title="{l s='Download this product'}"> {$delivery_product.product_name|escape:'html':'UTF-8'}</a>
+									{/if}
+								{else}
+									{$delivery_product.product_name|escape:'html':'UTF-8'}
+								{/if}
+							</label>
+						</td>
+						<td class="quantity">
+							<label for="cb_{$delivery_product.id_order_detail|intval}"><span class="order_qte_span editable">{$deliveredproductQuantity|intval}</span></label></td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+							{if $group_use_tax}
+								{convertPriceWithCurrency price=$delivery_product.unit_price_tax_incl currency=$currency}
+							{else}
+								{convertPriceWithCurrency price=$delivery_product.unit_price_tax_excl currency=$currency}
+							{/if}
+							</label>
+						</td>
+						<td>
+							<label for="cb_{$delivery_product.id_order_detail|intval}">
+							{if $group_use_tax}
+								{convertPriceWithCurrency price=$delivery_product.total_price_tax_incl currency=$currency}
+							{else}
+								{convertPriceWithCurrency price=$delivery_product.total_price_tax_excl currency=$currency}
+							{/if}
+							</label>
+						</td>
+					</tr>
+				{/if}
+			{/if}
+		{/foreach}
+		</tbody>
+	</table>
+</div>
+
+{/if}
+
 {if $order->getShipping()|count > 0}
 	<table class="table table-bordered footab">
 		<thead>

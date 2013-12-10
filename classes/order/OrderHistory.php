@@ -76,7 +76,7 @@ class OrderHistoryCore extends ObjectModel
 	 * @param int/object $id_order
 	 * @param bool $use_existing_payment
 	 */
-	public function changeIdOrderState($new_order_state, $id_order, $use_existing_payment = false)
+	public function changeIdOrderState($new_order_state, $id_order, $use_existing_payment = false, $delivery_id = false)
 	{
 		if (!$new_order_state || !$id_order)
 			return;
@@ -166,10 +166,51 @@ class OrderHistoryCore extends ObjectModel
 				$manager = StockManagerFactory::getManager();
 				
 			$errorOrCanceledStatuses = array(Configuration::get('PS_OS_ERROR'), Configuration::get('PS_OS_CANCELED'));
+
+			if (Configuration::get('PS_EDS'))
+			{
+				if ($new_os->partially_shipped)
+				{
+					$order_delivery = new OrderDelivery($order->id);
+					$order_delivery->setShipped($delivery_id);
+				}
+				if ($new_os->shipped == 1)
+				{
+					$order_delivery = new OrderDelivery($order->id);
+					$ids = $order_delivery->getIds($order->id, $order->id_shop);
+					foreach ($ids as $id)
+						$order_delivery->setShipped($id['delivery_id']);
+				}
+			}
+
+			// Preperation for partially_shipped statues
+			if ($new_os->partially_shipped == 1 && Configuration::get('PS_EDS'))
+			{
+				$order_delivery = new OrderDelivery($order->id);
+				$delivery_number = $order_delivery->getNrFromId($delivery_id);
+				$delivery_products = $order->getProductsDeliveryDetails();
+// 				$delivery_products = $order->getProductsDeliveryDetails($delivery_number);
+			}
+			
+			$products = $order->getProductsDetail();
+			foreach ($products as  &$product)
+			{
+				foreach ($delivery_products as $d_n)
+				{
+					foreach ($d_n as $d_p)
+					{
+						if ($product['product_id'] == $d_p['product_id'] && $d_n == $delivery_number )
+						{
+							$product['delivery'] = $dp;
+							break;
+						}
+					}
+				}
+			}
 			
 			// foreach products of the order
-			if (Validate::isLoadedObject($old_os))			
-				foreach ($order->getProductsDetail() as $product)
+			if (Validate::isLoadedObject($old_os))		
+				foreach ($products as $product)
 				{
 					// if becoming logable => adds sale
 					if ($new_os->logable && !$old_os->logable)
@@ -198,6 +239,46 @@ class OrderHistoryCore extends ObjectModel
 							 !in_array($old_os->id, $errorOrCanceledStatuses) &&
 							 !StockAvailable::dependsOnStock($product['id_product']))
 							 StockAvailable::updateQuantity($product['product_id'], $product['product_attribute_id'], (int)$product['product_quantity'], $order->id_shop);
+					/* Bellow
+						part ship should remove stock.
+						And if ship state is set, get all delivery's for that order, and then calc the qty to remove
+					*/
+					if ($new_os->partially_shipped == 1)
+					{
+						/*
+							Can this be done better, somewere else?
+							It's take time and reasoues to loop delivery products for every $product
+						*/
+// 						foreach ($delivery_products as $d_p)
+// 						{
+// 							if ($product['product_id'] == $d_p['product_id'])
+// 							{
+// 								$delivery_product = $d_p;
+// 								break;
+// 							}
+// 						}
+					}
+					if ($new_os->partially_shipped == 1&& Configuration::get('PS_EDS') &&
+					Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT') &&
+						Warehouse::exists($product['id_warehouse']) &&
+						$manager != null &&
+						((int)$product['delivery']['advanced_stock_management'] == 1 || Pack::usesAdvancedStockManagement($product['delivery']['product_id'])))
+					{
+
+						// gets the warehouse
+						$warehouse = new Warehouse($product['delivery']['id_warehouse']);
+
+						// decrements the stock (if it's a pack, the StockManager does what is needed)
+						$manager->removeProduct(
+							$product['delivery']['product_id'],
+							$product['delivery']['product_attribute_id'],
+							$warehouse,
+							$product['delivery']['product_quantity'],
+							Configuration::get('PS_STOCK_CUSTOMER_ORDER_REASON'),
+							true,
+							(int)$order->id
+						);
+					}
 					// @since 1.5.0 : if the order is being shipped and this products uses the advanced stock management :
 					// decrements the physical stock using $id_warehouse
 					if ($new_os->shipped == 1 && $old_os->shipped == 0 &&
@@ -209,6 +290,31 @@ class OrderHistoryCore extends ObjectModel
 						// gets the warehouse
 						$warehouse = new Warehouse($product['id_warehouse']);
 	
+						/*
+							Here we should calculate diffrences from ALL delivery_products
+							So we need to fetch them again, but this time, for the complete order, not just the one delivery
+							And then only get this $product from each delivery and add to a $delivered_qty
+							and then remove $delivered_qty from $product
+						*/
+						if(Configuration::get('PS_EDS'))
+						{
+// 						$full_delivery_products = $order->getProductsDeliveryDetails();
+						$delivered_qty = 0;
+						foreach ($delivery_products as $d_n)
+						{
+							foreach ($d_n as $d_p)
+							{
+								if ($product['product_id'] == $d_p['product_id'])
+								{
+									$delivered_qty += $d_p['product_quantity'];
+									break;
+								}
+							}
+						}
+						$product['product_quantity'] = $product['product_quantity'] - $delivered_qty;
+
+						if($product['product_quantity'] > 0)
+						{
 						// decrements the stock (if it's a pack, the StockManager does what is needed)
 						$manager->removeProduct(
 							$product['product_id'],
@@ -219,6 +325,21 @@ class OrderHistoryCore extends ObjectModel
 							true,
 							(int)$order->id
 						);
+						}
+						}
+						else
+						{
+						// decrements the stock (if it's a pack, the StockManager does what is needed)
+						$manager->removeProduct(
+							$product['product_id'],
+							$product['product_attribute_id'],
+							$warehouse,
+							$product['product_quantity'],
+							Configuration::get('PS_STOCK_CUSTOMER_ORDER_REASON'),
+							true,
+							(int)$order->id
+						);
+						}
 					}
 					// @since.1.5.0 : if the order was shipped, and is not anymore, we need to restock products
 					elseif ($new_os->shipped == 0 && $old_os->shipped == 1 &&
@@ -330,6 +451,10 @@ class OrderHistoryCore extends ObjectModel
 		if ($new_os->delivery)
 			$order->setDelivery();
 
+		// set package
+		if ($new_os->package)
+			$order->setPackage();
+
 		// executes hook
 		Hook::exec('actionOrderStatusPostUpdate', array(
 			'newOrderStatus' => $new_os,
@@ -379,7 +504,7 @@ class OrderHistoryCore extends ObjectModel
 			return false;
 
 		$result = Db::getInstance()->getRow('
-			SELECT osl.`template`, c.`lastname`, c.`firstname`, osl.`name` AS osname, c.`email`, os.`module_name`, os.`id_order_state`
+			SELECT osl.`template`, c.`lastname`, c.`firstname`, osl.`name` AS osname, c.`email`, os.`module_name`, os.`id_order_state`, os.`attach_pdf_invoice`, os.`attach_pdf_delivery`
 			FROM `'._DB_PREFIX_.'order_history` oh
 				LEFT JOIN `'._DB_PREFIX_.'orders` o ON oh.`id_order` = o.`id_order`
 				LEFT JOIN `'._DB_PREFIX_.'customer` c ON o.`id_customer` = c.`id_customer`
@@ -420,6 +545,34 @@ class OrderHistoryCore extends ObjectModel
 					$file_attachement['content'] = $pdf->render(false);
 					$file_attachement['name'] = Configuration::get('PS_INVOICE_PREFIX', (int)$order->id_lang, null, $order->id_shop).sprintf('%06d', $order->invoice_number).'.pdf';
 					$file_attachement['mime'] = 'application/pdf';
+				}
+				elseif (($result['attach_pdf_invoice'] || $result['attach_pdf_delivery']) && Configuration::get('PS_EDS'))
+				{
+					$file_attachement = array();
+					$context = Context::getContext();
+
+					if (Configuration::get('PS_EDS_EMAIL_PDF_LATEST'))
+					{
+						$id_order_invoice = $order->getLatestInvoice();
+						$invoice = new OrderInvoice($id_order_invoice);
+					}
+					else
+						$invoice = $order->getInvoicesCollection();
+
+					if ($result['attach_pdf_invoice'])
+					{
+						$pdf = new PDF($invoice, PDF::TEMPLATE_INVOICE, $context->smarty);
+						$file_attachement['invoice']['content'] = $pdf->render(false);
+						$file_attachement['invoice']['name'] = 'invoice.pdf';
+						$file_attachement['invoice']['mime'] = 'application/pdf';
+					}
+					if ($result['attach_pdf_delivery'])
+					{
+						$pdf = new PDF($invoice, PDF::TEMPLATE_DELIVERY_SLIP, $context->smarty);
+						$file_attachement['delivery']['content'] = $pdf->render(false);
+						$file_attachement['delivery']['name'] = 'delivery.pdf';
+						$file_attachement['delivery']['mime'] = 'application/pdf';
+					}
 				}
 				else
 					$file_attachement = null;

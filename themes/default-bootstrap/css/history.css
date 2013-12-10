@@ -22,6 +22,9 @@
 #order-detail-content table label {
   font-weight: 400;
 }
+#order-delivery-detail-content table label {
+  font-weight: 400;
+}
 
 .table td.history_detail a + a {
   margin-left: 14px;

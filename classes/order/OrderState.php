@@ -51,11 +51,23 @@ class OrderStateCore extends ObjectModel
 	/** @var boolean Delivery */
 	public $delivery;
 
+	/** @var boolean Package */
+	public $package;
+
 	/** @var boolean Hidden */
 	public $hidden;
 
 	/** @var boolean Shipped */
 	public $shipped;
+
+	/** @var boolean Partially shipped */
+	public $partially_shipped;
+
+	/** @var boolean Attach PDF Invoice */
+	public $attach_pdf_invoice;
+
+	/** @var boolean Attach PDF Delivery Slip */
+	public $attach_pdf_delivery;
 
 	/** @var boolean Paid */
 	public $paid;
@@ -79,9 +91,13 @@ class OrderStateCore extends ObjectModel
 			'shipped' => 	array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 			'unremovable' =>array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 			'delivery' =>	array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+			'package' =>	array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 			'hidden' =>		array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 			'paid' =>		array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 			'deleted' =>	array('type' => self::TYPE_BOOL, 'validade' => 'isBool'),
+			'partially_shipped' =>	array('type' => self::TYPE_BOOL, 'validade' => 'isBool'),
+			'attach_pdf_invoice' =>	array('type' => self::TYPE_BOOL, 'validade' => 'isBool'),
+			'attach_pdf_delivery' =>	array('type' => self::TYPE_BOOL, 'validade' => 'isBool'),
 
 			// Lang fields
 			'name' => 		array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isGenericName', 'required' => true, 'size' => 64),

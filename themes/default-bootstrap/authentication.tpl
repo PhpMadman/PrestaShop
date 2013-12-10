@@ -419,6 +419,13 @@ $(document).ready(function() {
                 <label for="email">{l s='Email'} <sup>*</sup></label>
                 <input type="text" class="is_required validate form-control" data-validate="isEmail" id="email" name="email" value="{if isset($smarty.post.email)}{$smarty.post.email}{/if}" />
             </div>
+		{if Configuration::get('PS_EDS')}
+			<div class="form-group">
+				<label for="invoice_email">{l s='Invoice Email'}</label>
+				<input type="text" class="is_required validate form-control" data-validate="isEmail" id="invoice_email" name="invoice_email" value="{if isset($smarty.post.invoice_email)}{$smarty.post.invoice_email}{/if}" />
+				<span class="form_info">{l s='(Optional email to send an additional invoice copy to)'}</span>
+			</div>
+		{/if}
             <div class="required password form-group">
                 <label for="passwd">{l s='Password'} <sup>*</sup></label>
                 <input type="password" class="is_required validate form-control" data-validate="isPasswd" name="passwd" id="passwd" />

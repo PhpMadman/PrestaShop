@@ -42,6 +42,17 @@ class PdfInvoiceControllerCore extends FrontController
 		if (!(int)Configuration::get('PS_INVOICE'))
 			die(Tools::displayError('Invoices are disabled in this shop.'));
 
+		if (Tools::getValue('id_order_invoice'))
+		{
+			$order_invoice = new OrderInvoice((int)Tools::getValue('id_order_invoice'));
+			if (!Validate::isLoadedObject($order_invoice))
+				die(Tools::displayError('The order invoice cannot be found within your database.'));
+
+			$this->order_invoice = $order_invoice;
+		}
+		else
+		{
+
 		$id_order = (int)Tools::getValue('id_order');
 		if (Validate::isUnsignedId($id_order))
 			$order = new Order((int)$id_order);
@@ -56,15 +67,24 @@ class PdfInvoiceControllerCore extends FrontController
 			die(Tools::displayError('No invoice is available.'));
 
 		$this->order = $order;
+		}
 	}
 
 	public function display()
 	{	
+		if ($this->order_invoice)
+		{
+			$pdf = new PDF($this->order_invoice, PDF::TEMPLATE_INVOICE, $this->context->smarty);
+			$pdf->render();
+		}
+		else
+		{
 		$order_invoice_list = $this->order->getInvoicesCollection();
 		Hook::exec('actionPDFInvoiceRender', array('order_invoice_list' => $order_invoice_list));
 
 		$pdf = new PDF($order_invoice_list, PDF::TEMPLATE_INVOICE, $this->context->smarty);
 		$pdf->render();
+		}
 	}
 
 }
