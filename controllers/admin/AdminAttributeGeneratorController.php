@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -200,11 +200,17 @@ class AdminAttributeGeneratorControllerCore extends AdminController
 	{
 		parent::initPageHeaderToolbar();
 
-		$this->page_header_toolbar_title = $this->l('Attributes generator');
+		$this->page_header_toolbar_title = $this->l('Attributes generator', null, null, false);
 		$this->page_header_toolbar_btn['back'] = array(
 			'href' => $this->context->link->getAdminLink('AdminProducts').'&id_product='.(int)Tools::getValue('id_product').'&addproduct&key_tab=Combinations',
-			'desc' => $this->l('Back to the product')
+			'desc' => $this->l('Back to the product', null, null, false)
 		);
+	}
+
+	public function initBreadcrumbs()
+	{
+		$this->display = 'generator';
+		return parent::initBreadcrumbs();
 	}
 
 	public function initContent()

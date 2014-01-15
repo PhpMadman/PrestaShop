@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -43,7 +43,7 @@ class AdminCartRulesControllerCore extends AdminController
 			'priority' => array('title' => $this->l('Priority'), 'align' => 'center', 'class' => 'fixed-width-xs'),
 			'code' => array('title' => $this->l('Code'), 'class' => 'fixed-width-sm'),
 			'quantity' => array('title' => $this->l('Quantity'), 'align' => 'center', 'class' => 'fixed-width-xs'),
-			'date_to' => array('title' => $this->l('Until'), 'class' => 'fixed-width-lg'),
+			'date_to' => array('title' => $this->l('Until'), 'type' => 'datetime'),
 			'active' => array('title' => $this->l('Status'), 'active' => 'status', 'type' => 'bool', 'orderby' => false),
 		);
 
@@ -61,8 +61,8 @@ class AdminCartRulesControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_cart_rule'] = array(
-				'href' => self::$currentIndex.'&amp;addcart_rule&amp;token='.$this->token,
-				'desc' => $this->l('Add new cart rule'),
+				'href' => self::$currentIndex.'&addcart_rule&token='.$this->token,
+				'desc' => $this->l('Add new cart rule', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 

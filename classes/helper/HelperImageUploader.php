@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -52,16 +52,7 @@ class HelperImageUploaderCore extends HelperUploader
 			return false;
 		}
 
-		$types = $this->getAcceptTypes();
-
-		//TODO check mime type.
-		if (isset($types) && !in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $types))
-		{
-			$file['error'] = Tools::displayError('Filetype not allowed');
-			return false;
-		}
-
-		if ($error = ImageManager::validateUpload($file, Tools::getMaxUploadSize($this->getMaxSize())))
+		if ($error = ImageManager::validateUpload($file, Tools::getMaxUploadSize($this->getMaxSize()), $this->getAcceptTypes()))
 		{
 			$file['error'] = $error;
 			return false;

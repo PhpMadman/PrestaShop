@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,7 +45,7 @@ class StatsNewsletter extends ModuleGraph
 		parent::__construct();
 
 		$this->displayName = $this->l('Newsletter');
-		$this->description = $this->l('Display newsletter registrations.');
+		$this->description = $this->l('Adds a tab with a graph showing newsletter registrations to the Stats dashboard.');
 	}
 
 	public function install()
@@ -84,7 +84,7 @@ class StatsNewsletter extends ModuleGraph
 			</div>';
 		}
 		else
-			$this->_html = '<p>'.$this->l('The "Newsletter Block" module must be installed.').'</p>';
+			$this->_html = '<p>'.$this->l('The "Newsletter block" module must be installed.').'</p>';
 
 		return $this->_html;
 	}

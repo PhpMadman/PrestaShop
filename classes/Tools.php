@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -421,28 +421,27 @@ class ToolsCore
 				if (is_object($currency) && $currency->id && !$currency->deleted && $currency->isAssociatedToShop())
 					$cookie->id_currency = (int)$currency->id;
 			}
-
-		if ((int)$cookie->id_currency)
-		{
-			$currency = Currency::getCurrencyInstance((int)$cookie->id_currency);
-			if (is_object($currency) && (int)$currency->id && (int)$currency->deleted != 1 && $currency->active)
-				if ($currency->isAssociatedToShop())
-					return $currency;
-				else
-				{
-					// get currency from context
-					$currency = Shop::getEntityIds('currency', Context::getContext()->shop->id);
-					if (isset($currency[0]) && $currency[0]['id_currency'])
-					{
-						$cookie->id_currency = $currency[0]['id_currency'];
-						return Currency::getCurrencyInstance((int)$cookie->id_currency);
-					}
-				}
-		}
+		
 		$currency = Currency::getCurrencyInstance(Configuration::get('PS_CURRENCY_DEFAULT'));
-		if (is_object($currency) && $currency->id)
-			$cookie->id_currency = (int)$currency->id;
+		if ((int)$cookie->id_currency)
+			$currency = Currency::getCurrencyInstance((int)$cookie->id_currency);
 
+		if (is_object($currency) && (int)$currency->id && (int)$currency->deleted != 1 && $currency->active)
+		{
+			$cookie->id_currency = (int)$currency->id;
+			if ($currency->isAssociatedToShop())
+				return $currency;
+			else
+			{
+				// get currency from context
+				$currency = Shop::getEntityIds('currency', Context::getContext()->shop->id, true, true);
+				if (isset($currency[0]) && $currency[0]['id_currency'])
+				{
+					$cookie->id_currency = $currency[0]['id_currency'];
+					return Currency::getCurrencyInstance((int)$cookie->id_currency);
+				}
+			}
+		}
 		return $currency;
 	}
 
@@ -1554,6 +1553,18 @@ class ToolsCore
 		if (!isset(self::$file_exists_cache[$filename]))
 			self::$file_exists_cache[$filename] = file_exists($filename);
 		return self::$file_exists_cache[$filename];
+	}
+
+	/**
+	 * file_exists() wrapper with a call to clearstatcache prior
+	 *
+	 * @param string $filename File name
+	 * @return boolean Cached result of file_exists($filename)
+	 */
+	public static function file_exists_no_cache($filename)
+	{
+		clearstatcache();
+		return file_exists($filename);
 	}
 
 	public static function file_get_contents($url, $use_include_path = false, $stream_context = null, $curl_timeout = 5)
@@ -2679,7 +2690,7 @@ exit;
 			'iso_lang' => Tools::strtolower(isset($params['iso_lang']) ? $params['iso_lang'] : Context::getContext()->language->iso_code),
 			'iso_code' => Tools::strtolower(isset($params['iso_country']) ? $params['iso_country'] : Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'))),
 			'shop_url' => isset($params['shop_url']) ? $params['shop_url'] : Tools::getShopDomain(),
-			'mail' => isset($params['email']) ? $params['email'] : Configuration::get('email')
+			'mail' => isset($params['email']) ? $params['email'] : Configuration::get('PS_SHOP_EMAIL')
 		));
 
 		$protocols = array('https');
@@ -2782,6 +2793,31 @@ exit;
 		if (strlen($str) >= $length_str && substr($str, -$length_str) == $str_search)
 			$str = substr($str, 0, -$length_str);
 		return $str;
+	}
+
+	/**
+	 * Format a number into a human readable format
+	 * e.g. 24962496 => 23.81M
+	 * @param     $size
+	 * @param int $precision
+	 *
+	 * @return string
+	 */
+	public static function formatBytes($size, $precision = 2)
+	{
+		if (!$size)
+			return '0';
+		$base = log($size) / log(1024);
+		$suffixes = array('', 'k', 'M', 'G', 'T');
+
+		return round(pow(1024, $base - floor($base)), $precision).$suffixes[floor($base)];
+	}
+
+	public static function boolVal($value)
+	{
+		if (empty($value))
+			$value = false;
+		return (bool)$value;
 	}
 }
 

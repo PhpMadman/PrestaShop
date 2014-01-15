@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -91,6 +91,7 @@ class SearchControllerCore extends FrontController
 			$this->productSort();
 			$this->n = abs((int)(Tools::getValue('n', Configuration::get('PS_PRODUCTS_PER_PAGE'))));
 			$this->p = abs((int)(Tools::getValue('p', 1)));
+			$original_query = Tools::safeOutput($query);
 			$query = Tools::replaceAccentedChars(urldecode($query));			
 			$search = Search::find($this->context->language->id, $query, $this->p, $this->n, $this->orderBy, $this->orderWay);
 			foreach ($search['result'] as &$product)
@@ -105,7 +106,7 @@ class SearchControllerCore extends FrontController
 				'products' => $search['result'], // DEPRECATED (since to 1.4), not use this: conflict with block_cart module
 				'search_products' => $search['result'],
 				'nbProducts' => $search['total'],
-				'search_query' => $query,
+				'search_query' => $original_query,
 				'homeSize' => Image::getSize(ImageType::getFormatedName('home'))));
 		}
 		elseif (($tag = urldecode(Tools::getValue('tag'))) && !is_array($tag))
@@ -157,8 +158,5 @@ class SearchControllerCore extends FrontController
 
 		if (!$this->instant_search && !$this->ajax_search)
 			$this->addCSS(_THEME_CSS_DIR_.'product_list.css');
-			
-		if (Configuration::get('PS_COMPARATOR_MAX_ITEM'))
-			$this->addJS(_THEME_JS_DIR_.'products-comparison.js');
 	}
 }

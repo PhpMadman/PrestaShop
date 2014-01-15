@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,35 +45,51 @@ class BlockLink extends Module
 
 		$this->displayName = $this->l('Link block');
 		$this->description = $this->l('Adds a block with additional links.');
-		$this->confirmUninstall = $this->l('Are you sure you want to delete all your links ?');
+		$this->confirmUninstall = $this->l('Are you sure you want to delete all your links?');
 	}
 	
 	public function install()
 	{
-		if (!parent::install() ||
-			!$this->registerHook('leftColumn') || !$this->registerHook('header') ||
-			!Db::getInstance()->execute('
-			CREATE TABLE '._DB_PREFIX_.'blocklink (
-			`id_blocklink` int(2) NOT NULL AUTO_INCREMENT, 
-			`url` varchar(255) NOT NULL,
-			`new_window` TINYINT(1) NOT NULL,
-			PRIMARY KEY(`id_blocklink`))
-			ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8') ||
-			!Db::getInstance()->execute('
-			CREATE TABLE '._DB_PREFIX_.'blocklink_shop (
-			`id_blocklink` int(2) NOT NULL AUTO_INCREMENT, 
-			`id_shop` int(2) NOT NULL,
-			PRIMARY KEY(`id_blocklink`, `id_shop`))
-			ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8') ||
-			!Db::getInstance()->execute('
-			CREATE TABLE '._DB_PREFIX_.'blocklink_lang (
-			`id_blocklink` int(2) NOT NULL,
-			`id_lang` int(2) NOT NULL,
-			`text` varchar(64) NOT NULL,
-			PRIMARY KEY(`id_blocklink`, `id_lang`))
-			ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8') ||
-			!Configuration::updateValue('PS_BLOCKLINK_TITLE', array('1' => 'Block link', '2' => 'Bloc lien')))
+		if (!parent::install() || !$this->registerHook('header'))
 			return false;
+
+		$success = Configuration::updateValue('PS_BLOCKLINK_TITLE', array('1' => 'Block link', '2' => 'Bloc lien'));
+		$success &= Db::getInstance()->execute('
+		CREATE TABLE '._DB_PREFIX_.'blocklink (
+		`id_blocklink` int(10) NOT NULL AUTO_INCREMENT, 
+		`url` varchar(254) NOT NULL,
+		`new_window` TINYINT(1) NOT NULL,
+		PRIMARY KEY(`id_blocklink`))
+		ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8');
+		$success &= Db::getInstance()->execute('
+		CREATE TABLE '._DB_PREFIX_.'blocklink_shop (
+		`id_blocklink` int(10) NOT NULL AUTO_INCREMENT, 
+		`id_shop` int(10) NOT NULL,
+		PRIMARY KEY(`id_blocklink`, `id_shop`))
+		ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8');
+		$success &= Db::getInstance()->execute('
+		CREATE TABLE '._DB_PREFIX_.'blocklink_lang (
+		`id_blocklink` int(10) NOT NULL,
+		`id_lang` int(10) NOT NULL,
+		`text` varchar(62) NOT NULL,
+		PRIMARY KEY(`id_blocklink`, `id_lang`))
+		ENGINE='._MYSQL_ENGINE_.' default CHARSET=utf8');
+		if (!$success)
+		{
+			parent::uninstall();
+			return false;
+		}
+
+		// Hook the module either on the left or right column
+		$theme = new Theme(Context::getContext()->shop->id_theme);
+		if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+			&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+		{
+			// If there are no colums implemented by the template, throw an error and uninstall the module
+			$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+			parent::uninstall();
+			return false;
+		}
 		return true;
 	}
 	
@@ -238,7 +254,7 @@ class BlockLink extends Module
 		if (Tools::isSubmit('submitLinkAdd') || Tools::isSubmit('updateblocklink'))
      	{
 			if (empty($_POST['text_'.Configuration::get('PS_LANG_DEFAULT')]) || empty($_POST['url']))
-				$this->_html .= $this->displayError($this->l('You must fill in all fields'));
+				$this->_html .= $this->displayError($this->l('You must fill in all fields.'));
 			elseif (!Validate::isUrl(str_replace('http://', '', $_POST['url'])))
 				$this->_html .= $this->displayError($this->l('Bad URL'));
 			else
@@ -442,7 +458,7 @@ class BlockLink extends Module
 					),
 					array(
 						'type' => 'switch',
-						'label' => $this->l('Open in a new window:'),
+						'label' => $this->l('Open in a new window'),
 						'name' => 'newWindow',
 						'is_bool' => true,
 						'values' => array(
@@ -462,7 +478,6 @@ class BlockLink extends Module
 				),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'btn btn-default',
 				'name' => 'submitLinkAdd',
 				)
 			),
@@ -473,7 +488,7 @@ class BlockLink extends Module
 		{
 			$fields_form_1['form']['input'][] = array(
 													'type' => 'shop',
-													'label' => $this->l('Shop association:'),
+													'label' => $this->l('Shop association'),
 													'name' => 'checkBoxShopAsso',
 												);
 		}
@@ -499,7 +514,6 @@ class BlockLink extends Module
 				),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'btn btn-default',
 				'name' => 'submitTitle',
 				)
 			),
@@ -514,7 +528,7 @@ class BlockLink extends Module
 				'input' => array(
 					array(
 						'type' => 'select',
-						'label' => $this->l('Order list:'),
+						'label' => $this->l('Order list'),
 						'name' => 'orderWay',
 						'options' => array(
 							'query' => array(
@@ -534,7 +548,6 @@ class BlockLink extends Module
 				),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'btn btn-default',
 				'name' => 'submitOrderWay',
 				)
 			),

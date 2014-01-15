@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -39,7 +39,6 @@
 	var currency_blank = "{$currency->blank}";
 	var priceDisplayPrecision = 2;
 	var use_taxes = {if $order->getTaxCalculationMethod() == $smarty.const.PS_TAX_INC}true{else}false{/if};
-	var token = "{$smarty.get.token|escape:'html':'UTF-8'}";
 	var stock_management = {$stock_management|intval};
 	var txt_add_product_stock_issue = "{l s='Are you sure you want to add this quantity?' js=1}";
 	var txt_add_product_new_invoice = "{l s='Are you sure you want to create a new invoice?' js=1}";
@@ -111,9 +110,9 @@
 							{l s='View invoice'}
 						</a>
 						{else}
-							<span class="icon-stack">
-								<i class="icon-file"></i>
-								<i class="icon-ban-circle icon-stack-base text-danger"></i>
+							<span class="icon-stack icon-lg">
+								<i class="icon-file icon-stack-1x"></i>
+								<i class="icon-ban-circle icon-stack-2x text-danger"></i>
 							</span>
 							{l s='No invoice'}
 						{/if}
@@ -123,9 +122,9 @@
 							{l s='View delivery slip'}
 						</a>
 						{else}
-							<span class="icon-stack">
-								<i class="icon-truck"></i>
-								<i class="icon-ban-circle icon-stack-base text-danger"></i>
+							<span class="icon-stack icon-lg">
+								<i class="icon-truck icon-stack-1x"></i>
+								<i class="icon-ban-circle icon-stack-2x text-danger"></i>
 							</span>
 							{l s='No delivery slip'}
 						{/if}
@@ -188,7 +187,7 @@
 								<div class="col-lg-9">
 									<select id="id_order_state" name="id_order_state">
 									{foreach from=$states item=state}
-										<option value="{$state['id_order_state']}"{if $state['id_order_state'] == $currentState->id} selected="selected" disabled="disabled"{/if}>{$state['name']|stripslashes}</option>
+										<option value="{$state['id_order_state']|intval}"{if $state['id_order_state'] == $currentState->id} selected="selected" disabled="disabled"{/if}>{$state['name']|escape}</option>
 									{/foreach}
 									</select>
 									<input type="hidden" name="id_order" value="{$order->id}" />
@@ -416,6 +415,7 @@
 					<i class="icon-user"></i>
 					{l s='Customer'} :
 					<a href="?tab=AdminCustomers&id_customer={$customer->id}&viewcustomer&token={getAdminToken tab='AdminCustomers'}">
+						{if Configuration::get('PS_B2B_ENABLE')}{$customer->company} - {/if}
 						{$gender->name|escape:'html':'UTF-8'}
 						{$customer->firstname}
 						{$customer->lastname}
@@ -445,6 +445,10 @@
 						<li>{l s='Account registered:'} <strong>{dateFormat date=$customer->date_add full=true}</strong></li>
 						<li>{l s='Valid orders placed:'} <strong>{$customerStats['nb_orders']}</strong></li>
 						<li>{l s='Total spent since registration:'} <strong>{displayPrice price=Tools::ps_round(Tools::convertPrice($customerStats['total_orders'], $currency), 2) currency=$currency->id}</strong></li>
+						{if Configuration::get('PS_B2B_ENABLE')}
+							<li>{l s='Siret:'} <strong>{$customer->siret}</strong></li>
+							<li>{l s='APE:'} <strong>{$customer->ape}</strong></li>
+						{/if}
 					</ul>
 					{/if}
 				{/if}
@@ -509,7 +513,7 @@
 									<hr />{$addresses.delivery->other}<br />
 								{/if}
 							</div>
-							<img src="http://maps.googleapis.com/maps/api/staticmap?center={$addresses.delivery->address1} {$addresses.delivery->postcode} {$addresses.delivery->city} {if ($addresses.delivery->id_state)} {$addresses.deliveryState->name}{/if}&markers={$addresses.delivery->address1} {$addresses.delivery->postcode} {$addresses.delivery->city} {if ($addresses.delivery->id_state)} {$addresses.deliveryState->name}{/if}&zoom=7&size=600x200&scale=2&sensor=false" class="thumbnail">
+							<img src="http://maps.googleapis.com/maps/api/staticmap?center={$addresses.delivery->address1} {$addresses.delivery->postcode} {$addresses.delivery->city} {if ($addresses.delivery->id_state)} {$addresses.deliveryState->name}{/if} {$addresses.delivery->country}&markers={$addresses.delivery->address1} {$addresses.delivery->postcode} {$addresses.delivery->city} {if ($addresses.delivery->id_state)} {$addresses.deliveryState->name}{/if} {$addresses.delivery->country}&zoom=7&size=600x200&scale=2&sensor=false" class="thumbnail">
 						{/if}
 					</div>
 					<div class="tab-pane" id="addressInvoice">
@@ -552,7 +556,7 @@
 								<hr />{$addresses.invoice->other}<br />
 							{/if}
 						</div>
-						<img src="http://maps.googleapis.com/maps/api/staticmap?center={$addresses.invoice->address1} {$addresses.invoice->postcode} {$addresses.invoice->city} {if ($addresses.invoice->id_state)} {$addresses.deliveryState->name}{/if}&markers={$addresses.invoice->address1} {$addresses.invoice->postcode} {$addresses.invoice->city} {if ($addresses.invoice->id_state)} {$addresses.deliveryState->name}{/if}&zoom=7&size=600x200&scale=2&sensor=false" class="thumbnail">
+						<img src="http://maps.googleapis.com/maps/api/staticmap?center={$addresses.invoice->address1} {$addresses.invoice->postcode} {$addresses.invoice->city} {if ($addresses.invoice->id_state) && isset($addresses.deliveryState)} {$addresses.deliveryState->name}{/if}&markers={$addresses.invoice->address1} {$addresses.invoice->postcode} {$addresses.invoice->city} {if ($addresses.invoice->id_state) && isset($addresses.deliveryState)} {$addresses.deliveryState->name}{/if}&zoom=7&size=600x200&scale=2&sensor=false" class="thumbnail">
 					</div>
 				</div>
 				<script>
@@ -596,7 +600,7 @@
 												<i class="icon-ban-circle text-danger"></i>
 												{l s='No'}
 											</label>
-											<a class="slide-button btn btn-default"></a>
+											<a class="slide-button btn"></a>
 										</span>
 									</div>
 								</div>				

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -72,8 +72,8 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 	{
 		$this->page_header_toolbar_title = $this->l('Tax rules groups');
 		$this->page_header_toolbar_btn['new_tax_rules_group'] = array(
-			'href' => self::$currentIndex.'&amp;addtax_rules_group&amp;token='.$this->token,
-			'desc' => $this->l('Add new tax rules group'),
+			'href' => self::$currentIndex.'&addtax_rules_group&token='.$this->token,
+			'desc' => $this->l('Add new tax rules group', null, null, false),
 			'icon' => 'process-icon-new'
 		);
 
@@ -160,14 +160,14 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 			'input' => array(
 				array(
 					'type' => 'text',
-					'label' => $this->l('Name:'),
+					'label' => $this->l('Name'),
 					'name' => 'name',
 					'required' => true,
 					'hint' => $this->l('Invalid characters:').' <>;=#{}'
 				),
 				array(
 					'type' => 'switch',
-					'label' => $this->l('Enable:'),
+					'label' => $this->l('Enable'),
 					'name' => 'active',
 					'required' => false,
 					'is_bool' => true,
@@ -187,7 +187,6 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 			),
 			'submit' => array(
 				'title' => $this->l('Save and stay'),
-				'class' => 'btn btn-default',
 				'stay' => true
 			)
 		);
@@ -196,7 +195,7 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 		{
 			$this->fields_form['input'][] = array(
 				'type' => 'shop',
-				'label' => $this->l('Shop association:'),
+				'label' => $this->l('Shop association'),
 				'name' => 'checkBoxShopAsso',
 			);
 		}
@@ -211,9 +210,9 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 		else
 		{
 			$this->no_back = true;
-			$this->toolbar_btn['new'] = array(
+			$this->page_header_toolbar_btn['new'] = array(
 				'href' => '#',
-				'desc' => $this->l('Add a new tax rule')
+				'desc' => $this->l('Add a new tax rule.')
 			);
 			$content = parent::renderForm();
 			$this->tpl_folder = 'tax_rules/';
@@ -236,7 +235,7 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 			'input' => array(
 				array(
 					'type' => 'select',
-					'label' => $this->l('Country:'),
+					'label' => $this->l('Country'),
 					'name' => 'country',
 					'id' => 'country',
 					'options' => array(
@@ -251,7 +250,7 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 				),
 				array(
 					'type' => 'select',
-					'label' => $this->l('State:'),
+					'label' => $this->l('State'),
 					'name' => 'states[]',
 					'id' => 'states',
 					'multiple' => true,
@@ -275,14 +274,14 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Zip Code range:'),
+					'label' => $this->l('Zip Code range'),
 					'name' => 'zipcode',
 					'required' => false,
-					'hint' => $this->l('You can define a range of zipcodes (eg: 75000-75015) or simply use one zipcode.')
+					'hint' => $this->l('You can define a range of zipcodes (e.g., 75000-75015) or simply use one zipcode.')
 				),
 				array(
 					'type' => 'select',
-					'label' => $this->l('Behavior:'),
+					'label' => $this->l('Behavior'),
 					'name' => 'behavior',
 					'required' => false,
 					'options' => array(
@@ -304,18 +303,15 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 						'name' => 'name'
 					),
 					'hint' => array(
-						$this->l('Define the behavior if an address matches multiple rules:'),
-						$this->l('This Tax Only:'),
-						$this->l('Will apply only this tax'),
-						$this->l('Combine:'),
-						$this->l('Combine taxes (eg: 10% + 5% = 15%)'),
-						$this->l('One After Another:'),
-						$this->l('Apply taxes one after another (eg: 0 + 10% = 0 + 5% = 5.5)')
+						$this->l('You must define the behavior if an address matches multiple rules:').'<br>',
+						$this->l('- This tax only: Will apply only this tax').'<br>',
+						$this->l('- Combine: Combine taxes (e.g.: 10% + 5% = 15%)').'<br>',
+						$this->l('- One after another: Apply taxes one after another (e.g.: 0 + 10% = 0 + 5% = 5.5)')
 					)
 				),
 				array(
 					'type' => 'select',
-					'label' => $this->l('Tax:'),
+					'label' => $this->l('Tax'),
 					'name' => 'id_tax',
 					'required' => false,
 					'options' => array(
@@ -331,9 +327,13 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Description:'),
+					'label' => $this->l('Description'),
 					'name' => 'description',
 				)
+			),
+			'submit' => array(
+				'title' => $this->l('Save and stay'),
+				'stay' => true
 			)
 		);
 
@@ -428,7 +428,7 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 			{
 				if ($tax_rules_group->hasUniqueTaxRuleForCountry($id_country, $id_state, $id_rule))
 				{
-					$this->errors[] = Tools::displayError('A tax rule already exists for this country/state with tax only behavior');
+					$this->errors[] = Tools::displayError('A tax rule already exists for this country/state with tax only behavior.');
 					continue;
 				}
 				$tr = new TaxRule();
@@ -455,7 +455,7 @@ class AdminTaxRulesGroupControllerCore extends AdminController
 								if (!$country->checkZipCode($zip_code))
 								{
 									$this->errors[] = sprintf(
-										Tools::displayError('Zip/Postal code is invalid. Must be typed as follows: %s for %s'),
+										Tools::displayError('Zip/Postal code is invalid. Must be typed as follows: %s for %s.'),
 										str_replace('C', $country->iso_code, str_replace('N', '0', str_replace('L', 'A', $country->zip_code_format))), $country->name
 									);
 								}

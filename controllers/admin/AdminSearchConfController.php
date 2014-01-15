@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -82,7 +82,8 @@ class AdminSearchConfControllerCore extends AdminController
 						'cast' => 'intval',
 						'desc' => $this->l('Enable the automatic indexation of products. If you enable this feature, the products will be indexed in the search automatically when they are saved. If the feature is disabled, you will have to index products manually by using the links provided in the field set.')
 					)
-				)
+				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'search' => array(
 				'title' =>	$this->l('Search'),
@@ -122,7 +123,7 @@ class AdminSearchConfControllerCore extends AdminController
 						'type' => 'textLang'
 					)
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'relevance' => array(
 				'title' =>	$this->l('Weight'),
@@ -187,7 +188,8 @@ class AdminSearchConfControllerCore extends AdminController
 						'type' => 'text',
 						'cast' => 'intval'
 					)
-				)
+				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 		);
 	}
@@ -196,15 +198,15 @@ class AdminSearchConfControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_alias'] = array(
-				'href' => self::$currentIndex.'&amp;addalias&amp;token='.$this->token,
-				'desc' => $this->l('Add new alias'),
+				'href' => self::$currentIndex.'&addalias&token='.$this->token,
+				'desc' => $this->l('Add new alias', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		$this->identifier_name = 'alias';
 		parent::initPageHeaderToolbar();
 			$this->toolbar_btn['import'] = array(
 				'href' => $this->context->link->getAdminLink('AdminImport', true).'&import_type=alias',
-				'desc' => $this->l('Import')
+				'desc' => $this->l('Import', null, null, false)
 			);
 	}
 
@@ -252,13 +254,13 @@ class AdminSearchConfControllerCore extends AdminController
 					'name' => 'alias',
 					'required' => true,
 					'hint' => array(
-						$this->l('Enter each alias separated by a comma (e.g. \'prestshop,preztashop,prestasohp\')'),
+						$this->l('Enter each alias separated by a comma (e.g. \'prestshop,preztashop,prestasohp\').'),
 						$this->l('Forbidden characters: &lt;&gt;;=#{}')
 					)
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Result:'),
+					'label' => $this->l('Result'),
 					'name' => 'search',
 					'required' => true,
 					'hint' => $this->l('Search this word instead.')
@@ -266,7 +268,6 @@ class AdminSearchConfControllerCore extends AdminController
 			),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'btn btn-default'
 			)
 		);
 

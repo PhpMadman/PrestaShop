@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -26,6 +26,6 @@
 <div class="alert alert-info">
 <img src="../modules/bankwire/bankwire.jpg" style="float:left; margin-right:15px;" width="86" height="49">
 <p><strong>{l s="This module allows you to accept secure payments by bank wire." mod='bankwire'}</strong></p>
-<p>{l s="If the client chooses to pay by bank wire, the order\'s status will change to 'Waiting for Payment.'" mod='bankwire'}</p>
+<p>{l s="If the client chooses to pay by bank wire, the order's status will change to 'Waiting for Payment.'" mod='bankwire'}</p>
 <p>{l s="That said, you must manually confirm the order upon receiving the bank wire." mod='bankwire'}</p>
 </div>

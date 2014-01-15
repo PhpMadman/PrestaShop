@@ -1,6 +1,6 @@
 <?php
 /*
- * 2007-2013 PrestaShop
+ * 2007-2014 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author PrestaShop SA <contact@prestashop.com>
- *  @copyright  2007-2013 PrestaShop SA
+ *  @copyright  2007-2014 PrestaShop SA
  *  @version  Release: $Revision: 7060 $
  *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
@@ -39,7 +39,7 @@ class BlockCms extends Module
 	{
 		$this->name = 'blockcms';
 		$this->tab = 'front_office_features';
-		$this->version = '1.3';
+		$this->version = '1.5';
 		$this->author = 'PrestaShop';
 		$this->need_instance = 0;
 
@@ -61,6 +61,7 @@ class BlockCms extends Module
 			|| !$this->registerHook('actionObjectCmsUpdateAfter')
 			|| !$this->registerHook('actionObjectCmsDeleteAfter')
 			|| !$this->registerHook('actionShopDataDuplication')
+			|| !$this->registerHook('actionAdminStoresControllerUpdate_optionsAfter')
 			|| !BlockCMSModel::createTables()
 			|| !Configuration::updateValue('FOOTER_CMS', '')
 			|| !Configuration::updateValue('FOOTER_BLOCK_ACTIVATION', 1)
@@ -155,10 +156,7 @@ class BlockCms extends Module
 				break;
 		}
 
-		$this->toolbar_btn['save'] = array(
-			'href' => '#',
-			'desc' => $this->l('Save')
-		);
+
 
 		return $this->toolbar_btn;
 	}
@@ -211,14 +209,14 @@ class BlockCms extends Module
 				),
 				array(
 					'type' => 'cms_pages',
-					'label' => $this->l('Footer links:'),
+					'label' => $this->l('Footer links'),
 					'name' => 'footerBox[]',
 					'values' => BlockCMSModel::getAllCMSStructure(),
 					'desc' => $this->l('Please mark every page that you want to display in the footer CMS block.')
 				),
 				array(
 					'type' => 'textarea',
-					'label' => $this->l('Footer informations:'),
+					'label' => $this->l('Footer informations'),
 					'name' => 'footer_text',
 					'rows' => 5,
 					'cols' => 60,
@@ -242,8 +240,7 @@ class BlockCms extends Module
 			),
 			'submit' => array(
 				'name' => 'submitFooterCMS',
-				'title' => $this->l('Save   '),
-				'class' => 'button'
+				'title' => $this->l('Save'),
 			)
 		);
 
@@ -296,14 +293,14 @@ class BlockCms extends Module
 			'input' => array(
 				array(
 					'type' => 'text',
-					'label' => $this->l('Name of the CMS block :'),
+					'label' => $this->l('Name of the CMS block:'),
 					'name' => 'block_name',
 					'lang' => true,
 					'desc' => $this->l('If you leave this field empty, the block name will use the category name by default.')
 				),
 				array(
 					'type' => 'select_category',
-					'label' => $this->l('CMS category :'),
+					'label' => $this->l('CMS category'),
 					'name' => 'id_category',
 					'options' => array(
 						'query' => BlockCMSModel::getCMSCategories(true),
@@ -313,7 +310,7 @@ class BlockCms extends Module
 				),
 				array(
 					'type' => 'select',
-					'label' => $this->l('Location :'),
+					'label' => $this->l('Location'),
 					'name' => 'block_location',
 					'options' => array(
 						'query' => array(
@@ -330,7 +327,7 @@ class BlockCms extends Module
 				),
 				array(
 					'type' => 'radio',
-					'label' => $this->l('Display stores :'),
+					'label' => $this->l('Display stores'),
 					'name' => 'display_stores',
 					'class' => 't',
 					'required' => true,
@@ -345,7 +342,7 @@ class BlockCms extends Module
 							'value' => 0,
 							'label' => $this->l('No')),
 					),
-					'desc' => $this->l('Display "our stores" at the end of the block.')
+					'desc' => $this->l('Displays the "Our stores" link at the end of the block.')
 				),
 				array(
 					'type' => 'cms_pages',
@@ -357,8 +354,7 @@ class BlockCms extends Module
 			),
 			'submit' => array(
 				'name' => 'submitBlockCMS',
-				'title' => $this->l('Save   '),
-				'class' => 'button'
+				'title' => $this->l('Save'),
 			)
 		);
 
@@ -620,7 +616,7 @@ class BlockCms extends Module
 				Tools::redirectAdmin(AdminController::$currentIndex.'&configure='.$this->name.'&token='.Tools::getAdminTokenLite('AdminModules').'&deleteBlockCMSConfirmation');
 			}
 			else
-				$this->_html .= $this->displayError($this->l('Error: You are trying to delete a non-existing CMS blocks. '));
+				$this->_html .= $this->displayError($this->l('Error: You are trying to delete a non-existing CMS block.'));
 		}
 		elseif (Tools::isSubmit('submitFooterCMS'))
 		{
@@ -682,6 +678,12 @@ class BlockCms extends Module
 	protected function getCacheId($name = null)
 	{
 		return parent::getCacheId('blockcms|'.$name);
+	}
+
+	public function hookActionAdminStoresControllerUpdate_optionsAfter()
+	{
+		if (Tools::getIsset('PS_STORES_DISPLAY_FOOTER'))
+			$this->_clearCache('blockcms.tpl');
 	}
 
 	public function hookActionObjectCmsUpdateAfter()

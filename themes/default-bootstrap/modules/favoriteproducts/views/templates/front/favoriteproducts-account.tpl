@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,45 +18,16 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-
-<script type="text/javascript">
-$('document').ready(function()
-{
-	$('a[rel^=ajax_id_favoriteproduct_]').click(function()
-	{
-		var idFavoriteProduct =  $(this).attr('rel').replace('ajax_id_favoriteproduct_', '');
-		var parent = $(this).parent().parent();
-
-		$.ajax({
-			url: "{$link->getModuleLink('favoriteproducts', 'actions', ['process' => 'remove'], true)|addslashes}",
-			type: "POST",
-			data: {
-				'id_product': idFavoriteProduct,
-				'ajax': true
-			},
-			success: function(result)
-			{
-				if (result == '0')
-				{
-					parent.fadeOut("normal", function()
-					{
-						parent.remove();
-					});
-				}
- 		 	}
-		});
-	});
-});
-</script>
-
 {capture name=path}
 	<a href="{$link->getPageLink('my-account', true)|escape:'html':'UTF-8'}">
-		{l s='My account' mod='favoriteproducts'}</a>
-		<span class="navigation-pipe">{$navigationPipe}</span><span class="navigation_page">{l s='My favorite products' mod='favoriteproducts'}</span>
+		{l s='My account' mod='favoriteproducts'}
+	</a>
+	<span class="navigation-pipe">{$navigationPipe}</span>
+	<span class="navigation_page">{l s='My favorite products' mod='favoriteproducts'}</span>
 {/capture}
 
 <div id="favoriteproducts_block_account">
@@ -66,12 +37,23 @@ $('document').ready(function()
 			{foreach from=$favoriteProducts item=favoriteProduct}
 			<li class="col-xs-12">
             	<div class="favoriteproduct clearfix inner-content">
-                    <a href="{$link->getProductLink($favoriteProduct.id_product, null, null, null, null, $favoriteProduct.id_shop)|escape:'html':'UTF-8'}" class="product_img_link">
-                        <img src="{$link->getImageLink($favoriteProduct.link_rewrite, $favoriteProduct.image, 'medium_default')|escape:'html':'UTF-8'}" alt=""/></a>
-                    <p class="s_title_block"><a href="{$link->getProductLink($favoriteProduct.id_product, null, null, null, null, $favoriteProduct.id_shop)|escape:'html':'UTF-8'}">{$favoriteProduct.name|escape:'html':'UTF-8'}</a></p>
+                    <a 
+                    class="product_img_link"
+                    href="{$link->getProductLink($favoriteProduct.id_product, null, null, null, null, $favoriteProduct.id_shop)|escape:'html':'UTF-8'}">
+                        <img 
+                        src="{$link->getImageLink($favoriteProduct.link_rewrite, $favoriteProduct.image, 'medium_default')|escape:'html':'UTF-8'}" 
+                        alt=""/>
+                    </a>
+                    <p class="s_title_block">
+                    	<a href="{$link->getProductLink($favoriteProduct.id_product, null, null, null, null, $favoriteProduct.id_shop)|escape:'html':'UTF-8'}">
+                    		{$favoriteProduct.name|escape:'html':'UTF-8'}
+                    	</a>
+                    </p>
                     <div class="product_desc">{$favoriteProduct.description_short|strip_tags|escape:'html':'UTF-8'}</div>
                     <div class="remove">
-                    	<a href="#" onclick="return false" rel="ajax_id_favoriteproduct_{$favoriteProduct.id_product}"><i class="icon-remove"></i></a>
+                    	<a href="#" onclick="return false" rel="ajax_id_favoriteproduct_{$favoriteProduct.id_product}">
+                    		<i class="icon-remove"></i>
+                    	</a>
                     </div>
                 </div>
 			</li>
@@ -83,6 +65,13 @@ $('document').ready(function()
 
 	<ul class="footer_links clearfix">
 		<li>
-			<a class="btn btn-default button button-small" href="{$link->getPageLink('my-account', true)|escape:'html':'UTF-8'}"><span><i class="icon-chevron-left"></i>{l s='Back to your account' mod='favoriteproducts'}</span></a></li>
+			<a 
+			class="btn btn-default button button-small" 
+			href="{$link->getPageLink('my-account', true)|escape:'html':'UTF-8'}">
+				<span>
+					<i class="icon-chevron-left"></i>{l s='Back to your account' mod='favoriteproducts'}
+				</span>
+			</a>
+		</li>
 	</ul>
 </div>

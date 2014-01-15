@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -464,14 +464,8 @@ class OrderInvoiceCore extends ObjectModel
 			SELECT oi.*
 			FROM `'._DB_PREFIX_.'order_invoice` oi
 			LEFT JOIN `'._DB_PREFIX_.'orders` o ON (o.`id_order` = oi.`id_order`)
-			WHERE '.(int)$id_order_state.' = (
-				SELECT id_order_state
-				FROM '._DB_PREFIX_.'order_history oh
-				WHERE oh.id_order = o.id_order
-				ORDER BY date_add DESC, id_order_history DESC
-				LIMIT 1
-			)
-			'.Shop::addSqlRestriction(Shop::SHARE_ORDER, 'o').'
+			WHERE '.(int)$id_order_state.' = o.current_state 
+			'.Shop::addSqlRestriction(Shop::SHARE_ORDER, 'o').' 
 			ORDER BY oi.`date_add` ASC
 		');
 
@@ -593,7 +587,7 @@ class OrderInvoiceCore extends ObjectModel
 		foreach ($invoices as $invoice)
 			$invoice_list[] = $invoice['id_order_invoice'];
 		
-		$payments = new Collection('OrderInvoice');
+		$payments = new PrestaShopCollection('OrderInvoice');
 		$payments->where('id_order_invoice', 'IN', $invoice_list);
 		
 		return $payments;

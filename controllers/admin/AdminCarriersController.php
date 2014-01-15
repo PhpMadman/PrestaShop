@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -115,7 +115,7 @@ class AdminCarriersControllerCore extends AdminController
 		$this->page_header_toolbar_title = $this->l('Carriers');
 		$this->page_header_toolbar_btn['new_carrier'] = array(
 			'href' => $this->context->link->getAdminLink('AdminCarrierWizard'),
-			'desc' => $this->l('Add new carrier'),
+			'desc' => $this->l('Add new carrier', null, null, false),
 			'icon' => 'process-icon-new'
 		);
 
@@ -376,8 +376,7 @@ class AdminCarriersControllerCore extends AdminController
 		}
 
 		$this->fields_form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'button'
+			'title' => $this->l('Save'),
 		);
 
 		if (!($obj = $this->loadObject(true)))

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -122,7 +122,7 @@ class AdminImagesControllerCore extends AdminController
 					),
 					'PS_PRODUCT_PICTURE_MAX_SIZE' => array(
 						'title' => $this->l('Maximum size of product pictures'),
-						'hint' => $this->l('The maximum size of pictures uploadable by customers (in Bytes).'),
+						'hint' => $this->l('The maximum size of pictures uploadable by customers (in bytes).'),
 						'validation' => 'isUnsignedInt',
 						'required' => true,
 						'cast' => 'intval',
@@ -132,7 +132,7 @@ class AdminImagesControllerCore extends AdminController
 					),
 					'PS_PRODUCT_PICTURE_WIDTH' => array(
 						'title' => $this->l('Product picture width'),
-						'hint' => $this->l('The maximum width of pictures uploadable by customers.'),
+						'hint' => $this->l('The maximum width of pictures uploadable by customers (in pixels).'),
 						'validation' => 'isUnsignedInt',
 						'required' => true,
 						'cast' => 'intval',
@@ -142,7 +142,7 @@ class AdminImagesControllerCore extends AdminController
 					),
 					'PS_PRODUCT_PICTURE_HEIGHT' => array(
 						'title' => $this->l('Product picture height'),
-						'hint' => $this->l('The maximum height of pictures uploadable by customers.'),
+						'hint' => $this->l('The maximum height of pictures uploadable by customers (in pixels).'),
 						'validation' => 'isUnsignedInt',
 						'required' => true,
 						'cast' => 'intval',
@@ -151,7 +151,7 @@ class AdminImagesControllerCore extends AdminController
 						'visibility' => Shop::CONTEXT_ALL
 					)
 				),
-				'submit' => array('title' => $this->l('Save   '), 'class' => 'btn btn-default'),
+				'submit' => array('title' => $this->l('Save')),
 			),
 		);
 		
@@ -177,7 +177,7 @@ class AdminImagesControllerCore extends AdminController
 					'label' => $this->l('Type name'),
 					'name' => 'name',
 					'required' => true,
-					'hint' => $this->l('Letters and hyphens only (e.g. small, medium, large, extra-large)')
+					'hint' => $this->l('Letters and hyphens only (e.g. small, medium, large, extra-large).')
 				),
 				array(
 					'type' => 'text',
@@ -185,7 +185,7 @@ class AdminImagesControllerCore extends AdminController
 					'name' => 'width',
 					'required' => true,
 					'maxlength' => 5,
-					'hint' => $this->l('Maximum image width in pixels')
+					'hint' => $this->l('Maximum image width in pixels.')
 				),
 				array(
 					'type' => 'text',
@@ -193,7 +193,7 @@ class AdminImagesControllerCore extends AdminController
 					'name' => 'height',
 					'required' => true,
 					'maxlength' => 5,
-					'hint' => $this->l('Maximum image height in pixels')
+					'hint' => $this->l('Maximum image height in pixels.')
 				),
 				array(
 					'type' => 'switch',
@@ -201,7 +201,7 @@ class AdminImagesControllerCore extends AdminController
 					'name' => 'products',
 					'required' => false,
 					'is_bool' => true,
-					'hint' => $this->l('This type will be used for Product images'),
+					'hint' => $this->l('This type will be used for Product images.'),
 					'values' => array(
 						array(
 							'id' => 'products_on',
@@ -319,8 +319,7 @@ class AdminImagesControllerCore extends AdminController
 				),
 			),
 			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default'
+				'title' => $this->l('Save')
 			)
 		);
 
@@ -338,7 +337,7 @@ class AdminImagesControllerCore extends AdminController
 				$this->l('only contains demonstration images, and then delete it.');
 		}
 
-		if (Tools::getValue('submitRegenerate'.$this->table))
+		if (Tools::isSubmit('submitRegenerate'.$this->table))
 		{
 		 	if ($this->tabAccess['edit'] === '1')
 		 	{
@@ -386,7 +385,7 @@ class AdminImagesControllerCore extends AdminController
 
 	public static function printEntityActiveIcon($value, $object)
 	{
-		return ($value ? '<i class="icon-ok text-success"></i>' : '<i class="icon-remove text-danger"></i>');
+		return ($value ? '<i class="icon-check text-success"></i>' : '<i class="icon-remove text-danger"></i>');
 	}
 
 	protected function _childValidation()
@@ -430,7 +429,9 @@ class AdminImagesControllerCore extends AdminController
 
 		foreach ($toDel as $d)
 			foreach ($type as $imageType)
-				if (preg_match('/^[0-9]+\-'.($product ? '[0-9]+\-' : '').$imageType['name'].'\.jpg$/', $d) || preg_match('/^([[:lower:]]{2})\-default\-'.$imageType['name'].'\.jpg$/', $d))
+				if (preg_match('/^[0-9]+\-'.($product ? '[0-9]+\-' : '').$imageType['name'].'\.jpg$/', $d) 
+					|| (count($type) > 1 && preg_match('/^[0-9]+\-[_a-zA-Z0-9-]*\.jpg$/', $d))					
+					|| preg_match('/^([[:lower:]]{2})\-default\-'.$imageType['name'].'\.jpg$/', $d))
 					if (file_exists($dir.$d))		
 						unlink($dir.$d);
 
@@ -447,10 +448,10 @@ class AdminImagesControllerCore extends AdminController
 					$toDel = scandir($dir.$imageObj->getImgFolder());
 					foreach ($toDel as $d)
 						foreach ($type as $imageType)
-							if (preg_match('/^[0-9]+\-'.$imageType['name'].'\.jpg$/', $d))
+							if (preg_match('/^[0-9]+\-'.$imageType['name'].'\.jpg$/', $d) || (count($type) > 1 && preg_match('/^[0-9]+\-[_a-zA-Z0-9-]*\.jpg$/', $d)))
 								if (file_exists($dir.$imageObj->getImgFolder().$d))
 									unlink($dir.$imageObj->getImgFolder().$d);
-	}
+				}
 			}
 		}
 	}
@@ -491,7 +492,7 @@ class AdminImagesControllerCore extends AdminController
 							elseif (!ImageManager::resize($dir.$image, $newDir.substr($image, 0, -4).'-'.stripslashes($imageType['name']).'.jpg', (int)$imageType['width'], (int)$imageType['height']))
 								$errors = true;
 						}
-						if (time() - $this->start_time > $this->max_execution_time - 4) // stop 4 seconds before the tiemout, just enough time to process the end of the page on a slow server
+						if (time() - $this->start_time > $this->max_execution_time - 4) // stop 4 seconds before the timeout, just enough time to process the end of the page on a slow server
 							return 'timeout';
 					}
 		}
@@ -508,13 +509,13 @@ class AdminImagesControllerCore extends AdminController
 							if (!ImageManager::resize($existing_img, $dir.$imageObj->getExistingImgPath().'-'.stripslashes($imageType['name']).'.jpg', (int)($imageType['width']), (int)($imageType['height'])))
 							{
 								$errors = true;
-								$this->errors[] = Tools::displayError(sprintf('Original image is corrupt (%s) or bad permission on folder', $existing_img));
+								$this->errors[] = Tools::displayError(sprintf('Original image is corrupt (%s) for product ID %2$d or bad permission on folder', $existing_img, (int)$imageObj->id_product));
 							}
 				}
 				else
 				{
 					$errors = true;
-					$this->errors[] = Tools::displayError(sprintf('Original image is missing or empty (%s)', $existing_img));
+					$this->errors[] = Tools::displayError(sprintf('Original image is missing or empty (%1$s) for product ID %2$d', $existing_img, (int)$imageObj->id_product));
 				}
 				if (time() - $this->start_time > $this->max_execution_time - 4) // stop 4 seconds before the tiemout, just enough time to process the end of the page on a slow server
 					return 'timeout';
@@ -651,8 +652,8 @@ class AdminImagesControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_image_type'] = array(
-				'href' => self::$currentIndex.'&amp;addimage_type&amp;token='.$this->token,
-				'desc' => $this->l('Add new image type'),
+				'href' => self::$currentIndex.'&addimage_type&token='.$this->token,
+				'desc' => $this->l('Add new image type', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		

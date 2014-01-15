@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -145,7 +145,19 @@ class AdminImportControllerCore extends AdminController
 					'shop' => array(
 						'label' => $this->l('ID / Name of shop'),
 						'help' => $this->l('Ignore this field if you don\'t use the Multistore tool. If you leave this field empty, the default shop will be used.'),
-					)
+					),
+					'advanced_stock_management' => array(
+						'label' => $this->l('Advanced Stock Management'),
+						'help' => $this->l('Enable Advanced Stock Management on product (0 = No, 1 = Yes)')
+					),
+					'depends_on_stock' => array(
+						'label' => $this->l('Depends On Stock'),
+						'help' => $this->l('0 = Use quantity set in product, 1 = Use quantity from Warehouse')
+					),
+					'warehouse' => array(
+						'label' => $this->l('Warehouse'),
+						'help' => $this->l('ID of the warehouse to set as storeage')
+					),
 				);
 
 				self::$default_values = array(
@@ -160,6 +172,8 @@ class AdminImportControllerCore extends AdminController
 					'minimal_quantity' => 1,
 					'weight' => 0,
 					'default_on' => 0,
+					'advanced_stock_management' => 0,
+					'depends_on_stock' => 0,
 				);
 			break;
 
@@ -255,11 +269,22 @@ class AdminImportControllerCore extends AdminController
 					'uploadable_files' => array('label' => $this->l('Uploadable files (0 = No, 1 = Yes)')),
 					'text_fields' => array('label' => $this->l('Text fields (0 = No, 1 = Yes)')),
 					'out_of_stock' => array('label' => $this->l('Action when out of stock')),
-					'advanced_stock_management' => array('label' => $this->l('Advanced stock management')),
 					'shop' => array(
 						'label' => $this->l('ID / Name of shop'),
 						'help' => $this->l('Ignore this field if you don\'t use the Multistore tool. If you leave this field empty, the default shop will be used.'),
-					)
+					),
+					'advanced_stock_management' => array(
+						'label' => $this->l('Advanced Stock Management'),
+						'help' => $this->l('Enable Advanced Stock Management on product (0 = No, 1 = Yes)')
+					),
+					'depends_on_stock' => array(
+						'label' => $this->l('Depends On Stock'),
+						'help' => $this->l('0 = Use quantity set in product, 1 = Use quantity from Warehouse')
+					),
+					'warehouse' => array(
+						'label' => $this->l('Warehouse'),
+						'help' => $this->l('ID of the warehouse to set as storeage')
+					),
 				);
 
 				self::$default_values = array(
@@ -287,7 +312,8 @@ class AdminImportControllerCore extends AdminController
 					'uploadable_files' => 0,
 					'text_fields' => 0,
 					'out_of_stock' => '2',
-					'advanced_stock_management' => '0',
+					'advanced_stock_management' => 0,
+					'depends_on_stock' => 0,
 				);
 			break;
 
@@ -482,8 +508,6 @@ class AdminImportControllerCore extends AdminController
 
 	public function setMedia()
 	{
-		$admin_webpath = str_ireplace(_PS_ROOT_DIR_, '', _PS_ADMIN_DIR_);
-		$admin_webpath = preg_replace('/^'.preg_quote(DIRECTORY_SEPARATOR, '/').'/', '', $admin_webpath);
 		$bo_theme = ((Validate::isLoadedObject($this->context->employee)
 			&& $this->context->employee->bo_theme) ? $this->context->employee->bo_theme : 'default');
 
@@ -491,15 +515,16 @@ class AdminImportControllerCore extends AdminController
 			.'template'))
 			$bo_theme = 'default';
 
-		$this->addJs(__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/vendor/jquery.ui.widget.js');
-		$this->addJs(__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/jquery.iframe-transport.js');
-		$this->addJs(__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/jquery.fileupload.js');
-		$this->addJs(__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/jquery.fileupload-process.js');
-		$this->addJs(__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/jquery.fileupload-validate.js');			
+		// We need to set parent media first, so that jQuery is loaded before the dependant plugins
+		parent::setMedia();
+
+		$this->addJs(__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$bo_theme.'/js/vendor/jquery.ui.widget.js');
+		$this->addJs(__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$bo_theme.'/js/jquery.iframe-transport.js');
+		$this->addJs(__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$bo_theme.'/js/jquery.fileupload.js');
+		$this->addJs(__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$bo_theme.'/js/jquery.fileupload-process.js');
+		$this->addJs(__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$bo_theme.'/js/jquery.fileupload-validate.js');			
 		$this->addJs(__PS_BASE_URI__.'js/vendor/spin.js');
 		$this->addJs(__PS_BASE_URI__.'js/vendor/ladda.js');
-
-		return parent::setMedia();
 	}
 
 	public function renderForm()
@@ -748,10 +773,12 @@ class AdminImportControllerCore extends AdminController
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		// toolbar (save, cancel, new, ..)
 		$this->initToolbar();
 		$this->initPageHeaderToolbar();
 		if ($this->display == 'import')
+		{
 			if (Tools::getValue('csv'))
 				$this->content .= $this->renderView();
 			else
@@ -759,6 +786,7 @@ class AdminImportControllerCore extends AdminController
 				$this->errors[] = $this->l('You must upload a file in order to proceed to the next step');
 				$this->content .= $this->renderForm();
 			}
+		}
 		else
 			$this->content .= $this->renderForm();
 
@@ -868,7 +896,8 @@ class AdminImportControllerCore extends AdminController
 			else
 			{
 				if (isset($field['help']))
-					$html = '&nbsp;<a href="#" class="info_import" title="'.$this->l('Info').'|'.$field['help'].'"><i class="icon-info-sign"></i></a>';
+
+					$html = '&nbsp;<a href="#" class="help-tooltip" data-toggle="tooltip" title="'.$field['help'].'"><i class="icon-info-sign"></i></a>';
 				else
 					$html = '';
 				$fields[] = '<div>'.$field['label'].$html.'</div>';
@@ -1357,6 +1386,13 @@ class AdminImportControllerCore extends AdminController
 							$product->id_category[] = (int)$value;
 						else
 						{
+							$this->errors[] = sprintf(
+								Tools::displayError('%1$s (ID: %2$s) cannot be saved'),
+								$category_to_create->name[$default_language_id],
+								(isset($category_to_create->id) && !empty($category_to_create->id))? $category_to_create->id : 'null'
+							);
+							$this->errors[] = ($field_error !== true ? $field_error : '').(isset($lang_field_error) && $lang_field_error !== true ? $lang_field_error : '').
+								Db::getInstance()->getMsgError();
 							$category_to_create = new Category();
 							$category_to_create->id = (int)$value;
 							$category_to_create->name = AdminImportController::createMultiLangField($value);
@@ -1381,35 +1417,11 @@ class AdminImportControllerCore extends AdminController
 					}
 					else if (is_string($value) && !empty($value))
 					{
-						$category = Category::searchByName($id_lang, trim($value), true);
+						$category = Category::searchByPath($default_language_id, trim($value), $this, 'productImportCreateCat');
 						if ($category['id_category'])
 							$product->id_category[] = (int)$category['id_category'];
 						else
-						{
-							$category_to_create = new Category();
-							if (!Shop::isFeatureActive())
-								$category_to_create->id_shop_default = 1;
-							else
-								$category_to_create->id_shop_default = (int)Context::getContext()->shop->id;
-							$category_to_create->name = AdminImportController::createMultiLangField(trim($value));
-							$category_to_create->active = 1;
-							$category_to_create->id_parent = (int)Configuration::get('PS_HOME_CATEGORY'); // Default parent is home for unknown category to create
-							$category_link_rewrite = Tools::link_rewrite($category_to_create->name[$default_language_id]);
-							$category_to_create->link_rewrite = AdminImportController::createMultiLangField($category_link_rewrite);
-							if (($field_error = $category_to_create->validateFields(UNFRIENDLY_ERROR, true)) === true &&
-								($lang_field_error = $category_to_create->validateFieldsLang(UNFRIENDLY_ERROR, true)) === true && $category_to_create->add())
-								$product->id_category[] = (int)$category_to_create->id;
-							else
-							{
-								$this->errors[] = sprintf(
-									Tools::displayError('%1$s (ID: %2$s) cannot be saved'),
-									$category_to_create->name[$default_language_id],
-									(isset($category_to_create->id) && !empty($category_to_create->id))? $category_to_create->id : 'null'
-								);
-								$this->errors[] = ($field_error !== true ? $field_error : '').(isset($lang_field_error) && $lang_field_error !== true ? $lang_field_error : '').
-									Db::getInstance()->getMsgError();
-							}
-						}
+							$this->errors[] = sprintf(Tools::displayError('%1$s cannot be saved'), trim($value));
 					}
 				}
 			}
@@ -1711,17 +1723,120 @@ class AdminImportControllerCore extends AdminController
 				Feature::cleanPositions();
 			}
 
-			// stock available
-			if (Shop::isFeatureActive())
+			// set advanced stock managment
+			if (isset($product->advanced_stock_management))
 			{
-				foreach ($shops as $shop)
-					StockAvailable::setQuantity((int)$product->id, 0, $product->quantity, (int)$shop);
+				if ($product->advanced_stock_management != 1 && $product->advanced_stock_management != 0)
+					$this->warnings[] = sprintf(Tools::displayError('Advanced stock management has incorrect value. Not set for product %1$s '),$product->name[$default_language_id]);
+				elseif (!Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT') && $product->advanced_stock_management == 1)
+					$this->warnings[] = sprintf(Tools::displayError('Advanced stock management is not enabled, can not enable on product %1$s '),$product->name[$default_language_id]);
+				else
+					$product->setAdvancedStockManagement($product->advanced_stock_management);
+				// automaticly disable depends on stock, if a_s_m set to disabled
+				if (StockAvailable::dependsOnStock($product->id) == 1 && $product->advanced_stock_management == 0)
+					StockAvailable::setProductDependsOnStock($product->id, 0);
 			}
-			else
-				StockAvailable::setQuantity((int)$product->id, 0, $product->quantity, $this->context->shop->id);
 
+			// Check if warehouse exists
+			if (isset($product->warehouse) && $product->warehouse)
+			{
+				if (!Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT'))
+					$this->warnings[] = sprintf(Tools::displayError('Advanced stock management is not enabled, warehouse not set on product %1$s '),$product->name[$default_language_id]);
+				else
+				{
+					if (Warehouse::exists($product->warehouse))
+					{
+						// Get already associated warehouses
+						$associated_warehouses_collection = WarehouseProductLocation::getCollection($product->id);
+						// Delete any entry in warehouse for this product
+						foreach ($associated_warehouses_collection as $awc)
+							$awc->delete();
+						$warehouse_location_entity = new WarehouseProductLocation();
+						$warehouse_location_entity->id_product = $product->id;
+						$warehouse_location_entity->id_product_attribute =  0;
+						$warehouse_location_entity->id_warehouse = $product->warehouse;
+							if (WarehouseProductLocation::getProductLocation($product->id, 0, $product->warehouse) !== false)
+								$warehouse_location_entity->update();
+							else
+								$warehouse_location_entity->save();
+						StockAvailable::synchronize($product->id);
+					}
+					else
+						$this->warnings[] = sprintf(Tools::displayError('Warehouse did not exists, can not set on product %1$s '),$product->name[$default_language_id]);
+				}
+			}
+
+			// stock available
+			if (isset($product->depends_on_stock))
+			{
+				if ($product->depends_on_stock != 0 && $product->depends_on_stock != 1)
+					$this->warnings[] = sprintf(Tools::displayError('Incorrect value for depends on stock for product %1$s '),$product->name[$default_language_id]);
+				elseif ((!$product->advanced_stock_management || $product->advanced_stock_management == 0) && $product->depends_on_stock == 1)
+					$this->warnings[] = sprintf(Tools::displayError('Advanced stock management not enabled, can not set depends on stock %1$s '),$product->name[$default_language_id]);
+				else
+					StockAvailable::setProductDependsOnStock($product->id, $product->depends_on_stock);
+
+				// This code allows us to set qty and disable depends on stock
+				if (isset($product->quantity) && $product->depends_on_stock == 0)
+				{
+					if (Shop::isFeatureActive())
+						foreach ($shops as $shop)
+							StockAvailable::setQuantity((int)$product->id, 0, $product->quantity, (int)$shop);
+					else
+						StockAvailable::setQuantity((int)$product->id, 0, $product->quantity, $this->context->shop->id);
+				}
+				// elseif enable depends on stock and quantity, add quantity to stock
+				elseif (isset($product->quantity) && $product->depends_on_stock == 1)
+				{
+					// add stock
+					$stock_manager = StockManagerFactory::getManager();
+					$price = str_replace(',', '.', $product->wholesale_price);
+					if ($price == 0)
+						$price = 0.000001;
+					$price = round(floatval($price), 6);
+					$warehouse = new Warehouse($product->warehouse);
+					if ($stock_manager->addProduct((int)$product->id, 0, $warehouse, $product->quantity, 1, $price, true))
+						StockAvailable::synchronize((int)$product->id);
+				}
+			}
+			// if not depends_on_stock set, use normal qty
+			else
+			{
+				if (Shop::isFeatureActive())
+					foreach ($shops as $shop)
+						StockAvailable::setQuantity((int)$product->id, 0, $product->quantity, (int)$shop);
+				else
+					StockAvailable::setQuantity((int)$product->id, 0, $product->quantity, $this->context->shop->id);
+			}
 		}
 		$this->closeCsvFile($handle);
+	}
+
+	public function productImportCreateCat($default_language_id, $category_name, $id_parent_category=null)
+	{
+		$category_to_create = new Category();
+		if (!Shop::isFeatureActive())
+			$category_to_create->id_shop_default = 1;
+		else
+			$category_to_create->id_shop_default = (int)Context::getContext()->shop->id;
+		$category_to_create->name = AdminImportController::createMultiLangField(trim($category_name));
+		$category_to_create->active = 1;
+		$category_to_create->id_parent = (int)Configuration::get('PS_HOME_CATEGORY'); // Default parent is home for unknown category to create
+		$category_link_rewrite = Tools::link_rewrite($category_to_create->name[$default_language_id]);
+		$category_to_create->link_rewrite = AdminImportController::createMultiLangField($category_link_rewrite);
+		if (($field_error = $category_to_create->validateFields(UNFRIENDLY_ERROR, true)) === true &&
+			($lang_field_error = $category_to_create->validateFieldsLang(UNFRIENDLY_ERROR, true)) === true && $category_to_create->add())
+			$product->id_category[] = (int)$category_to_create->id;
+		else
+		{
+			$this->errors[] = sprintf(
+				Tools::displayError('%1$s (ID: %2$s) cannot be saved'),
+				$category_to_create->name[$default_language_id],
+				(isset($category_to_create->id) && !empty($category_to_create->id))? $category_to_create->id : 'null'
+			);
+			$this->errors[] = ($field_error !== true ? $field_error : '').(isset($lang_field_error) && $lang_field_error !== true ? $lang_field_error : '').
+				Db::getInstance()->getMsgError();
+		}
 	}
 
 	public function attributeImport()
@@ -1876,11 +1991,11 @@ class AdminImportControllerCore extends AdminController
 						else
 							$this->errors[] = ($field_error !== true ? $field_error : '').(isset($lang_field_error) && $lang_field_error !== true ? $lang_field_error : '');
 	
-						// fils groups attributes
+						// fills groups attributes
 						$id_attribute_group = $obj->id;
 						$groups_attributes[$key]['id'] = $id_attribute_group;
 					}
-					else // alreay exists
+					else // already exists
 					{
 						$id_attribute_group = $groups[$group];
 						$groups_attributes[$key]['id'] = $id_attribute_group;
@@ -2031,7 +2146,87 @@ class AdminImportControllerCore extends AdminController
 						VALUES ('.(int)$attribute_to_add.','.(int)$id_product_attribute.')');
 				}
 
-				StockAvailable::setQuantity($product->id, $id_product_attribute, (int)$info['quantity']);
+				// set advanced stock managment
+				if (isset($info['advanced_stock_management']))
+				{
+					if ($info['advanced_stock_management'] != 1 && $info['advanced_stock_management'] != 0)
+						$this->warnings[] = sprintf(Tools::displayError('Advanced stock management has incorrect value. Not set for product with id %s '),$product->id);
+					elseif (!Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT') && $info['advanced_stock_management'] == 1)
+						$this->warnings[] = sprintf(Tools::displayError('Advanced stock management is not enabled, can not enable on product with id %s '),$product->id);
+					else
+						$product->setAdvancedStockManagement($info['advanced_stock_management']);
+					// automaticly disable depends on stock, if a_s_m set to disabled
+					if (StockAvailable::dependsOnStock($product->id) == 1 && $info['advanced_stock_management'] == 0)
+						StockAvailable::setProductDependsOnStock($product->id, 0,null,$id_product_attribute);
+				}
+
+				// Check if warehouse exists
+				if ($info['warehouse'])
+				{
+					if (!Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT'))
+						$this->warnings[] = sprintf(Tools::displayError('Advanced stock management is not enabled, warehouse not set on product with id %s '),$product->id);
+					else
+					{
+						if (Warehouse::exists($info['warehouse']))
+						{
+							$warehouse_location_entity = new WarehouseProductLocation();
+							$warehouse_location_entity->id_product = $product->id;
+							$warehouse_location_entity->id_product_attribute =  $id_product_attribute;
+							$warehouse_location_entity->id_warehouse = $info['warehouse'];
+							if (WarehouseProductLocation::getProductLocation($product->id, $id_product_attribute, $info['warehouse']) !== false)
+								$warehouse_location_entity->update();
+							else
+								$warehouse_location_entity->save();
+							StockAvailable::synchronize($product->id);
+						}
+						else
+							$this->warnings[] = sprintf(Tools::displayError('Warehouse did not exists, can not set on product %1$s '),$product->name[$default_language_id]);
+					}
+				}
+
+				// stock available
+				if (isset($info['depends_on_stock']))
+				{
+					if ($info['depends_on_stock'] != 0 && $info['depends_on_stock'] != 1)
+						$this->warnings[] = sprintf(Tools::displayError('Incorrect value for depends on stock for product %1$s '),$product->name[$default_language_id]);
+					elseif ((!$info['advanced_stock_management'] || $info['advanced_stock_management'] == 0) && $info['depends_on_stock'] == 1)
+						$this->warnings[] = sprintf(Tools::displayError('Advanced stock management not enabled, can not set depends on stock %1$s '),$product->name[$default_language_id]);
+					else
+						StockAvailable::setProductDependsOnStock($product->id, $info['depends_on_stock'],null,$id_product_attribute);
+
+					// This code allows us to set qty and disable depends on stock
+					if (isset($info['quantity']) && $info['depends_on_stock'] == 0)
+					{
+						if (Shop::isFeatureActive())
+							foreach ($shops as $shop)
+								StockAvailable::setQuantity((int)$product->id, $id_product_attribute, (int)$info['quantity'], (int)$shop);
+						else
+							StockAvailable::setQuantity((int)$product->id, $id_product_attribute, (int)$info['quantity'], $this->context->shop->id);
+					}
+					// elseif enable depends on stock and quantity, add quantity to stock
+					elseif (isset($info['quantity']) && $info['depends_on_stock'] == 1)
+					{
+						// add stock
+						$stock_manager = StockManagerFactory::getManager();
+						$price = str_replace(',', '.', $info['wholesale_price']);
+						if ($price == 0)
+							$price = 0.000001;
+						$price = round(floatval($price), 6);
+						$warehouse = new Warehouse($info['warehouse']);
+						if ($stock_manager->addProduct((int)$product->id, $id_product_attribute, $warehouse, (int)$info['quantity'], 1, $price, true))
+							StockAvailable::synchronize((int)$product->id);
+					}
+				}
+				// if not depends_on_stock set, use normal qty
+				else
+				{
+					if (Shop::isFeatureActive())
+						foreach ($shops as $shop)
+							StockAvailable::setQuantity((int)$product->id, $id_product_attribute, (int)$info['quantity'], (int)$shop);
+					else
+						StockAvailable::setQuantity((int)$product->id, $id_product_attribute, (int)$info['quantity'], $this->context->shop->id);
+				}
+
 			}
 		}
 
@@ -2967,6 +3162,7 @@ class AdminImportControllerCore extends AdminController
 				Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'product_attribute_shop`');
 				Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'product_attribute_combination`');
 				Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'product_attribute_image`');
+				Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'pack`');
 				Image::deleteAllImages(_PS_PROD_IMG_DIR_);
 				if (!file_exists(_PS_PROD_IMG_DIR_))
 					mkdir(_PS_PROD_IMG_DIR_);
@@ -3031,7 +3227,7 @@ class AdminImportControllerCore extends AdminController
 			return;
 		}
 
-		if (Tools::getValue('submitImportFile'))
+		if (Tools::isSubmit('import'))
 		{
 			// Check if the CSV file exist
 			if (Tools::getValue('csv'))

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -156,7 +156,10 @@ class AdminCarrierWizardControllerCore extends AdminController
 	public function initPageHeaderToolbar()
 	{
 		parent::initPageHeaderToolbar();
-		$this->page_header_toolbar_btn['back']['href'] = $this->context->link->getAdminLink('AdminCarriers');
+		$this->page_header_toolbar_btn['cancel'] = array(
+			'href' => $this->context->link->getAdminLink('AdminCarriers'),
+			'desc' => $this->l('Cancel', null, null, false)
+		);
 	}
 
 	public function renderStepOne($carrier)
@@ -686,17 +689,18 @@ class AdminCarrierWizardControllerCore extends AdminController
 				$price_list = array();
 				if (is_array($fees) && count($fees))
 				{
-					$price = isset($fee[$key]) ? (float)$fee[$key] : 0;
 					foreach ($fees as $id_zone => $fee)
+					{
 						$price_list[] = array(
 							'id_range_price' => ($range_type == Carrier::SHIPPING_METHOD_PRICE ? (int)$range->id : null),
 							'id_range_weight' => ($range_type == Carrier::SHIPPING_METHOD_WEIGHT ? (int)$range->id : null),
 							'id_carrier' => (int)$carrier->id,
 							'id_zone' => (int)$id_zone,
-							'price' => $price,
+							'price' => isset($fee[$key]) ? (float)$fee[$key] : 0,
 						);
+					}
 				}
-
+				
 				if (count($price_list) && !$carrier->addDeliveryPrice($price_list, true))
 					return false;
 			}

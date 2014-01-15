@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -61,7 +61,7 @@ class AdminLocalizationControllerCore extends AdminController
 						'list' => Currency::getCurrencies()
 					),
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'localization' => array(
 				'title' =>	$this->l('Localization'),
@@ -291,10 +291,10 @@ class AdminLocalizationControllerCore extends AdminController
 				)
 			),
 			'submit' => array(
-				'title' => $this->l('Import   '),
-				'class' => 'btn btn-default',
+				'title' => $this->l('Import'),
+				'icon' => 'process-icon-import',
 				'name' => 'submitLocalizationPack'
-			)
+			),
 		);
 
 		$this->fields_value = array(
@@ -306,19 +306,18 @@ class AdminLocalizationControllerCore extends AdminController
 			'download_updated_pack' => 1
 		);
 
-		$this->show_toolbar = false;
+		$this->show_toolbar = true;
 		return parent::renderForm();
 	}
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		if (!$this->loadObject(true))
-			return;
+			return;	
 
-		// toolbar (save, cancel, new, ..)
 		$this->initToolbar();
 		$this->initPageHeaderToolbar();
-
 		$this->context->smarty->assign(array(
 			'localization_form' => $this->renderForm(),
 			'localization_options' => $this->renderOptions(),

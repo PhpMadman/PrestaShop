@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
@@ -40,8 +40,8 @@ class Blockcmsinfo extends Module
 		$this->bootstrap = true;
 		$this->need_instance = 0;
 		parent::__construct();
-		$this->displayName = $this->l('Customer cms information block');
-		$this->description = $this->l('Adds an information block customers in your store.');
+		$this->displayName = $this->l('Custom CMS information block');
+		$this->description = $this->l('Adds custom information blocks in your store.');
 	}
 
 	public function install()
@@ -49,7 +49,8 @@ class Blockcmsinfo extends Module
 			return parent::install() &&
 			$this->installDB() &&
 			Configuration::updateValue('blockcmsinfo_nbblocks', 2) &&
-			$this->registerHook('home') && $this->installFixtures();
+			$this->registerHook('home') && $this->installFixtures() &&
+			$this->disableDevice(Context::DEVICE_TABLET | Context::DEVICE_MOBILE);
 	}
 	
 	public function installDB()
@@ -189,12 +190,12 @@ class Blockcmsinfo extends Module
 		$this->fields_form[0]['form'] = array(
 					'tinymce' => true,
 					'legend' => array(
-					'title' => $this->l('New cms custom block.'),
+					'title' => $this->l('New custom CMS block'),
 			),
 			'input' => array(
 				array(
 					'type' => 'textarea',
-					'label' => $this->l('Text:'),
+					'label' => $this->l('Text'),
 					'lang' => true,
 					'name' => 'text',
 					'cols' => 40,
@@ -206,7 +207,6 @@ class Blockcmsinfo extends Module
 			),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'button'
 			)
 		);
 
@@ -246,24 +246,27 @@ class Blockcmsinfo extends Module
 
 	protected function initList()
 	{
-
-
 		$this->fields_list =  array(
 		
 			'id_info' => array(
-				'title' => $this->l('Custom block #'),
+				'title' => $this->l('Custom block number'),
 				'width' => 40,
 				'type' => 'text',
+				'search'  => false,
 			),
 			
 		);
 
 		if (Shop::isFeatureActive())
-			$this->fields_list['id_shop'] = array('title' => $this->l('ID Shop'), 'align' => 'center', 'width' => 25, 'type' => 'int');
+			$this->fields_list['id_shop'] = array('title'   => $this->l('ID Shop'),
+												  'align'   => 'center',
+												  'width'   => 25,
+												  'type'    => 'int'
+			);
 
 		$helper = new HelperList();
 		$helper->shopLinkType = '';
-		$helper->simple_header = true;
+		$helper->simple_header = false;
 		$helper->identifier = 'id_info';
 		$helper->actions = array('edit', 'delete');
 		$helper->show_toolbar = true;
@@ -282,10 +285,6 @@ class Blockcmsinfo extends Module
 
 	public function hookHome($params)
 	{
-		// Check if not a mobile theme
-		if ($this->context->getMobileDevice() != false)
-			return false;
-
 		$this->context->controller->addCSS($this->_path.'style.css', 'all');
 		if (!$this->isCached('blockcmsinfo.tpl', $this->getCacheId()))
 		{

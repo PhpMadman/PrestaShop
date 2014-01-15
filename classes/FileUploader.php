@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -105,10 +105,10 @@ class QqUploadedFileForm
 			$legends = Tools::getValue('legend');
 			if (is_array($legends))
 				foreach ($legends as $key => $legend)
-					if (!empty($legend) && Validate::isGenericName($legend))
+					if (Validate::isGenericName($legend))
 						$image->legend[(int)$key] = $legend;
 					else
-						return array('error' => sprintf(Tools::displayError('Error on image legend "%1s." is not a valid legend.'), Tools::safeOutput($legend)));
+						return array('error' => sprintf(Tools::displayError('Error on image legend "%1s" is not a valid legend.'), Tools::safeOutput($legend)));
 			if (!Image::getCover($image->id_product))
 				$image->cover = 1;
 			else
@@ -194,10 +194,10 @@ class QqUploadedFileXhr
 			$legends = Tools::getValue('legend');
 			if (is_array($legends))
 				foreach ($legends as $key => $legend)
-					if (!empty($legend) && Validate::isGenericName($legend))
+					if (Validate::isGenericName($legend))
 						$image->legend[(int)$key] = $legend;
 					else
-						return array('error' => sprintf(Tools::displayError('Error on image legend "%1s." is not a valid legend.'), Tools::safeOutput($legend)));
+						return array('error' => sprintf(Tools::displayError('Error on image legend "%1s" is not a valid legend.'), Tools::safeOutput($legend)));
 			if (!Image::getCover($image->id_product))
 				$image->cover = 1;
 			else

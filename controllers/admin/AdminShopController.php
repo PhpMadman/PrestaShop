@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -81,67 +81,50 @@ class AdminShopControllerCore extends AdminController
 		return Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE');
 	}
 
-	public function initToolbar()
+	public function initPageHeaderToolbar()
 	{
-		if (!$this->id_shop_group && $this->object && $this->object->id_shop_group)
-			$this->id_shop_group = $this->object->id_shop_group;
+		parent::initPageHeaderToolbar();
 
 		if (!$this->display && $this->id_shop_group)
-			$this->toolbar_btn['edit'] = array(
+		{
+			if ($this->id_object)
+				$this->loadObject();
+
+			if (!$this->id_shop_group && $this->object && $this->object->id_shop_group)
+				$this->id_shop_group = $this->object->id_shop_group;
+
+			$this->page_header_toolbar_btn['edit'] = array(
 				'desc' => $this->l('Edit this shop group'),
-				'href' => $this->context->link->getAdminLink('AdminShopGroup').'&amp;updateshop_group&amp;id_shop_group='.$this->id_shop_group,
+				'href' => $this->context->link->getAdminLink('AdminShopGroup').'&updateshop_group&id_shop_group='
+					.$this->id_shop_group,
 			);
 
-		if ($this->display == 'edit' || $this->display == 'add')
-		{
-			if ($shop = $this->loadObject(true))
-			{
-				if ((bool)$shop->id)
-				{
-					// adding button for delete this shop
-					if ($this->tabAccess['delete'] && $this->display != 'add' && !Shop::hasDependency($shop->id))
-						$this->toolbar_btn['delete'] = array(
-							'short' => 'Delete',
-							'href' => $this->context->link->getAdminLink('AdminShop').'&amp;id_shop='.$shop->id.'&amp;deleteshop',
-							'desc' => $this->l('Delete this shop'),
-							'confirm' => 1);
-
-					$this->toolbar_btn['new-url'] = array(
-						'href' => $this->context->link->getAdminLink('AdminShopUrl').'&amp;id_shop='.$shop->id.'&amp;addshop_url',
-						'desc' => $this->l('Add URL'),
-						'class' => 'addShopUrl'
-					);
-				}
-
-				if ($this->tabAccess['edit'])
-				{
-					$this->toolbar_btn['save'] = array(
-						'short' => 'Save',
-						'href' => '#todo'.$this->context->link->getAdminLink('AdminShops').'&amp;id_shop='.$shop->id,
-						'desc' => $this->l('Save'),
-					);
-
-					$this->toolbar_btn['save-and-stay'] = array(
-						'short' => 'SaveAndStay',
-						'href' => '#todo'.$this->context->link->getAdminLink('AdminShops').'&amp;id_shop='.$shop->id,
-						'desc' => $this->l('Save and stay'),
-					);
-				}
-			}
+			$this->page_header_toolbar_btn['new'] = array(
+				'desc' => $this->l('Add new shop'),
+				'href' => $this->context->link->getAdminLink('AdminShop').'&add'.$this->table.'&id_shop_group='
+					.$this->id_shop_group,
+			);
 		}
+	}
 
+	public function initToolbar()
+	{
 		parent::initToolbar();
-		$this->context->smarty->assign('toolbar_scroll', 1);
 
-		$this->show_toolbar = false;
-		if (isset($this->toolbar_btn['new']))
+		if ($this->display != 'edit' && $this->display != 'add')
+		{
+			if ($this->id_object)
+				$this->loadObject();
+
+			if (!$this->id_shop_group && $this->object && $this->object->id_shop_group)
+				$this->id_shop_group = $this->object->id_shop_group;
+
 			$this->toolbar_btn['new'] = array(
 				'desc' => $this->l('Add new shop'),
-				'href' => $this->context->link->getAdminLink('AdminShop').'&amp;add'.$this->table.'&amp;id_shop_group='.$this->id_shop_group,
+				'href' => $this->context->link->getAdminLink('AdminShop').'&amp;add'.$this->table.'&amp;id_shop_group='
+					.$this->id_shop_group,
 			);
-
-		if (isset($this->toolbar_btn['back']))
-			$this->toolbar_btn['back']['href'] .= '&amp;id_shop_group='.$this->id_shop_group;
+		}
 	}
 
 	public function initContent()
@@ -149,8 +132,44 @@ class AdminShopControllerCore extends AdminController
 		parent::initContent();
 
 		$this->addJqueryPlugin('cooki-plugin');
-		$this->addJqueryPlugin('jstree');
-		$this->addCSS(_PS_JS_DIR_.'jquery/plugins/jstree/themes/classic/style.css');
+		$data = Shop::getTree();
+
+		foreach ($data as $key_group => &$group)
+			foreach ($group['shops'] as $key_shop => &$shop)
+			{
+				$current_shop = new Shop($shop['id_shop']);
+				$urls = $current_shop->getUrls();
+
+				foreach ($urls as $key_url => &$url)
+				{
+					$title = $url['domain'].$url['physical_uri'].$url['virtual_uri'];
+					if (strlen($title) > 23)
+						$title = substr($title, 0, 23).'...';
+
+					$url['name'] = $title;
+					$shop['urls'][$url['id_shop_url']] = $url;
+				}
+			}
+
+		$shops_tree = new HelperTreeShops('shops-tree', 'Multistore tree');
+		$shops_tree->setNodeFolderTemplate('shop_tree_node_folder.tpl')->setNodeItemTemplate('shop_tree_node_item.tpl')
+			->setHeaderTemplate('shop_tree_header.tpl')->setActions(array(
+				new TreeToolbarLink(
+					'Collapse All',
+					'#',
+					'$(\'#'.$shops_tree->getId().'\').tree(\'collapseAll\'); return false;',
+					'icon-collapse-alt'),
+				new TreeToolbarLink(
+					'Expand All',
+					'#',
+					'$(\'#'.$shops_tree->getId().'\').tree(\'expandAll\'); return false;',
+					'icon-expand-alt')
+			))
+			->setAttribute('url_shop_group', $this->context->link->getAdminLink('AdminShopGroup'))
+			->setAttribute('url_shop', $this->context->link->getAdminLink('AdminShop'))
+			->setAttribute('url_shop_url', $this->context->link->getAdminLink('AdminShopUrl'))
+			->setData($data);
+		$shops_tree = $shops_tree->render(null, false, false);
 
 		if ($this->display == 'edit')
 			$this->toolbar_title[] = $this->object->name;
@@ -164,7 +183,7 @@ class AdminShopControllerCore extends AdminController
 			'toolbar_scroll' => 1,
 			'toolbar_btn' => $this->toolbar_btn,
 			'title' => $this->toolbar_title,
-			'selected_tree_id' => ($this->display == 'edit' ? 'tree-shop-'.$this->id_object : (Tools::getValue('id_shop_group') ? 'tree-group-'.Tools::getValue('id_shop_group') : '')),
+			'shops_tree' => $shops_tree
 		));
 	}
 
@@ -283,7 +302,10 @@ class AdminShopControllerCore extends AdminController
 
 	protected function afterUpdate($new_shop)
 	{
-		if (!Category::updateFromShop(Tools::getValue('categoryBox'), $new_shop->id))
+		$categories = Tools::getValue('categoryBox');
+		array_unshift($categories, Configuration::get('PS_ROOT_CATEGORY'));
+
+		if (!Category::updateFromShop($categories, $new_shop->id))
 			$this->errors[] = $this->l('You need to select at least the root category.');
 		if (Tools::getValue('useImportData') && ($import_data = Tools::getValue('importData')) && is_array($import_data))
 			$new_shop->copyShopData((int)Tools::getValue('importFromShop'), $import_data);
@@ -322,7 +344,7 @@ class AdminShopControllerCore extends AdminController
 					'type' => 'text',
 					'label' => $this->l('Shop name:'),
 					'desc' => array($this->l('This field does not refer to the shop name visible in the front office.'),
-							sprintf($this->l('Follow %sthis link%s to edit the shop name used on the Front Office.'), '<a href="'.$this->context->link->getAdminLink('AdminStores').'">', '</a>')),
+							sprintf($this->l('Follow %sthis link%s to edit the shop name used on the Front Office.'), '<a href="'.$this->context->link->getAdminLink('AdminStores').'#store_fieldset_general">', '</a>')),
 					'name' => 'name',
 					'required' => true,
 				)
@@ -407,6 +429,8 @@ class AdminShopControllerCore extends AdminController
 
 
 		$id_shop = (int)Tools::getValue('id_shop');
+		self::$currentIndex = self::$currentIndex.'&id_shop_group='.(int)(Tools::getValue('id_shop_group') ?
+			Tools::getValue('id_shop_group') : (isset($obj->id_shop_group) ? $obj->id_shop_group : Shop::getContextShopGroupID()));
 		$shop = new Shop($id_shop);
 		$selected_cat = Shop::getCategories($id_shop);
 
@@ -477,7 +501,6 @@ class AdminShopControllerCore extends AdminController
 
 		$this->fields_form['submit'] = array(
 			'title' => $this->l('Save'),
-			'class' => 'button'
 		);
 
 		if (Shop::getTotalShops() > 1 && $obj->id)
@@ -632,7 +655,9 @@ class AdminShopControllerCore extends AdminController
 				StockAvailable::copyStockAvailableFromShopToShop($id_src_shop, $object->id);
 		}
 
-		Category::updateFromShop(Tools::getValue('categoryBox'), $object->id);
+		$categories = Tools::getValue('categoryBox');
+		array_unshift($categories, Configuration::get('PS_ROOT_CATEGORY'));
+		Category::updateFromShop($categories, $object->id);
 		Search::indexation(true);
 		return $object;
 	}

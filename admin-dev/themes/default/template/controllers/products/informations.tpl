@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -181,7 +181,7 @@
 
 	<hr/>
 
-	{* status informations *}	
+	{* status informations *}
 	<div class="form-group">		
 		<label class="control-label col-lg-3">
 			{include file="controllers/products/multishop/checkbox.tpl" field="active" type="radio" onclick=""}
@@ -191,15 +191,13 @@
 			<span class="switch prestashop-switch">
 				<input onclick="toggleDraftWarning(false);showOptions(true);showRedirectProductOptions(false);" type="radio" name="active" id="active_on" value="1" {if $product->active || !$product->isAssociatedToShop()}checked="checked" {/if} />
 				<label for="active_on" class="radioCheck">
-					<i class="icon-check-sign text-success"></i>
 					{l s='Enabled'}
 				</label>
 				<input onclick="toggleDraftWarning(true);showOptions(false);showRedirectProductOptions(true);"  type="radio" name="active" id="active_off" value="0" {if !$product->active && $product->isAssociatedToShop()}checked="checked"{/if} />
 				<label for="active_off" class="radioCheck">
-					<i class="icon-ban-circle text-danger"></i>
 					{l s='Disabled'}
 				</label>
-				<a class="slide-button btn btn-default"></a>
+				<a class="slide-button btn"></a>
 			</span>
 		</div>
 	</div>
@@ -330,6 +328,7 @@
 				file="controllers/products/textarea_lang.tpl"
 				languages=$languages
 				input_name='description_short'
+				class="autoload_rte"
 				input_value=$product->description_short
 				max=$PS_PRODUCT_SHORT_DESC_LIMIT}
 		</div>
@@ -347,6 +346,7 @@
 			{include
 				file="controllers/products/textarea_lang.tpl"
 				languages=$languages input_name='description'
+				class="autoload_rte"
 				input_value=$product->description}
 		</div>
 	</div>

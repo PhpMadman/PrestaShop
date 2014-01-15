@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -106,36 +106,39 @@ class HelperTreeShopsCore extends TreeCore
 		return $this->_template;
 	}
 
-	public function render($data = NULL)
+	public function render($data = null, $use_default_actions = true, $use_selected_shop = true)
 	{
 		if (!isset($data))
 			$data = $this->getData();
 
-		$this->setActions(array(
-			new TreeToolbarLink(
-				'Collapse All',
-				'#',
-				'$(\'#'.$this->getId().'\').tree(\'collapseAll\'); return false;',
-				'icon-collapse-alt'),
-			new TreeToolbarLink(
-				'Expand All',
-				'#',
-				'$(\'#'.$this->getId().'\').tree(\'expandAll\'); return false;',
-				'icon-expand-alt'),
-			new TreeToolbarLink(
-				'Check All',
-				'#',
-				'checkAllAssociatedShops($(\'#'.$this->getId().'\')); return false;',
-				'icon-check-sign'),
-			new TreeToolbarLink(
-				'Uncheck All',
-				'#',
-				'uncheckAllAssociatedShops($(\'#'.$this->getId().'\')); return false;',
-				'icon-check-empty')
-			)
-		);
+		if ($use_default_actions)
+			$this->setActions(array(
+				new TreeToolbarLink(
+					'Collapse All',
+					'#',
+					'$(\'#'.$this->getId().'\').tree(\'collapseAll\'); return false;',
+					'icon-collapse-alt'),
+				new TreeToolbarLink(
+					'Expand All',
+					'#',
+					'$(\'#'.$this->getId().'\').tree(\'expandAll\'); return false;',
+					'icon-expand-alt'),
+				new TreeToolbarLink(
+					'Check All',
+					'#',
+					'checkAllAssociatedShops($(\'#'.$this->getId().'\')); return false;',
+					'icon-check-sign'),
+				new TreeToolbarLink(
+					'Uncheck All',
+					'#',
+					'uncheckAllAssociatedShops($(\'#'.$this->getId().'\')); return false;',
+					'icon-check-empty')
+				)
+			);
 
-		$this->setAttribute('selected_shops', $this->getSelectedShops());		
+		if ($use_selected_shop)
+			$this->setAttribute('selected_shops', $this->getSelectedShops());
+
 		return parent::render($data);
 	}
 
@@ -156,7 +159,7 @@ class HelperTreeShopsCore extends TreeCore
 				$html .= $this->getContext()->smarty->createTemplate(
 					$this->getTemplateFile($this->getNodeFolderTemplate()),
 					$this->getContext()->smarty
-				)->assign(array(
+				)->assign($this->getAttributes())->assign(array(
 					'children' => $this->renderNodes($item['shops']),
 					'node'     => $item
 				))->fetch();
@@ -164,7 +167,7 @@ class HelperTreeShopsCore extends TreeCore
 				$html .= $this->getContext()->smarty->createTemplate(
 					$this->getTemplateFile($this->getNodeItemTemplate()),
 					$this->getContext()->smarty
-				)->assign(array(
+				)->assign($this->getAttributes())->assign(array(
 					'node' => $item
 				))->fetch();
 		}

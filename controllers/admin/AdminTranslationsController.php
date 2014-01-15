@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -74,14 +74,9 @@ class AdminTranslationsControllerCore extends AdminController
 	{
 		$this->bootstrap = true;
 		$this->multishop_context = Shop::CONTEXT_ALL;
-
-		parent::__construct();
-
 	 	$this->table = 'translations';
 
-		// Include all file for create or read an archive
-		include_once(_PS_ADMIN_DIR_.'/../tools/tar/Archive_Tar.php');
-		include_once(_PS_ADMIN_DIR_.'/../tools/pear/PEAR.php');
+		parent::__construct();
 	}
 
 	/*
@@ -98,6 +93,7 @@ class AdminTranslationsControllerCore extends AdminController
 	 */
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		$this->initPageHeaderToolbar();
 		
 		if (!is_null($this->type_selected))
@@ -146,34 +142,11 @@ class AdminTranslationsControllerCore extends AdminController
 			'post_limit_exceeded' => $this->post_limit_exceed,
 			'url_submit' => self::$currentIndex.'&submitTranslations'.ucfirst($this->type_selected).'=1&token='.$this->token,
 			'toggle_button' => $this->displayToggleButton(),
-			'textarea_sized' => TEXTAREA_SIZED,
-			'auto_translate' => ''
+			'textarea_sized' => TEXTAREA_SIZED
 		);
 
 		// Call method initForm for a type
 		return $this->{$method_name}();
-	}
-
-	public function initPageHeaderToolbar()
-	{
-		parent::initPageHeaderToolbar();
-
-		if (Tools::getValue('lang'))
-		{
-			$this->page_header_toolbar_btn['save-and-stay'] = array(
-				'short' => 'SaveAndStay',
-				'href' => '#',
-				'desc' => $this->l('Save and stay'),
-			);
-			$this->page_header_toolbar_btn['save'] = array(
-				'href' => '#',
-				'desc' => $this->l('Update translations')
-			);
-			$this->page_header_toolbar_btn['cancel'] = array(
-				'href' => self::$currentIndex.'&token='.$this->token,
-				'desc' => $this->l('Cancel')
-			);
-		}
 	}
 
 	/**
@@ -317,7 +290,7 @@ class AdminTranslationsControllerCore extends AdminController
 		if ($fd = fopen($file_path, 'w'))
 		{
 			// Get value of button save and stay
-			$save_and_stay = Tools::getValue('submitTranslations'.$type.'AndStay');
+			$save_and_stay = Tools::isSubmit('submitTranslations'.$type.'AndStay');
 
 			// Get language
 			$lang = strtolower(Tools::getValue('lang'));
@@ -467,6 +440,7 @@ class AdminTranslationsControllerCore extends AdminController
 			$this->exportTabs();
 			$items = array_flip(Language::getFilesList($this->lang_selected->iso_code, $this->theme_selected, false, false, false, false, true));
 			$file_name = _PS_TRANSLATIONS_DIR_.'/export/'.$this->lang_selected->iso_code.'.gzip';
+			require_once(_PS_TOOL_DIR_.'tar/Archive_Tar.php');
 			$gz = new Archive_Tar($file_name, true);
 			if ($gz->createModify($items, null, _PS_ROOT_DIR_));
 			{
@@ -693,6 +667,7 @@ class AdminTranslationsControllerCore extends AdminController
 			$this->errors[] = Tools::displayError('No file has been selected.');
 		else
 		{
+			require_once(_PS_TOOL_DIR_.'tar/Archive_Tar.php');
 			$gz = new Archive_Tar($_FILES['file']['tmp_name'], true);
 			$filename = $_FILES['file']['name'];
 			$iso_code = str_replace(array('.tar.gz', '.gzip'), '', $filename);
@@ -817,6 +792,7 @@ class AdminTranslationsControllerCore extends AdminController
 				$file = _PS_TRANSLATIONS_DIR_.$arr_import_lang[0].'.gzip';
 				if ((bool)@file_put_contents($file, $content))
 				{
+					require_once(_PS_TOOL_DIR_.'/tar/Archive_Tar.php');
 					$gz = new Archive_Tar($file, true);
 					$files_list = AdminTranslationsController::filterTranslationFiles($gz->listContent());
 					if ($error = $gz->extractList(AdminTranslationsController::filesListToPaths($files_list), _PS_TRANSLATIONS_DIR_.'../'))
@@ -1154,58 +1130,68 @@ class AdminTranslationsControllerCore extends AdminController
 		{
 			case 'front':
 					// Parsing file in Front office
-					$regex = '/\{l\s*s=[\'\"]'._PS_TRANS_PATTERN_.'[\'\"](\s*sprintf=.*)?(\s*js=1)?\s*\}/U';
+					$regex = '/\{l\s*s=([\'\"])'._PS_TRANS_PATTERN_.'\1(\s*sprintf=.*)?(\s*js=1)?\s*\}/U';
 				break;
 
 			case 'back':
 					// Parsing file in Back office
 					if ($type_file == 'php')
-						$regex = '/this->l\(\''._PS_TRANS_PATTERN_.'\'[\)|\,]/U';
+						$regex = '/this->l\((\')'._PS_TRANS_PATTERN_.'\'[\)|\,]/U';
 					else if ($type_file == 'specific')
-						$regex = '/Translate::getAdminTranslation\(\''._PS_TRANS_PATTERN_.'\'\)/U';
+						$regex = '/Translate::getAdminTranslation\((\')'._PS_TRANS_PATTERN_.'\'\)/U';
 					else
-						$regex = '/\{l\s*s\s*=[\'\"]'._PS_TRANS_PATTERN_.'[\'\"](\s*sprintf=.*)?(\s*js=1)?(\s*slashes=1)?\s*\}/U';
+						$regex = '/\{l\s*s\s*=([\'\"])'._PS_TRANS_PATTERN_.'\1(\s*sprintf=.*)?(\s*js=1)?(\s*slashes=1)?\s*\}/U';
 				break;
 
 			case 'errors':
 					// Parsing file for all errors syntax
-					$regex = '/Tools::displayError\(\''._PS_TRANS_PATTERN_.'\'(,\s*(.+))?\)/U';
+					$regex = '/Tools::displayError\((\')'._PS_TRANS_PATTERN_.'\'(,\s*(.+))?\)/U';
 				break;
 
 			case 'modules':
 					// Parsing modules file
 					if ($type_file == 'php')
-						$regex = '/->l\(\''._PS_TRANS_PATTERN_.'\'(, ?\'(.+)\')?(, ?(.+))?\)/U';
+						$regex = '/->l\((\')'._PS_TRANS_PATTERN_.'\'(, ?\'(.+)\')?(, ?(.+))?\)/U';
 					else
 						// In tpl file look for something that should contain mod='module_name' according to the documentation
-						$regex = array(
-							'/\{l\s*s=\''._PS_TRANS_PATTERN_.'\'.*\s+mod=\''.$module_name.'\'.*\}/U',
-							'/\{l\s*s=\"'._PS_TRANS_PATTERN_.'\".*\s+mod=\''.$module_name.'\'.*\}/U'
-						);
+						$regex = '/\{l\s*s=([\'\"])'._PS_TRANS_PATTERN_.'\1.*\s+mod=\''.$module_name.'\'.*\}/U';
 				break;
 
 			case 'pdf':
 					// Parsing PDF file
 					if ($type_file == 'php')
-						$regex = '/HTMLTemplate.*::l\(\''._PS_TRANS_PATTERN_.'\'[\)|\,]/U';
+						$regex = '/HTMLTemplate.*::l\((\')'._PS_TRANS_PATTERN_.'\'[\)|\,]/U';
 					else
-						$regex = '/\{l\s*s=[\'\"]'._PS_TRANS_PATTERN_.'[\'\"](\s*sprintf=.*)?(\s*js=1)?(\s*pdf=\'true\')?\s*\}/U';
+						$regex = '/\{l\s*s=([\'\"])'._PS_TRANS_PATTERN_.'\1(\s*sprintf=.*)?(\s*js=1)?(\s*pdf=\'true\')?\s*\}/U';
 				break;
 		}
 
-		if (is_array($regex))
+		if (!is_array($regex))
+			$regex = array($regex);
+
+		$strings = array();
+		foreach ($regex as $regex_row)
 		{
-			$matches = array(1 => array());
-			foreach ($regex as $regex_row)
+			$matches = array();
+			$n = preg_match_all($regex_row, $content, $matches);
+			for ($i = 0; $i < $n; $i += 1)
 			{
-				preg_match_all($regex_row, $content, $matches2);
-				$matches[1] = array_merge($matches[1], $matches2[1]);
+				$quote = $matches[1][$i];
+				$string = $matches[2][$i];
+
+				if ($quote === '"')
+				{
+					// Escape single quotes because the core will do it when looking for the translation of this string
+					$string = str_replace('\'', '\\\'', $string);
+					// Unescape double quotes
+					$string = preg_replace('/\\\\+"/', '"', $string);
+				}
+
+				$strings[] = $string;
 			}
 		}
-		else
-			preg_match_all($regex, $content, $matches);
 
-		return $matches[1];
+		return array_unique($strings);
 	}
 
 	/**
@@ -1641,42 +1627,15 @@ class AdminTranslationsControllerCore extends AdminController
 		<script type="text/javascript">';
 		if (Tools::getValue('type') == 'mails')
 			$str_output .= '$(document).ready(function(){
-				openCloseAllDiv(\''.$this->type_selected.'_div\', this.value == openAll); toggleElemValue(this.id, openAll, closeAll);
+				openCloseAllDiv(\''.$this->type_selected.'_div\', $(this).data(\'status\') == \'open\'); toggleElemValue(this.id, openAll, closeAll);
 				});';
 		$str_output .= '
-			var openAll = \''.html_entity_decode($this->l('Expand all fieldsets'), ENT_NOQUOTES, 'UTF-8').'\';
-			var closeAll = \''.html_entity_decode($this->l('Close all fieldsets'), ENT_NOQUOTES, 'UTF-8').'\';
+			var openAll = \'<i class="process-icon-plus"></i> '.html_entity_decode($this->l('Expand all fieldsets'), ENT_NOQUOTES, 'UTF-8').'\';
+			var closeAll = \'<i class="process-icon-minus"></i> '.html_entity_decode($this->l('Close all fieldsets'), ENT_NOQUOTES, 'UTF-8').'\';
 		</script>
-		<div class="row">
-		<input type="button" class="btn btn-default" id="buttonall" onclick="openCloseAllDiv(\''.$this->type_selected.'_div\', this.value == openAll); toggleElemValue(this.id, openAll, closeAll);" />
-		</div>
+		<button type="button" class="btn btn-default" id="buttonall" data-status="open" onclick="openCloseAllDiv(\''.$this->type_selected.'_div\',$(this).data(\'status\') == \'open\'); toggleElemValue(this.id, openAll, closeAll);"><i class="process-icon-minus"></i> '.$this->l('Close all fieldsets').'</button>
 		<script type="text/javascript">toggleElemValue(\'buttonall\', '.($closed ? 'openAll' : 'closeAll').', '.($closed ? 'closeAll' : 'openAll').');</script>';
 		return $str_output;
-	}
-
-	protected function displaySubmitButtons($name)
-	{
-		return '
-			<input type="submit" name="submitTranslations'.ucfirst($name).'" value="'.$this->l('Update translations').'" class="button" />
-			<input type="submit" name="submitTranslations'.ucfirst($name).'AndStay" value="'.$this->l('Update and stay').'" class="button" />';
-	}
-
-	/**
-	 * Init js variables for translation with google
-	 *
-	 * @return array of variables to assign to the smarty template
-	 */
-	public function initAutoTranslate()
-	{
-		$this->addJS('http://www.google.com/jsapi');
-		$this->addJS(_PS_JS_DIR_.'gg-translate.js');
-		$this->addJS(_PS_JS_DIR_.'admin-translations.js');
-
-		$language_code = Tools::htmlentitiesUTF8(Language::getLanguageCodeByIso(Tools::getValue('lang')));
-		return array('language_code' => $language_code,
-					 'not_available' => addslashes(html_entity_decode($this->l('This language is not available in Google Translate\'s API'), ENT_QUOTES, 'utf-8')),
-					 'tooltip_title' => addslashes(html_entity_decode($this->l('Google Translate suggests :'), ENT_QUOTES, 'utf-8'))
-					);
 	}
 
 	public function displayLimitPostWarning($count)
@@ -1790,12 +1749,10 @@ class AdminTranslationsControllerCore extends AdminController
 		$this->tpl_view_vars = array_merge($this->tpl_view_vars, array(
 			'missing_translations' => $missing_translations_front,
 			'count' => $count,
+			'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 			'limit_warning' => $this->displayLimitPostWarning($count),
 			'tabsArray' => $tabs_array,
 		));
-
-		// Add js variables needed for autotranslate
-		//$this->tpl_view_vars = array_merge($this->tpl_view_vars, $this->initAutoTranslate());
 
 		$this->initToolbar();
 		$this->base_tpl_view = 'translation_form.tpl';
@@ -1917,7 +1874,7 @@ class AdminTranslationsControllerCore extends AdminController
 						$prefix_key = 'Admin'.ucfirst(substr($tmp, strrpos($tmp, DIRECTORY_SEPARATOR) + 1, $pos));
 
 					// Adding list, form, option in Helper Translations
-					$list_prefix_key = array('AdminHelpers', 'AdminList', 'AdminView', 'AdminOptions', 'AdminForm', 'AdminHelpAccess');
+					$list_prefix_key = array('AdminHelpers', 'AdminList', 'AdminView', 'AdminOptions', 'AdminForm');
 					if (in_array($prefix_key, $list_prefix_key))
 						$prefix_key = 'Helper';
 
@@ -1979,13 +1936,11 @@ class AdminTranslationsControllerCore extends AdminController
 
 		$this->tpl_view_vars = array_merge($this->tpl_view_vars, array(
 			'count' => $count,
+			'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 			'limit_warning' => $this->displayLimitPostWarning($count),
 			'tabsArray' => $tabs_array,
 			'missing_translations' => $missing_translations_back
 		));
-
-		// Add js variables needed for autotranslate
-		//$this->tpl_view_vars = array_merge($this->tpl_view_vars, $this->initAutoTranslate());
 
 		$this->initToolbar();
 		$this->base_tpl_view = 'translation_form.tpl';
@@ -2062,6 +2017,7 @@ class AdminTranslationsControllerCore extends AdminController
 
 		$this->tpl_view_vars = array_merge($this->tpl_view_vars, array(
 			'count' => count($string_to_translate),
+			'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 			'limit_warning' => $this->displayLimitPostWarning(count($string_to_translate)),
 			'errorsArray' => $string_to_translate,
 			'missing_translations' => $count_empty
@@ -2157,6 +2113,7 @@ class AdminTranslationsControllerCore extends AdminController
 			'count' => $count,
 			'limit_warning' => $this->displayLimitPostWarning($count),
 			'tabsArray' => $tabs_array,
+			'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 			'missing_translations' => $missing_translations_fields
 		));
 
@@ -2264,19 +2221,28 @@ class AdminTranslationsControllerCore extends AdminController
 		if (array_key_exists('group_name', $mails))
 			$group_name = $mails['group_name'];
 
-		$str_return .= '
-		<div class="mails_field" >
-			<h3 style="cursor : pointer" onclick="$(\'#'.$id_html.'\').slideToggle();">'.$title.' - <font color="red">'.$mails['empty_values'].'</font> '
-			.sprintf($this->l('missing translation(s) on %1$s template(s) for %2$s'),
-				'<font color="blue">'.((int)$mails['empty_values'] + (int)$mails['total_filled']).'</font>',
-			 	$obj_lang->name)
-			.':</h3>
-			<div name="mails_div" id="'.$id_html.'">';
+		if($mails['empty_values'] == 0) {
+			$translation_missing_badge_type = 'badge-success';
+		} else {
+			$translation_missing_badge_type = 'badge-danger';
+		}
+
+		$str_return .= '<div class="mails_field">
+			<h4>
+			<span class="badge">'.((int)$mails['empty_values'] + (int)$mails['total_filled']).' <i class="icon-envelope-o"></i></span>
+			<a href="javascript:void(0);" onclick="$(\'#'.$id_html.'\').slideToggle();">'.$title.'</a>
+			<span class="pull-right badge '.$translation_missing_badge_type.'">'.$mails['empty_values'].' '.$this->l('missing translation(s)').'</span>
+			</h4>
+			<div name="mails_div" id="'.$id_html.'" class="panel-group">';
+
 		if (!empty($mails['files']))
 		{
 			$topic_already_displayed = array();
 			foreach ($mails['files'] as $mail_name => $mail_files)
 			{
+				$str_return .= '<div class="panel translations-email-panel">';
+				$str_return .= '<a href="#email-'.$mail_name.'" class="panel-title" data-toggle="collapse" data-parent="#'.$id_html.'" >'.$mail_name.' <i class="icon-caret-down"></i> </a>';
+				$str_return .= '<div id="email-'.$mail_name.'" class="email-collapse panel-collapse collapse">';
 				if (array_key_exists('html', $mail_files) || array_key_exists('txt', $mail_files))
 				{
 					if (array_key_exists($mail_name, $all_subject_mail))
@@ -2289,52 +2255,71 @@ class AdminTranslationsControllerCore extends AdminController
 							$topic_already_displayed[] = $subject_key;
 							$value_subject_mail = isset($mails['subject'][$subject_mail]) ? $mails['subject'][$subject_mail] : '';
 							$str_return .= '
-							<div class="label-subject" style="text-align:center;">
-								<label style="text-align:right">'.sprintf($this->l('Subject for %s:'), '<em>'.$mail_name.'</em>').'</label>
-								<div class="mail-form" style="text-align:left">
-									<b>'.$subject_mail.'</b><br />';
-							if (isset($value_subject_mail['trad']) && $value_subject_mail['trad'])
-								$str_return .= '<input type="text" name="subject['.Tools::htmlentitiesUTF8($group_name).']['.Tools::htmlentitiesUTF8($subject_mail).']" value="'.$value_subject_mail['trad'].'" />';
-							else
-								$str_return .= '<input type="text" name="subject['.Tools::htmlentitiesUTF8($group_name).']['.Tools::htmlentitiesUTF8($subject_mail).']" value="" />';
-
+							<div class="label-subject row">
+								<label class="control-label col-lg-3">'.sprintf($this->l('Subject'));
 							if (isset($value_subject_mail['use_sprintf']) && $value_subject_mail['use_sprintf'])
-								$str_return .= '<a class="useSpecialSyntax" title="'.$this->l('This expression uses a special syntax:').' '.$value_subject_mail['use_sprintf'].'" style="cursor:pointer">
-									<img src="'._PS_IMG_.'admin/error.png" alt="'.$value_subject_mail['use_sprintf'].'" />
-								</a>';
-							$str_return .= '</div>
-							</div>';
+								$str_return .= '<span class="useSpecialSyntax" title="'.$this->l('This expression uses a special syntax:').' '.$value_subject_mail['use_sprintf'].'">
+									<i class="icon-exclamation-triangle"></i>
+								</span>';
+							$str_return .= '</label><div class="col-lg-9">';
+							if (isset($value_subject_mail['trad']) && $value_subject_mail['trad'])
+								$str_return .= '<input class="form-control" type="text" name="subject['.Tools::htmlentitiesUTF8($group_name).']['.Tools::htmlentitiesUTF8($subject_mail).']" value="'.$value_subject_mail['trad'].'" />';
+							else
+								$str_return .= '<input class="form-control" type="text" name="subject['.Tools::htmlentitiesUTF8($group_name).']['.Tools::htmlentitiesUTF8($subject_mail).']" value="" />';
+							$str_return .= '<p class="help-block">'.$subject_mail.'</p>';
+							$str_return .= '</div></div>';
 						}
 					}
 					else
 					{
 						$str_return .= '
-						<div class="label-subject">
-							<b>'.sprintf($this->l('No Subject was found for %s in the database.'), '<em>'.$mail_name.'</em>').'</b>
-						</div>';
+							<hr><div class="alert alert-info">'
+							.sprintf($this->l('No Subject was found for %s in the database.'), $mail_name)
+							.'</div>';
 					}
+					// tab menu
+					$str_return .= '<hr><ul class="nav nav-pills">
+						<li class="active"><a href="#'.$mail_name.'-html" data-toggle="tab">'.$this->l('View HTML version').'</a></li>
+						<li><a href="#'.$mail_name.'-editor" data-toggle="tab">'.$this->l('Edit HTML version').'</a></li>
+						<li><a href="#'.$mail_name.'-text" data-toggle="tab">'.$this->l('View/Edit TXT version').'</a></li>
+						</ul>';
+					// tab-content
+					$str_return .= '<div class="tab-content">';
+
 					if (array_key_exists('html', $mail_files))
 					{
+						$str_return .= '<div class="tab-pane active" id="'.$mail_name.'-html">';
 						$base_uri = str_replace(_PS_ROOT_DIR_, __PS_BASE_URI__, $mails['directory']);
 						$base_uri = str_replace('//', '/', $base_uri);
 						$url_mail = $base_uri.$mail_name.'.html';
 						$str_return .= $this->displayMailBlockHtml($mail_files['html'], $obj_lang->iso_code, $url_mail, $mail_name, $group_name, $name_for_module);
+						$str_return .= '</div>';
 					}
+
 					if (array_key_exists('txt', $mail_files))
+					{
+						$str_return .= '<div class="tab-pane" id="'.$mail_name.'-text">';
 						$str_return .= $this->displayMailBlockTxt($mail_files['txt'], $obj_lang->iso_code, $mail_name, $group_name, $name_for_module);
+						$str_return .= '</div>';
+					}
+
+					$str_return .= '<div class="tab-pane" id="'.$mail_name.'-editor">';
+					$str_return .= $this->displayMailEditor($mail_files['html'], $obj_lang->iso_code, $url_mail, $mail_name, $group_name, $name_for_module);
+					$str_return .= '</div>';
+
+					$str_return .= '</div>';
+					$str_return .= '</div><!--end .panel-collapse -->';
+					$str_return .= '</div><!--end .panel -->';
 				}
 			}
 		}
 		else
 			$str_return .= '<p class="error">
-				'.$this->l('There was a problem getting the mail files.').'<br />
+				'.$this->l('There was a problem getting the mail files.').'<br>
 				'.sprintf($this->l('English language files must exist in %s folder'), '<em>'.preg_replace('@/[a-z]{2}(/?)$@', '/en$1', $mails['directory']).'</em>').'
 			</p>';
 
-		$str_return .= '
-			</div><!-- #'.$id_html.' -->
-			<div class="clear"></div>
-		</div>';
+		$str_return .= '</div><!-- #'.$id_html.' --></div><!-- end .mails_field -->';
 		return $str_return;
 	}
 	/**
@@ -2349,13 +2334,11 @@ class AdminTranslationsControllerCore extends AdminController
 	 */
 	protected function displayMailBlockTxt($content, $lang, $mail_name, $group_name, $name_for_module = false)
 	{
-		return '
-				<div class="block-mail" >
-					<label>'.$mail_name.'.txt</label>
+		return '<div class="block-mail" >
 					<div class="mail-form">
-						<div><textarea class="rte mailrte noEditor" cols="80" rows="30" name="'.$group_name.'[txt]['.($name_for_module ? $name_for_module.'|' : '' ).$mail_name.']" style="width:560px;margin=0;">'.Tools::htmlentitiesUTF8(stripslashes(strip_tags($content[$lang]))).'</textarea></div>
-					</div><!-- .mail-form -->
-				</div><!-- .block-mail -->';
+						<div><textarea class="rte noEditor" name="'.$group_name.'[txt]['.($name_for_module ? $name_for_module.'|' : '' ).$mail_name.']">'.Tools::htmlentitiesUTF8(stripslashes(strip_tags($content[$lang]))).'</textarea></div>
+					</div>
+				</div>';
 	}
 	/**
 	 * Just build the html structure for display html mails.
@@ -2371,18 +2354,41 @@ class AdminTranslationsControllerCore extends AdminController
 	protected function displayMailBlockHtml($content, $lang, $url, $mail_name, $group_name, $name_for_module = false)
 	{
 		$title = array();
+		$this->cleanMailContent($content, $lang, $title);
+		$name_for_module = $name_for_module ? $name_for_module.'|' : '';
+		return '<div class="block-mail" >
+					<div class="mail-form">
+						<div class="form-group">
+							<label class="control-label col-lg-3">'.$this->l('"title" tag:').'</label>
+							<div class="col-lg-9">
+								<input class="form-control" type="text" name="title_'.$group_name.'_'.$mail_name.'" value="'.(isset($title[$lang]) ? $title[$lang] : '').'" />
+								<p class="help-block">'.(isset($title['en']) ? $title['en'] : '').'</p>
+							</div>
+						</div>
+						<div class="thumbnail email-html-frame" data-email-src="'.$url.'?'.(rand(0, 1000000000)).'"></div>
+					</div>
+				</div>';
+	}
 
+	protected function displayMailEditor($content, $lang, $url, $mail_name, $group_name, $name_for_module = false)
+	{
+		$title = array();
+		$this->cleanMailContent($content, $lang, $title);
+		$name_for_module = $name_for_module ? $name_for_module.'|' : '';
+		return '<textarea class="rte-mail rte-mail-'.$mail_name.' form-control" data-rte="'.$mail_name.'" name="'.$group_name.'[html]['.$name_for_module.$mail_name.']">'.$content[$lang].'</textarea>';
+	}
+
+	protected function cleanMailContent(&$content, $lang, &$title)
+	{
 		// Because TinyMCE don't work correctly with <DOCTYPE>, <html> and <body> tags
 		if (stripos($content[$lang], '<body'))
 		{
 			$array_lang = $lang != 'en' ? array('en', $lang) : array($lang);
-
 			foreach ($array_lang as $language)
 			{
 				$title[$language] = substr($content[$language], 0, stripos($content[$language], '<body'));
 				preg_match('#<title>([^<]+)</title>#Ui', $title[$language], $matches);
 				$title[$language] = empty($matches[1])?'':$matches[1];
-
 				// The 2 lines below allow to exlude <body> tag from the content.
 				// This allow to exclude body tag even if attributs are setted.
 				$content[$language] = substr($content[$language], stripos($content[$language], '<body') + 5);
@@ -2390,28 +2396,7 @@ class AdminTranslationsControllerCore extends AdminController
 				$content[$language] = substr($content[$language], 0, stripos($content[$language], '</body>'));
 			}
 		}
-
-		$str_return = '';
-		$name_for_module = $name_for_module ? $name_for_module.'|' : '';
 		$content[$lang] = (isset($content[$lang]) ? Tools::htmlentitiesUTF8(stripslashes($content[$lang])) : '');
-		$str_return .= '
-		<div class="block-mail" >
-			<label>'.$mail_name.'.html</label>
-			<div class="mail-form">
-				<div>';
-		$str_return .= '
-				<div class="label-subject">
-					<b>'.$this->l('"title" tag:').'</b>&nbsp;'.(isset($title['en']) ? $title['en'] : '').'<br />
-					<input type="text" name="title_'.$group_name.'_'.$mail_name.'" value="'.(isset($title[$lang]) ? $title[$lang] : '').'" />
-				</div><!-- .label-subject -->';
-		$str_return .= '
-				<iframe style="background:white;border:1px solid #DFD5C3;" border="0" src ="'.$url.'?'.(rand(0, 1000000000)).'" width="565" height="497"></iframe>
-					<a style="display:block;margin-top:5px;width:130px;" href="#" onclick="$(this).parent().hide(); displayTiny($(this).parent().next()); return false;" class="button">'.$this->l('Edit this email template.').'</a>
-				</div>
-				<textarea style="display:none;" class="rte mailrte" cols="80" rows="30" name="'.$group_name.'[html]['.$name_for_module.$mail_name.']">'.$content[$lang].'</textarea>
-			</div><!-- .mail-form -->
-		</div><!-- .block-mail -->';
-		return $str_return;
 	}
 
 	/**
@@ -2448,22 +2433,15 @@ class AdminTranslationsControllerCore extends AdminController
 		// TinyMCE
 		$iso_tiny_mce = (Tools::file_exists_cache(_PS_ROOT_DIR_.'/js/tiny_mce/langs/'.$iso_lang.'.js') ? $iso_lang : 'en');
 		$ad = dirname($_SERVER['PHP_SELF']);
+		//return false;
 		return '
 			<script type="text/javascript">
-			var iso = \''.$iso_tiny_mce.'\' ;
-			var pathCSS = \''._THEME_CSS_DIR_.'\' ;
-			var ad = \''.$ad.'\' ;
+				var iso = \''.$iso_tiny_mce.'\' ;
+				var pathCSS = \''._THEME_CSS_DIR_.'\' ;
+				var ad = \''.$ad.'\' ;
 			</script>
 			<script type="text/javascript" src="'.__PS_BASE_URI__.'js/tiny_mce/tiny_mce.js"></script>
-			<script type="text/javascript" src="'.__PS_BASE_URI__.'js/tinymce.inc.js"></script>
-			<script type="text/javascript">
-			$(document).ready(function () {
-				tinySetup();
-			});
-			function displayTiny(obj) {
-				tinyMCE.get(obj.attr(\'name\')).show();
-			}
-			</script>';
+			<script type="text/javascript" src="'.__PS_BASE_URI__.'js/tinymce.inc.js"></script>';
 	}
 
 	/**
@@ -2499,7 +2477,7 @@ class AdminTranslationsControllerCore extends AdminController
 		{
 			$module_mails[$module_name] = $this->getMailFiles($module_path.'mails/'.$this->lang_selected->iso_code.'/', 'module_mail');
 			$module_mails[$module_name]['subject'] = $core_mails['subject'];
-			$module_mails[$module_name]['display'] = $this->displayMailContent($module_mails[$module_name], $subject_mail, $this->lang_selected, Tools::strtolower($module_name), sprintf($this->l('Emails for %s module'), '<em>'.$module_name.'</em>'), $module_name);
+			$module_mails[$module_name]['display'] = $this->displayMailContent($module_mails[$module_name], $subject_mail, $this->lang_selected, Tools::strtolower($module_name), $module_name, $module_name);
 		}
 
 		if ($no_display)
@@ -2520,6 +2498,7 @@ class AdminTranslationsControllerCore extends AdminController
 			'limit_warning' => $this->displayLimitPostWarning($this->total_expression),
 			'tinyMCE' => $this->getTinyMCEForMails($this->lang_selected->iso_code),
 			'mail_content' => $this->displayMailContent($core_mails, $subject_mail, $this->lang_selected, 'core', $this->l('Core emails')),
+			'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 			'module_mails' => $module_mails,
 			'theme_name' => $this->theme_selected
 		));
@@ -2736,6 +2715,7 @@ class AdminTranslationsControllerCore extends AdminController
 				'count' => $this->total_expression,
 				'limit_warning' => $this->displayLimitPostWarning($this->total_expression),
 				'textarea_sized' => TEXTAREA_SIZED,
+				'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 				'modules_translations' => isset($this->modules_translations) ? $this->modules_translations : array(),
 				'missing_translations' => $this->missing_translations
 			));
@@ -2860,6 +2840,7 @@ class AdminTranslationsControllerCore extends AdminController
 			'count' => count($tabs_array['PDF']),
 			'limit_warning' => $this->displayLimitPostWarning(count($tabs_array['PDF'])),
 			'tabsArray' => $tabs_array,
+			'cancel_url' => $this->context->link->getAdminLink('AdminTranslations'),
 			'missing_translations' => $missing_translations_pdf
 		));
 

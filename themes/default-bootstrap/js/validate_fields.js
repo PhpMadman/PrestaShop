@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,11 +18,11 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-$(document).on('keyup', 'input.validate, textarea.validate', function() {
+$(document).on('keyup blur', 'input.validate, textarea.validate', function() {
 	if ($(this).hasClass('is_required') || $(this).val().length)
 	{
 		if (window['validate_'+$(this).attr('data-validate')]($(this).val()))

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -90,16 +90,16 @@
 <table class="table tableDnD" id="imageTable">
 	<thead>
 		<tr class="nodrag nodrop"> 
-			<th class="fixed-width-sm"><span class="title_box">{l s='Image'}</span></th>
+			<th class="fixed-width-lg"><span class="title_box">{l s='Image'}</span></th>
 			<th class="fixed-width-lg"><span class="title_box">{l s='Legend'}</span></th>
-			<th class="center fixed-width-xs"><span class="title_box">{l s='Position'}</span></th>
+			<th class="fixed-width-xs"><span class="title_box">{l s='Position'}</span></th>
 			{if $shops}
-			{foreach from=$shops item=shop}
-				<th class="center fixed-width-xs"><span class="title_box">{$shop.name}</span></th>
-			{/foreach}
+				{foreach from=$shops item=shop}
+					<th class="fixed-width-xs"><span class="title_box">{$shop.name}</span></th>
+				{/foreach}
 			{/if}
-			<th class="center fixed-width-xs"><span class="title_box">{l s='Cover'}</span></th>
-			<th></th>
+			<th class="fixed-width-xs"><span class="title_box">{l s='Cover'}</span></th>
+			<th></th> <!-- action -->
 		</tr>
 	</thead>
 	<tbody id="imageList">
@@ -111,7 +111,11 @@
 	<tr id="image_id">
 		<td>
 			<a href="{$smarty.const._THEME_PROD_DIR_}image_path.jpg" class="fancybox">
-				<img src="{$smarty.const._THEME_PROD_DIR_}{$iso_lang}-default-{$imageType}.jpg" alt="legend" title="legend" />
+				<img
+					src="{$smarty.const._THEME_PROD_DIR_}{$iso_lang}-default-{$imageType}.jpg"
+					alt="legend"
+					title="legend"
+					class="img-thumbnail" />
 			</a>
 		</td>
 		<td>legend</td>
@@ -120,16 +124,23 @@
 		</td>
 		{if $shops}
 			{foreach from=$shops item=shop}
-			<td class="center">
-				<input type="checkbox" class="image_shop" name="id_image" id="{$shop.id_shop}image_id" value="{$shop.id_shop}" />
+			<td>
+				<input
+					type="checkbox"
+					class="image_shop"
+					name="id_image"
+					id="{$shop.id_shop}image_id"
+					value="{$shop.id_shop}" />
 			</td>
 			{/foreach}
 		{/if}
-		<td class="center cover"><a href="#">
-			<i class="covered icon-check-empty"></i>
+		<td class="cover">
+			<a href="#">
+				<i class="icon-check-empty icon-2x covered"></i>
+			</a>
 		</td>
-		<td class="center">
-			<a href="#" class="btn btn-default delete_product_image pull-right" >
+		<td>
+			<a href="#" class="delete_product_image pull-right btn btn-default" >
 				<i class="icon-trash"></i> {l s='Delete this image'}
 			</a>
 		</td>
@@ -138,7 +149,6 @@
 
 <script type="text/javascript">
 	var upbutton = '{l s='Upload an image'}';
-	var token = '{$token}';
 	var come_from = '{$table}';
 	var success_add =  '{l s='The image has been successfully added.'}';
 	var id_tmp = 0;
@@ -149,8 +159,10 @@
 	function imageLine(id, path, position, cover, shops, legend)
 	{
 		line = $("#lineType").html();
-		line = line.replace(/image_id/g, id);			
-		line = line.replace(/[a-z]{0,2}-default/g, path);
+		line = line.replace(/image_id/g, id);
+		line = line.replace(/(\/)?[a-z]{0,2}-default/g, function($0, $1){
+			return $1 ? $1 + path : $0;
+		});
 		line = line.replace(/image_path/g, path);
 		line = line.replace(/image_position/g, position);
 		line = line.replace(/legend/g, legend);
@@ -187,23 +199,28 @@
 			imageLine({$image->id}, "{$image->getExistingImgPath()}", {$image->position}, "{if $image->cover}icon-check-sign{else}icon-check-empty{/if}", assoc, "{$image->legend[$default_language]|@addcslashes:'\"'}");
 		{/foreach}
 		{literal}
+		var originalOrder = false;
+
 		$("#imageTable").tableDnD(
-		{
+		{	onDragStart: function(table, row) {
+				originalOrder = $.tableDnD.serialize();
+			},
 			onDrop: function(table, row) {
-			current = $(row).attr("id");
-			stop = false;
-			image_up = "{";
-			$("#imageList").find("tr").each(function(i) {
-				$("#td_" +  $(this).attr("id")).html(i + 1);
-				if (!stop || (i + 1) == 2)
-					image_up += '"' + $(this).attr("id") + '" : ' + (i + 1) + ',';
-			});
-			image_up = image_up.slice(0, -1);
-			image_up += "}";
-			updateImagePosition(image_up);
+				if (originalOrder != $.tableDnD.serialize()) {
+					current = $(row).attr("id");
+					stop = false;
+					image_up = "{";
+					$("#imageList").find("tr").each(function(i) {
+						$("#td_" +  $(this).attr("id")).html(i + 1);
+						if (!stop || (i + 1) == 2)
+							image_up += '"' + $(this).attr("id") + '" : ' + (i + 1) + ',';
+					});
+					image_up = image_up.slice(0, -1);
+					image_up += "}";
+					updateImagePosition(image_up);
+				}
 			}
 		});
-
 		/**
 		 * on success function 
 		 */

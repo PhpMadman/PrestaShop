@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -26,8 +26,7 @@
 <div id="gear-right">
 	<i class="icon-cogs icon-2x icon-light"></i>
 </div>
-<form action="?live_configurator=1" method="post">
-	<input type="hidden" name="theme" id="theme" value="{$theme}"/>
+<form action="" method="post">
 	<div id="tool_customization">
 		<p>
 			{l s='The customization tool allows you to make color and font changes in your theme.' mod='themeconfigurator'}<br /><br />
@@ -42,16 +41,14 @@
 			</p>
 		</div>
 		{if isset($themes)}
-		<div id="color-box">
-			<ul>
+			<ul id="color-box">
 				{foreach $themes as $theme}
-				<li class="{$theme}">
-					<div class="color-theme1 color1"></div>
-					<div class="color-theme2 color2"> </div>
-				</li>
+					<li class="{$theme}">
+						<div class="color-theme1 color1"></div>
+						<div class="color-theme2 color2"> </div>
+					</li>
 				{/foreach}
 			</ul>
-		</div>
 		{/if}
 		<div class="list-tools">
 			<p id="font-title">
@@ -60,20 +57,22 @@
 			</p>
 		</div>
 		<div id="font-box">
-			<p>{l s='Global' mod='themeconfigurator'}</p>
+			<p>{l s='Titles' mod='themeconfigurator'}</p>
 			<select name="font" id="font" class="font-list">
 				<option value="">{l s='Choose a font' mod='themeconfigurator'}</option>
 				{foreach $fonts as $key => $font}
-				<option value="{$key}">{$font}</option>
+				<option value="{$key}"{if $key == $theme_font} selected="selected"{/if}>{$font}</option>
 				{/foreach}
 			</select>
 		</div>
 		<div class="btn-tools">
-			<button type="reset" class="btn btn-1" id="reset">{l s='Reset' mod='themeconfigurator'}</button>
+			<button type="button" class="btn btn-1" id="reset" name="resetLiveConfigurator">{l s='Reset' mod='themeconfigurator'}</button>
 			<button type="submit" class="btn btn-2" name="submitLiveConfigurator">{l s='Save' mod='themeconfigurator'}</button>
 		</div>
 		<div id="block-advertisement">
-			<img src="{$advertisement_image}" alt="{$advertisement_text}" />
+			<a href="http://addons.prestashop.com/?utm_source=configurator">
+				<img src="{$advertisement_image}" alt="{$advertisement_text}" />
+			</a>
 		</div>
 	</div>
 </form>

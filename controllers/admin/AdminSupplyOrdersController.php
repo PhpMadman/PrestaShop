@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -152,19 +152,19 @@ class AdminSupplyOrdersControllerCore extends AdminController
 		if ($this->display == 'details')
 			$this->page_header_toolbar_btn['back'] = array(
 				'href' => Context::getContext()->link->getAdminLink('AdminSupplyOrders'),
-				'desc' => $this->l('Back to list'),
+				'desc' => $this->l('Back to list', null, null, false),
 				'icon' => 'process-icon-back'
 			);
 		elseif (empty($this->display))
 		{
 			$this->page_header_toolbar_btn['new_supply_order'] = array(
-				'href' => self::$currentIndex.'&amp;addsupply_order&amp;token='.$this->token,
-				'desc' => $this->l('Add new supply order'),
+				'href' => self::$currentIndex.'&addsupply_order&token='.$this->token,
+				'desc' => $this->l('Add new supply order', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 			$this->page_header_toolbar_btn['new_supply_order_template'] = array(
-				'href' => self::$currentIndex.'&amp;addsupply_order&amp;mod=template&amp;token='.$this->token,
-				'desc' => $this->l('Add new supply order template'),
+				'href' => self::$currentIndex.'&addsupply_order&mod=template&token='.$this->token,
+				'desc' => $this->l('Add new supply order template', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		}
@@ -227,14 +227,14 @@ class AdminSupplyOrdersControllerCore extends AdminController
 				'input' => array(
 					array(
 						'type' => 'text',
-						'label' => $this->l('Reference:'),
+						'label' => $this->l('Reference'),
 						'name' => 'reference',
 						'required' => true,
-						'hint' => $this->l('Here\'s the reference number for your order.'),
+						'hint' => $this->l('The reference number for your order.'),
 					),
 					array(
 						'type' => 'select',
-						'label' => $this->l('Supplier:'),
+						'label' => $this->l('Supplier'),
 						'name' => 'id_supplier',
 						'required' => true,
 						'options' => array(
@@ -249,7 +249,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 					),
 					array(
 						'type' => 'select',
-						'label' => $this->l('Warehouse:'),
+						'label' => $this->l('Warehouse'),
 						'name' => 'id_warehouse',
 						'required' => true,
 						'options' => array(
@@ -261,7 +261,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 					),
 					array(
 						'type' => 'select',
-						'label' => $this->l('Currency:'),
+						'label' => $this->l('Currency'),
 						'name' => 'id_currency',
 						'required' => true,
 						'options' => array(
@@ -276,7 +276,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 					),
 					array(
 						'type' => 'select',
-						'label' => $this->l('Order Language:'),
+						'label' => $this->l('Order Language'),
 						'name' => 'id_lang',
 						'required' => true,
 						'options' => array(
@@ -295,11 +295,11 @@ class AdminSupplyOrdersControllerCore extends AdminController
 					),
 					array(
 						'type' => 'text',
-						'label' => $this->l('Automatically load products:'),
+						'label' => $this->l('Automatically load products'),
 						'name' => 'load_products',
 						'required' => false,
 						'hint' => array(
-							$this->l('This will reset the order'),
+							$this->l('This will reset the order.'),
 							$this->l('If specified, each product quantity less than or equal to this value will be loaded.'),
 						),
 					),
@@ -327,7 +327,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 			{
 				$this->fields_form['input'][] = array(
 					'type' => 'date',
-					'label' => $this->l('Expected delivery date:'),
+					'label' => $this->l('Expected delivery date'),
 					'name' => 'date_delivery_expected',
 					'required' => true,
 					'desc' => $this->l('The expected delivery date for this order is...'),
@@ -350,7 +350,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 			$this->displayInformation(
 				$this->l('If you wish to order products, they have to be available for the specified supplier/warehouse.')
 				.' '.
-				$this->l('See Catalog/Products/Your Product/Suppliers & Warehouses')
+				$this->l('See Catalog/Products/[Your Product]/Suppliers & Warehouses.')
 				.'<br />'.
 				$this->l('Changing the currency or the supplier will reset the order.')
 				.'<br />'
@@ -600,11 +600,15 @@ class AdminSupplyOrdersControllerCore extends AdminController
 		$this->getlanguages();
 
 		// defines the fields of the form to display
-		$this->fields_form[]['form'] = array(
+		$this->fields_form[0]['form'] = array(
 			'legend' => array(
 				'title' => $this->l('Supply order status'),
 				'icon' => 'icon-pencil'
 			),
+			'input' => array(),
+			'submit' => array(
+				'title' => $this->l('Save')
+			)
 		);
 
 		$this->displayInformation($this->l('Be careful when changing status\'. Some of those changes cannot be canceled. '));
@@ -767,7 +771,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 				'orderby' => false,
 				'filter' => false,
 				'search' => false,
-				'hint' => $this->l('Enter here the quantity you received today'),
+				'hint' => $this->l('Enter the quantity you received today.'),
 			),
 			'quantity_received' => array(
 				'title' => $this->l('Quantity received'),
@@ -775,7 +779,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 				'orderby' => false,
 				'filter' => false,
 				'search' => false,
-				'hint' => $this->l('Note that you can see details on the receptions - per products'),
+				'hint' => $this->l('Note that you can see details on the receptions - per products.'),
 			),
 			'quantity_expected' => array(
 				'title' => $this->l('Quantity expected'),
@@ -791,7 +795,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 				'orderby' => false,
 				'filter' => false,
 				'search' => false,
-				'hint' => $this->l('This is the quantity left to receive'),
+				'hint' => $this->l('This is the quantity left to receive.'),
 			)
 		);
 
@@ -826,10 +830,10 @@ class AdminSupplyOrdersControllerCore extends AdminController
 		$this->_group = 'GROUP BY a.id_supply_order_detail';
 
 		// gets the list ordered by price desc, without limit
-		$this->getList($lang_id, 'quantity_expected', 'DESC', 0, false, false);
+		$this->getList($lang_id, 'quantity_expected', 'DESC', 0, Tools::getValue('supply_order_pagination'), false);
 
 		// defines action for POST
-		$action = '&id_supply_order='.$id_supply_order;
+		$action = '&id_supply_order='.$id_supply_order.'&update_receipt=1';
 
 		// unsets some buttons
 		unset($this->toolbar_btn['export-csv-orders']);
@@ -840,6 +844,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 		$helper = new HelperList();
 		$this->setHelperDisplay($helper);
 		$helper->actions = array('details');
+		$helper->force_show_bulk_actions = true;
 		$helper->override_folder = 'supply_orders_receipt_history/';
 		$helper->toolbar_btn = $this->toolbar_btn;
 
@@ -1243,7 +1248,7 @@ class AdminSupplyOrdersControllerCore extends AdminController
 				return;
 
 			$id_lang = Context::getContext()->language->id;
-			$orders = new Collection('SupplyOrder', $id_lang);
+			$orders = new PrestaShopCollection('SupplyOrder', $id_lang);
 			$orders->where('is_template', '=', false);
 			$orders->where('id_supply_order', 'in', $ids);
 			$id_warehouse = $this->getCurrentWarehouse();

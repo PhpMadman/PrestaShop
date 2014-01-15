@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -74,12 +74,12 @@ class AdminCmsControllerCore extends AdminController
 	{
 		$this->page_header_toolbar_btn['save-and-preview'] = array(
 			'href' => '#',
-			'desc' => $this->l('Save and preview')
+			'desc' => $this->l('Save and preview', null, null, false)
 		);
 		$this->page_header_toolbar_btn['save-and-stay'] = array(
-			'short' => 'SaveAndStay',
+			'short' => $this->l('SaveAndStay', null, null, false),
 			'href' => '#',
-			'desc' => $this->l('Save and stay'),
+			'desc' => $this->l('Save and stay', null, null, false),
 		);
 		
 		return parent::initPageHeaderToolbar();
@@ -119,7 +119,7 @@ class AdminCmsControllerCore extends AdminController
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Meta title:'),
+					'label' => $this->l('Meta title'),
 					'name' => 'meta_title',
 					'id' => 'name', // for copyMeta2friendlyURL compatibility
 					'lang' => true,
@@ -140,8 +140,8 @@ class AdminCmsControllerCore extends AdminController
 					'name' => 'meta_keywords',
 					'lang' => true,
 					'hint' => array(
-						$this->l('Invalid characters:').' &lt;&gt;;=#{}',
-						$this->l('To add "tags" click in the field, write something, and then press "Enter."')
+						$this->l('To add "tags" click in the field, write something, and then press "Enter."'),
+						$this->l('Invalid characters:').' &lt;&gt;;=#{}'
 					)
 				),
 				array(
@@ -150,7 +150,7 @@ class AdminCmsControllerCore extends AdminController
 					'name' => 'link_rewrite',
 					'required' => true,
 					'lang' => true,
-					'hint' => $this->l('Only letters and the minus (-) character are allowed')
+					'hint' => $this->l('Only letters and the hyphen (-) character are allowed.')
 				),
 				array(
 					'type' => 'textarea',
@@ -164,7 +164,7 @@ class AdminCmsControllerCore extends AdminController
 				),
 				array(
 					'type' => 'switch',
-					'label' => $this->l('Indexation (by search engines):'),
+					'label' => $this->l('Indexation by search engines'),
 					'name' => 'indexation',
 					'required' => false,
 					'class' => 't',
@@ -184,7 +184,7 @@ class AdminCmsControllerCore extends AdminController
 				),
 				array(
 					'type' => 'switch',
-					'label' => $this->l('Displayed:'),
+					'label' => $this->l('Displayed'),
 					'name' => 'active',
 					'required' => false,
 					'is_bool' => true,
@@ -204,7 +204,6 @@ class AdminCmsControllerCore extends AdminController
 			),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'btn btn-default'
 			)
 		);
 
@@ -212,7 +211,7 @@ class AdminCmsControllerCore extends AdminController
 		{
 			$this->fields_form['input'][] = array(
 				'type' => 'shop',
-				'label' => $this->l('Shop association:'),
+				'label' => $this->l('Shop association'),
 				'name' => 'checkBoxShopAsso',
 			);
 		}

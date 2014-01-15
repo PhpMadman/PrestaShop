@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -62,7 +62,7 @@ class AdminCountriesControllerCore extends AdminController
 						'default' => '0'
 					)
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			)
 		);
 		
@@ -118,8 +118,8 @@ class AdminCountriesControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_country'] = array(
-				'href' => self::$currentIndex.'&amp;addcountry&amp;token='.$this->token,
-				'desc' => $this->l('Add new country'),
+				'href' => self::$currentIndex.'&addcountry&token='.$this->token,
+				'desc' => $this->l('Add new country', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 
@@ -375,8 +375,7 @@ class AdminCountriesControllerCore extends AdminController
 		}
 
 		$this->fields_form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'btn btn-default'
+			'title' => $this->l('Save')
 		);
 		
 		if ($this->object->iso_code == 'US')

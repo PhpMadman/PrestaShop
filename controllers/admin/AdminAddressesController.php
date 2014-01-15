@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -87,8 +87,8 @@ class AdminAddressesControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_address'] = array(
-				'href' => self::$currentIndex.'&amp;addaddress&amp;token='.$this->token,
-				'desc' => $this->l('Add new address'),
+				'href' => self::$currentIndex.'&addaddress&token='.$this->token,
+				'desc' => $this->l('Add new address', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 
@@ -152,8 +152,7 @@ class AdminAddressesControllerCore extends AdminController
 				),
 			),
 			'submit' => array(
-				'title' => $this->l('Save   '),
-				'class' => 'btn btn-default'
+				'title' => $this->l('Save'),
 			)
 		);
 		$id_customer = (int)Tools::getValue('id_customer');

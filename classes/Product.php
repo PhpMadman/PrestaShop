@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -1548,7 +1548,7 @@ class ProductCore extends ObjectModel
 		Hook::exec('actionProductAttributeDelete', array('id_product_attribute' => 0, 'id_product' => $this->id, 'deleteAllAttributes' => true));
 
 		$result = true;
-		$combinations = new Collection('Combination');
+		$combinations = new PrestaShopCollection('Combination');
 		$combinations->where('id_product', '=', $this->id);
 		foreach ($combinations as $combination)
 			$result &= $combination->delete();
@@ -2523,8 +2523,8 @@ class ProductCore extends ObjectModel
 		if ((int)$id_cart)
 		{
 			$cache_id = 'Product::getPriceStatic_'.(int)$id_product.'-'.(int)$id_cart;
-			if (!Cache::isStored($cache_id))
-			{ 
+			if (!Cache::isStored($cache_id) || ($cart_quantity = Cache::retrieve($cache_id) != (int)$quantity))
+			{
 				$sql = 'SELECT SUM(`quantity`)
 				FROM `'._DB_PREFIX_.'cart_product`
 				WHERE `id_product` = '.(int)$id_product.'
@@ -5362,10 +5362,10 @@ class ProductCore extends ObjectModel
 	public function deleteDownload()
 	{
 		$result = true;
-		$collection_download = new Collection('ProductDownload');
+		$collection_download = new PrestaShopCollection('ProductDownload');
 		$collection_download->where('id_product', '=', $this->id);
 		foreach ($collection_download as $product_download)
-			$result &= $product_download->delete(true);
+			$result &= $product_download->delete($product_download->checkFile());
 		return $result;
 	}
 

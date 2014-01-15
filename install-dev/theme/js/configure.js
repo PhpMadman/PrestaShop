@@ -17,16 +17,13 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
 $(document).ready(function()
 {
-	// Change logo
-	$('#fileToUpload').bind('change', upload_logo);
-	
 	// When a country is changed
 	$('#infosCountry').change(function()
 	{
@@ -59,41 +56,3 @@ function in_array(needle, haystack) {
     }
     return false;
 }
-
-/**
- * Upload a new logo
- */
-function upload_logo()
-{
-	$.ajaxFileUpload(
-	{
-		url: 'index.php?uploadLogo=true',
-		secureuri: false,
-		fileElementId: 'fileToUpload',
-		dataType: 'json',
-		success: function(json)
-		{
-			if (typeof(json.success) == 'undefined')
-				return ;
-
-			$("#uploadedImage").slideUp('slow', function()
-			{
-				if (!json.success)
-					$('#resultInfosLogo').html(json.message).addClass('errorBlock').show();
-				else
-				{
-					$(this).attr('src', ps_base_uri+'img/logo.jpg?'+(new Date()))
-					$(this).show('slow');
-					$('#resultInfosLogo').html('').removeClass('errorBlock').hide();
-				}
-				
-				$('#fileToUpload').bind('change', upload_logo);
-			});
-		},
-		error: function()
-		{
-			$('#uploadedImage').attr('src', ps_base_uri+'img/logo.jpg?'+(new Date()));
-			$('#resultInfosLogo').html('').addClass('errorBlock');
-		}
-	});
-};

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -51,7 +51,7 @@ class ConfigurationCore extends ObjectModel
 		'primary' => 'id_configuration',
 		'multilang' => true,
 		'fields' => array(
-			'name' => 			array('type' => self::TYPE_STRING, 'validate' => 'isConfigName', 'required' => true, 'size' => 32),
+			'name' => 			array('type' => self::TYPE_STRING, 'validate' => 'isConfigName', 'required' => true, 'size' => 254),
 			'id_shop_group' => 	array('type' => self::TYPE_NOTHING, 'validate' => 'isUnsignedId'),
 			'id_shop' => 		array('type' => self::TYPE_NOTHING, 'validate' => 'isUnsignedId'),
 			'value' => 			array('type' => self::TYPE_STRING),
@@ -110,13 +110,13 @@ class ConfigurationCore extends ObjectModel
 	public static function loadConfiguration()
 	{
 		self::$_cache[self::$definition['table']] = array();
+
 		$sql = 'SELECT c.`name`, cl.`id_lang`, IF(cl.`id_lang` IS NULL, c.`value`, cl.`value`) AS value, c.id_shop_group, c.id_shop
 				FROM `'._DB_PREFIX_.bqSQL(self::$definition['table']).'` c
 				LEFT JOIN `'._DB_PREFIX_.bqSQL(self::$definition['table']).'_lang` cl ON (c.`'.bqSQL(self::$definition['primary']).'` = cl.`'.bqSQL(self::$definition['primary']).'`)';
-		if (!$results = Db::getInstance()->executeS($sql))
-			return;
-
-		foreach ($results as $row)
+		$db = Db::getInstance();
+		$result = $db->executeS($sql, false);
+		while ($row = $db->nextRow($result))
 		{
 			$lang = ($row['id_lang']) ? $row['id_lang'] : 0;
 			self::$types[$row['name']] = ($lang) ? 'lang' : 'normal';
@@ -314,7 +314,9 @@ class ConfigurationCore extends ObjectModel
 		$result = true;
 		foreach ($values as $lang => $value)
 		{
-			if ($value === Configuration::get($key, $lang, $id_shop_group, $id_shop))
+			$stored_value = Configuration::get($key, $lang, $id_shop_group, $id_shop);
+			// if there isn't a $stored_value, we must insert $value
+			if ((!is_numeric($value) && $value === $stored_value) || (is_numeric($value) && $value == $stored_value && Configuration::hasKey($key, $lang)))
 				continue;
 
 			// If key already exists, update value

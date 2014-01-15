@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -49,18 +49,15 @@ class TreeToolbarSearchCategoriesCore extends TreeToolbarButtonCore implements
 		$bo_theme = ((Validate::isLoadedObject($this->getContext()->employee)
 			&& $this->getContext()->employee->bo_theme) ? $this->getContext()->employee->bo_theme : 'default');
 
-		if (!file_exists(_PS_BO_ALL_THEMES_DIR_.$bo_theme.DIRECTORY_SEPARATOR
-			.'template'))
+		if (!file_exists(_PS_BO_ALL_THEMES_DIR_.$bo_theme.DIRECTORY_SEPARATOR.'template'))
 			$bo_theme = 'default';
 
 		if ($this->getContext()->controller->ajax)
-			$html = '<script type="text/javascript" src="'.__PS_BASE_URI__.$admin_webpath
-				.'/themes/'.$bo_theme.'/js/vendor/typeahead.min.js"></script>';
+			$html = '<script type="text/javascript" src="'.__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/vendor/typeahead.min.js"></script>';
 		else
-			$this->getContext()->controller->addJs(__PS_BASE_URI__.$admin_webpath
-				.'/themes/'.$bo_theme.'/js/vendor/typeahead.min.js');
+			$this->getContext()->controller->addJs(__PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/vendor/typeahead.min.js');
 
-		return (isset($html)?$html:'').parent::render();
+		return (isset($html) ? $html : '').parent::render();
 	}
 
 	private function _renderData($data)

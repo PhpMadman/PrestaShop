@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -112,7 +112,7 @@ class AdminStockCoverControllerCore extends AdminController
 					.(Tools::getValue('coverage_period') ? '&coverage_period='.Tools::getValue('coverage_period') : '')
 					.(Tools::getValue('warn_days') ? '&warn_days='.Tools::getValue('warn_days') : '')
 					.(Tools::getValue('id_warehouse') ? '&id_warehouse='.Tools::getValue('id_warehouse') : ''),
-				'desc' => $this->l('Back to list'),
+				'desc' => $this->l('Back to list', null, null, false),
 				'icon' => 'process-icon-back'
 			);
 
@@ -196,7 +196,7 @@ class AdminStockCoverControllerCore extends AdminController
 		);
 
 		$this->displayInformation($this->l('Considering the coverage period chosen and the quantity of products/combinations that you sold.'));
-		$this->displayInformation($this->l('this interface gives you an idea of when a product will run out of stock.'));
+		$this->displayInformation($this->l('This interface gives you an idea of when a product will run out of stock.'));
 
 		return parent::renderList();
 	}

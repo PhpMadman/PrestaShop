@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -83,7 +83,9 @@ smartyRegisterFunction($smarty, 'function', 'getAdminToken', array('Tools', 'get
 smartyRegisterFunction($smarty, 'function', 'displayAddressDetail', array('AddressFormat', 'generateAddressSmarty'));
 smartyRegisterFunction($smarty, 'function', 'getWidthSize', array('Image', 'getWidth'));
 smartyRegisterFunction($smarty, 'function', 'getHeightSize', array('Image', 'getHeight'));
-
+smartyRegisterFunction($smarty, 'function', 'addJsDef', array('Media', 'addJsDef'));
+smartyRegisterFunction($smarty, 'block', 'addJsDefL', array('Media', 'addJsDefL'));
+smartyRegisterFunction($smarty, 'modifier', 'boolval', array('Tools', 'boolval'));
 
 function smartyDieObject($params, &$smarty)
 {
@@ -126,6 +128,8 @@ function smarty_modifier_truncate($string, $length = 80, $etc = '...', $break_wo
 	if (!$length)
 		return '';
 
+	$string = trim($string);
+
 	if (Tools::strlen($string) > $length)
 	{
 		$length -= min($length, Tools::strlen($etc));
@@ -155,7 +159,7 @@ function smartyPackJSinHTML($tpl_output, &$smarty)
 
 function smartyRegisterFunction($smarty, $type, $function, $params, $lazy = true)
 {
-	if (!in_array($type, array('function', 'modifier')))
+	if (!in_array($type, array('function', 'modifier', 'block')))
 		return false;
 
 	// lazy is better if the function is not called on every page

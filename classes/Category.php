@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -153,6 +153,10 @@ class CategoryCore extends ObjectModel
 	{
 		if (!isset($this->level_depth))
 			$this->level_depth = $this->calcLevelDepth();
+
+		if ($this->is_root_category && ($id_root_category = (int)Configuration::get('PS_ROOT_CATEGORY')))
+			$this->id_parent = $id_root_category;
+
 		$ret = parent::add($autodate, $null_values);
 		if (Tools::isSubmit('checkBoxShopAsso_category'))
 			foreach (Tools::getValue('checkBoxShopAsso_category') as $id_shop => $value)
@@ -185,6 +189,10 @@ class CategoryCore extends ObjectModel
 	{
 		if ($this->id_parent == $this->id)
 			throw new PrestaShopException('a category cannot be it\'s own parent');
+
+		if ($this->is_root_category)
+			$this->id_parent = (int)Configuration::get('PS_ROOT_CATEGORY');
+		
 		// Update group selection
 		$this->updateGroup($this->groupBox);
 		$this->level_depth = $this->calcLevelDepth();
@@ -385,8 +393,8 @@ class CategoryCore extends ObjectModel
 		$categories_array = array();
 		foreach ($categories as $category)
 			$categories_array[$category['id_parent']]['subcategories'][] = $category['id_category'];
-
 		$n = 1;
+
 		if (isset($categories_array[0]) && $categories_array[0]['subcategories'])
 			Category::_subTree($categories_array, $categories_array[0]['subcategories'][0], $n);
 	}
@@ -764,7 +772,7 @@ class CategoryCore extends ObjectModel
 		if (is_null($id_lang))
 			$id_lang = Context::getContext()->language->id;
 
-		$categories = new Collection('Category', $id_lang);
+		$categories = new PrestaShopCollection('Category', $id_lang);
 		$categories->where('nleft', '>', $this->nleft);
 		$categories->where('nright', '<', $this->nright);
 		return $categories;
@@ -947,6 +955,39 @@ class CategoryCore extends ObjectModel
 	}
 
 	/**
+	  * Search with Pathes for categories
+	  *
+	  * @param integer $id_lang Language ID
+	  * @param string $path of category
+	  * @param boolean $object_to_create a category
+* 	  * @param boolean $method_to_create a category
+	  * @return array Corresponding categories
+	  */
+	public static function searchByPath($id_lang, $path, $object_to_create = false, $method_to_create = false)
+	{
+		$categories = explode('/', trim($path));
+		$category = $id_parent_category = false;
+
+		if (is_array($categories) && count($categories))
+			foreach($categories as $category_name)
+			{
+				if ($id_parent_category)
+					$category = Category::searchByNameAndParentCategoryId($id_lang, $category_name, $id_parent_category);
+				else
+					$category = Category::searchByName($id_lang,$category_name,true);
+
+				if (!$category && $object_to_create && $method_to_create)
+				{
+					call_user_func_array(array($object_to_create, $method_to_create), array($id_lang, $category_name , $id_parent_category));
+					$category = Category::searchByPath($id_lang, $category_name);
+		     	}
+				if (isset($category['id_category']) && $category['id_category'])
+					$id_parent_category = (int)$category['id_category'];
+			}
+		return $category;
+	}
+
+	/**
 	 * Get Each parent category of this category until the root category
 	 *
 	 * @param integer $id_lang Language ID
@@ -1110,7 +1151,7 @@ class CategoryCore extends ObjectModel
 		if (!$res = Db::getInstance()->executeS('
 			SELECT cp.`id_category`, category_shop.`position`, cp.`id_parent`
 			FROM `'._DB_PREFIX_.'category` cp
-			'.Shop::addSqlAssociation('category', 'c').'
+			'.Shop::addSqlAssociation('category', 'cp').'
 			WHERE cp.`id_parent` = '.(int)$this->id_parent.'
 			ORDER BY category_shop.`position` ASC'
 		))
@@ -1352,7 +1393,7 @@ class CategoryCore extends ObjectModel
 	}
 
 	/**
-	 * Add association between shop and cateogries
+	 * Add association between shop and categories
 	 * @param int $id_shop
 	 * @return bool
 	 */

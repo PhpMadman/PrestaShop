@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -47,7 +47,7 @@ class VatNumber extends TaxManagerModule
 			$this->warning = $this->l('No default country set.');
 
 		$this->displayName = $this->l('European VAT number');
-		$this->description = $this->l('Enable entering of the VAT intra-community number when creating the address (You must fill in the company field to allow keyboarding VAT number)');
+		$this->description = $this->l('Enable entering of the VAT intra-community number when creating the address. You must fill in the company field to allow entering the VAT number.');
 	}
 
 	public function	install()
@@ -80,7 +80,7 @@ class VatNumber extends TaxManagerModule
 			'DK'=>'DK',	//Denmark
 			'FI'=>'FI',	//Finland
 			'FR'=>'FR',	//France
-			'FX'=>'FR',	//France m�tropolitaine
+			'FX'=>'FR',	//France métropolitaine
 			'DE'=>'DE',	//Germany
 			'GR'=>'EL',	//Greece
 			'IE'=>'IE',	//Irland
@@ -182,7 +182,7 @@ class VatNumber extends TaxManagerModule
 				'input' => array(
 					array(
 						'type' => 'select',
-						'label' => $this->l('Customers\' country :'),
+						'label' => $this->l('Customers\' country'),
 						'desc' => $this->l('Operate a filter on customers\' country.'),
 						'name' => 'VATNUMBER_COUNTRY',
 						'required' => false,
@@ -195,10 +195,10 @@ class VatNumber extends TaxManagerModule
 					),
 					array(
 						'type' => 'switch',
-						'label' => $this->l('Enable checking of the VAT number with the WebService'),
+						'label' => $this->l('Enable checking of the VAT number with the web service'),
 						'name' => 'VATNUMBER_CHECKING',
 						'is_bool' => true,
-						'desc' => $this->l('The verification by the webservice is slow. Enabling this option can slow down your shop.'),
+						'desc' => $this->l('The verification by the web service is slow. Enabling this option can slow down your shop.'),
 						'values' => array(
 									array(
 										'id' => 'active_on',
@@ -213,9 +213,9 @@ class VatNumber extends TaxManagerModule
 								),
 						)
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

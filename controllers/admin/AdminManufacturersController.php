@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -105,13 +105,13 @@ class AdminManufacturersControllerCore extends AdminController
 		if (empty($this->display))
 		{
 			$this->page_header_toolbar_btn['new_manufacturer'] = array(
-				'href' => self::$currentIndex.'&amp;addmanufacturer&amp;token='.$this->token,
-				'desc' => $this->l('Add new manufacturer'),
+				'href' => self::$currentIndex.'&addmanufacturer&token='.$this->token,
+				'desc' => $this->l('Add new manufacturer', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 			$this->page_header_toolbar_btn['new_manufacturer_address'] = array(
-				'href' => self::$currentIndex.'&amp;addaddress&amp;token='.$this->token,
-				'desc' => $this->l('Add new manufacturer address'),
+				'href' => self::$currentIndex.'&addaddress&token='.$this->token,
+				'desc' => $this->l('Add new manufacturer address', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		}
@@ -125,7 +125,7 @@ class AdminManufacturersControllerCore extends AdminController
 
 				$this->page_header_toolbar_btn['cancel'] = array(
 					'href' => $back,
-					'desc' => $this->l('Cancel')
+					'desc' => $this->l('Cancel', null, null, false)
 				);
 			}
 		}
@@ -386,8 +386,7 @@ class AdminManufacturersControllerCore extends AdminController
 		}
 
 		$this->fields_form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'button'
+			'title' => $this->l('Save')
 		);
 
 		foreach ($this->_languages as $language)
@@ -557,8 +556,7 @@ class AdminManufacturersControllerCore extends AdminController
 			'col' => 6,
 		);
 		$form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'button'
+			'title' => $this->l('Save'),
 		);
 
 		$this->fields_value = array(
@@ -571,6 +569,15 @@ class AdminManufacturersControllerCore extends AdminController
 		$this->fields_form[0]['form'] = $form;
 		$this->getlanguages();
 		$helper = new HelperForm();
+		$helper->show_cancel_button = true;
+
+		$back = Tools::safeOutput(Tools::getValue('back', ''));
+		if (empty($back))
+			$back = self::$currentIndex.'&token='.$this->token;
+		if (!Validate::isCleanHtml($back))
+			die(Tools::displayError());
+
+		$helper->back_url = $back;
 		$helper->currentIndex = self::$currentIndex;
 		$helper->token = $this->token;
 		$helper->table = $this->table;
@@ -688,6 +695,7 @@ class AdminManufacturersControllerCore extends AdminController
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		// toolbar (save, cancel, new, ..)
 		$this->initToolbar();
 		$this->initPageHeaderToolbar();

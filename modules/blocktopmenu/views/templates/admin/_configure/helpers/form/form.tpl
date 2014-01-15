@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -35,6 +35,9 @@ $('#menuOrderDown').click(function(e){
     e.preventDefault();
     move();
 });
+$("#items").closest('form').on('submit', function(e) {
+	$("#items option").prop('selected', true);
+});
 $("#addItem").click(add);
 $("#availableItems").dblclick(add);
 $("#removeItem").click(remove);
@@ -47,10 +50,10 @@ function add()
 		text = text.replace(/(^\s*)|(\s*$)/gi,"");
 		if (val == "PRODUCT")
 		{
-			val = prompt('{l s="Set ID product" js=1}');
+			val = prompt('{l s="Set ID product" mod='blocktopmenu' js=1}');
 			if (val == null || val == "" || isNaN(val))
 				return;
-			text = '{l s="Product ID" js=1}'+val;
+			text = '{l s="Product ID" mod='blocktopmenu' js=1}'+val;
 			val = "PRD"+val;
 		}
 		$("#items").append('<option value="'+val+'" selected="selected">'+text+'</option>');
@@ -79,7 +82,7 @@ function move(up)
         var tomove = $('#items option:selected');
         if (tomove.length >1)
         {
-                alert('{l s="Please select just one item"}');
+                alert('{l s="Please select just one item" mod='blocktopmenu'}');
                 return false;
         }
         if (up)
@@ -96,16 +99,16 @@ function move(up)
     {if $input.type == 'link_choice'}
 	    <div class="row">
 	    	<div class="col-lg-1">
-	    		<h4 style="margin-top:5px;">{l s="Change position"}</h4> 
+	    		<h4 style="margin-top:5px;">{l s="Change position" mod="blocktopmenu"}</h4> 
                 <a href="#" id="menuOrderUp" class="btn btn-default" style="font-size:20px;display:block;"><i class="icon-chevron-up"></i></a><br/>
                 <a href="#" id="menuOrderDown" class="btn btn-default" style="font-size:20px;display:block;"><i class="icon-chevron-down"></i></a><br/>
 	    	</div>
 	    	<div class="col-lg-4">
-	    		<h4 style="margin-top:5px;">{l s="Selected items"}</h4>
+	    		<h4 style="margin-top:5px;">{l s="Selected items" mod="blocktopmenu"}</h4>
 	    		{$selected_links}
 	    	</div>
 	    	<div class="col-lg-4">
-	    		<h4 style="margin-top:5px;">{l s="Available items"}</h4>
+	    		<h4 style="margin-top:5px;">{l s="Available items" mod="blocktopmenu"}</h4>
 	    		{$choices}
 	    	</div>
 	    	
@@ -113,8 +116,8 @@ function move(up)
 	    <br/>
 	    <div class="row">
 	    	<div class="col-lg-1"></div>
-	    	<div class="col-lg-4"><a href="#" id="removeItem" class="btn btn-primary"><i class="icon-arrow-right"></i> {l s='Remove'}</a></div>
-	    	<div class="col-lg-4"><a href="#" id="addItem" class="btn btn-primary"><i class="icon-arrow-left"></i> {l s='Add'}</a></div>
+	    	<div class="col-lg-4"><a href="#" id="removeItem" class="btn btn-primary"><i class="icon-arrow-right"></i> {l s='Remove' mod="blocktopmenu"}</a></div>
+	    	<div class="col-lg-4"><a href="#" id="addItem" class="btn btn-primary"><i class="icon-arrow-left"></i> {l s='Add' mod="blocktopmenu"}</a></div>
 	    </div>
 	{else}
 		{$smarty.block.parent}

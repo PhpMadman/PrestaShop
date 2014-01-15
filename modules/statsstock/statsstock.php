@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -41,8 +41,8 @@ class StatsStock extends Module
 
 		parent::__construct();
 
-		$this->displayName = $this->l('Stats on available quantities');
-		$this->description = '';
+		$this->displayName = $this->l('Available quantities');
+		$this->description = 'Adds a tab showing the quantity of available products for sale to the Stats dashboard.';
 	}
 
 	public function install()
@@ -86,7 +86,7 @@ class StatsStock extends Module
 		<script type="text/javascript">$(\'#calendar\').slideToggle();</script>
 
 		<div class="panel-heading">'
-			.$this->l('Evaluation of available quantities for sale.').
+			.$this->l('Evaluation of available quantities for sale').
 		'</div>
 		<form action="'.$ru.'" method="post" class="form-horizontal">
 			<div class="row row-margin-bottom">

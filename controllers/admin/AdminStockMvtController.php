@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -116,9 +116,9 @@ class AdminStockMvtControllerCore extends AdminController
 
 		if (Tools::isSubmit('id_warehouse') && (int)Tools::getValue('id_warehouse') != -1)
 			$this->page_header_toolbar_btn['export-stock-mvt-csv'] = array(
-				'short' => 'Export this list as CSV',
-				'href' => $this->context->link->getAdminLink('AdminStockMvt').'&amp;csv&amp;id_warehouse='.(int)$this->getCurrentWarehouseId(),
-				'desc' => $this->l('Export (CSV)'),
+				'short' => $this->l('Export this list as CSV', null, null, false),
+				'href' => $this->context->link->getAdminLink('AdminStockMvt').'&csv&id_warehouse='.(int)$this->getCurrentWarehouseId(),
+				'desc' => $this->l('Export (CSV)', null, null, false),
 				'imgclass' => 'export'
 			);
 

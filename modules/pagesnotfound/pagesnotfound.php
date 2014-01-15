@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -42,7 +42,7 @@ class Pagesnotfound extends Module
 		parent::__construct();
 
 		$this->displayName = $this->l('Pages not found');
-		$this->description = $this->l('Display the pages requested by your visitors that have not been found.');
+		$this->description = $this->l('Displays the pages requested by your visitors that have not been found.');
 	}
 
 	public function install()
@@ -96,7 +96,7 @@ class Pagesnotfound extends Module
 		if (Tools::isSubmit('submitTruncatePNF'))
 		{
 			Db::getInstance()->execute('TRUNCATE `'._DB_PREFIX_.'pagenotfound`');
-			$this->_html .= '<div class="alert alert-warning"> '.$this->l('The pages not found cache has been emptied.').'</div>';
+			$this->_html .= '<div class="alert alert-warning"> '.$this->l('The "pages not found" cache has been emptied.').'</div>';
 		}
 		else if (Tools::isSubmit('submitDeletePNF'))
 		{
@@ -115,9 +115,9 @@ class Pagesnotfound extends Module
 				<h4>'.$this->l('404 errors').'</h4>
 				<p>'
 					.$this->l('A 404 error is an HTTP error code which means that the file requested by the user cannot be found. 
-					In your case it means that one of your visitors entered a wrong URL in the address bar or that you or another website has a dead link. 
-					When it is available, the referrer is shown so you can find the page which contains the dead link. 
-					If not, it means generally that it is a direct access, so someone may have bookmarked a link which doesn\'t exist anymore.').'
+					In your case it means that one of your visitors entered a wrong URL in the address bar,or that you or another website has a dead link. 
+					When possible, the referrer is shown so you can find the page/site which contains the dead link. 
+					If not, it generally means that it is a direct access, so someone may have bookmarked a link which doesn\'t exist anymore.').'
 				</p>
 				<p>&nbsp;</p>
 				<h4>'.$this->l('How to catch these errors?').'</h4>

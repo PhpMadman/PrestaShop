@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -44,7 +44,7 @@ class BlockSpecials extends Module
 		parent::__construct();	
 
 		$this->displayName = $this->l('Specials block');
-		$this->description = $this->l('Adds a block displaying current product specials.');
+		$this->description = $this->l('Adds a block displaying your current discounted products.');
 	}
 
 	public function install()
@@ -53,13 +53,28 @@ class BlockSpecials extends Module
 			Configuration::updateValue('BLOCKSPECIALS_NB_CACHES', 20);
 		$this->_clearCache('blockspecials.tpl');
 
-		return (parent::install()
-			&& $this->registerHook('rightColumn')
+		$success = (
+			parent::install()
 			&& $this->registerHook('header')
 			&& $this->registerHook('addproduct')
 			&& $this->registerHook('updateproduct')
 			&& $this->registerHook('deleteproduct')
 		);
+
+		if ($success)
+		{
+			// Hook the module either on the left or right column
+			$theme = new Theme(Context::getContext()->shop->id_theme);
+			if ((!$theme->default_right_column || !$this->registerHook('rightColumn'))
+				&& (!$theme->default_left_column || !$this->registerHook('leftColumn')))
+			{
+				// If there are no colums implemented by the template, throw an error and uninstall the module
+				$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+				parent::uninstall();
+				return false;
+			}
+		}
+		return $success;
 	}
 	
 	public function uninstall()
@@ -141,7 +156,7 @@ class BlockSpecials extends Module
 				'input' => array(
 					array(
 						'type' => 'switch',
-						'label' => $this->l('Always display this block.'),
+						'label' => $this->l('Always display this block'),
 						'name' => 'PS_BLOCK_SPECIALS_DISPLAY',
 						'desc' => $this->l('Show the block even if no products are available.'),
 						'values' => array(
@@ -159,14 +174,14 @@ class BlockSpecials extends Module
 					),
 					array(
 						'type' => 'text',
-						'label' => $this->l('Number of cache files.'),
+						'label' => $this->l('Number of cached files'),
 						'name' => 'BLOCKSPECIALS_NB_CACHES',
-						'desc' => $this->l('Specials are displayed randomly on the front end, but since it takes a lot of ressources, it is better to cache the results. Cache is reset everyday. 0 will disable the cache.'),
+						'desc' => $this->l('Specials are displayed randomly on the front-end, but since it takes a lot of ressources, it is better to cache the results. The cache is reset daily. 0 will disable the cache.'),
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

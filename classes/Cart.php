@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -1620,8 +1620,8 @@ class CartCore extends ObjectModel
 	public function getPackageList($flush = false)
 	{
 		static $cache = array();
-		if (isset($cache[(int)$this->id]) && $cache[(int)$this->id] !== false && !$flush)
-			return $cache[(int)$this->id];
+		if (isset($cache[(int)$this->id.'_'.(int)$this->id_address_delivery]) && $cache[(int)$this->id.'_'.(int)$this->id_address_delivery] !== false && !$flush)
+			return $cache[(int)$this->id.'_'.(int)$this->id_address_delivery];
 
 		$product_list = $this->getProducts();
 		// Step 1 : Get product informations (warehouse_list and carrier_list), count warehouse

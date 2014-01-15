@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,17 +45,15 @@ class CategoryControllerCore extends FrontController
 				_THEME_CSS_DIR_.'category.css' => 'all',
 				_THEME_CSS_DIR_.'product_list.css' => 'all',
 			));
-
-			if (Configuration::get('PS_COMPARATOR_MAX_ITEM') > 0)
-				$this->addJS(_THEME_JS_DIR_.'products-comparison.js');
 		}
+		$this->addJS(_THEME_JS_DIR_.'category.js');
 	}
 
 	public function canonicalRedirection($canonicalURL = '')
 	{
 		if (Tools::getValue('live_edit'))
 			return ;
-		if (!Validate::isLoadedObject($this->category) || !$this->category->inShop() || !$this->category->isAssociatedToShop())
+		if (!Validate::isLoadedObject($this->category) || !$this->category->inShop() || !$this->category->isAssociatedToShop() || in_array($this->category->id, array(Configuration::get('PS_HOME_CATEGORY'), Configuration::get('PS_ROOT_CATEGORY'))))
 		{
 			$this->redirect_after = '404';
 			$this->redirect();
@@ -111,8 +109,7 @@ class CategoryControllerCore extends FrontController
 		
 		$this->assignScenes();
 		$this->assignSubcategories();
-		if ($this->category->id != 1)
-			$this->assignProductList();
+		$this->assignProductList();
 
 		$this->context->smarty->assign(array(
 			'category' => $this->category,

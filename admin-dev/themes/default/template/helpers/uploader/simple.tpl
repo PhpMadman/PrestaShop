@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -40,7 +40,7 @@
 			{if isset($file.delete_url)}
 			<p>
 				<a class="btn btn-default" href="{$file.delete_url}">
-				<i class="icon-trash"></i> {l s='Delete'}
+					<i class="icon-trash"></i> {l s='Delete'}
 				</a>
 			</p>
 			{/if}
@@ -61,7 +61,7 @@
 		<input id="{$id}" type="file" name="{$name}"{if isset($multiple) && $multiple} multiple="multiple"{/if} class="hide" />
 		<div class="dummyfile input-group">
 			<span class="input-group-addon"><i class="icon-file"></i></span>
-			<input id="{$id}-name" type="text" class="disabled" name="filename" readonly />
+			<input id="{$id}-name" type="text" name="filename" readonly />
 			<span class="input-group-btn">
 				<button id="{$id}-selectbutton" type="button" name="submitAddAttachments" class="btn btn-default">
 					<i class="icon-folder-open"></i> {if isset($multiple) && $multiple}{l s='Add files'}{else}{l s='Add file'}{/if}
@@ -79,9 +79,9 @@
 	</div>
 </div>
 <script type="text/javascript">
-	{if isset($multiple) && isset($max_files)}
+{if isset($multiple) && isset($max_files)}
 	var {$id}_max_files = {$max_files - $files|count};
-	{/if}
+{/if}
 
 	$(document).ready(function(){
 		$('#{$id}-selectbutton').click(function(e) {
@@ -90,6 +90,23 @@
 
 		$('#{$id}-name').click(function(e) {
 			$('#{$id}').trigger('click');
+		});
+
+		$('#{$id}-name').on('dragenter', function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+		});
+
+		$('#{$id}-name').on('dragover', function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+		});
+
+		$('#{$id}-name').on('drop', function(e) {
+			e.preventDefault();
+			var files = e.originalEvent.dataTransfer.files;
+			$('#{$id}')[0].files = files;
+			$(this).val(files[0].name);
 		});
 
 		$('#{$id}').change(function(e) {

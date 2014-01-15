@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -42,7 +42,7 @@ class StatsCheckUp extends Module
 		parent::__construct();
 
 		$this->displayName = $this->l('Catalog evaluation');
-		$this->description = $this->l('Quick evaluation of your catalog quality.');
+		$this->description = $this->l('Adds a quick evaluation of your catalog quality to the Stats dashboard.');
 	}
 
 	public function install()
@@ -148,10 +148,10 @@ class StatsCheckUp extends Module
 			return $this->l('No product was found.');
 
 		$arrayConf = array(
-			'DESCRIPTIONS' => array('name' => $this->l('Descriptions'), 'text' => $this->l('Chars (without HTML)')),
-			'IMAGES' => array('name' => $this->l('Images'), 'text' => $this->l('Images')),
+			'DESCRIPTIONS' => array('name' => $this->l('Descriptions'), 'text' => $this->l('chars (without HTML)')),
+			'IMAGES' => array('name' => $this->l('Images'), 'text' => $this->l('images')),
 			'SALES' => array('name' => $this->l('Sales'), 'text' => $this->l('orders / month')),
-			'STOCK' => array('name' => $this->l('Available quantity for sale'), 'text' => $this->l('Items'))
+			'STOCK' => array('name' => $this->l('Available quantity for sale'), 'text' => $this->l('items'))
 		);
 
 		$this->html = '

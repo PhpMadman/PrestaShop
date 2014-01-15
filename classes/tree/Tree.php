@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -297,6 +297,15 @@ class TreeCore
 		return $this;
 	}
 
+	public function removeActions()
+	{
+		if (!isset($this->_toolbar))
+			$this->setToolbar(new TreeToolbarCore());
+
+		$this->getToolbar()->setTemplateDirectory($this->getTemplateDirectory())->removeActions();
+		return $this;
+	}
+
 	public function render($data = null)
 	{
 		//Adding tree.js
@@ -305,16 +314,14 @@ class TreeCore
 		$bo_theme = ((Validate::isLoadedObject($this->getContext()->employee)
 			&& $this->getContext()->employee->bo_theme) ? $this->getContext()->employee->bo_theme : 'default');
 
-		if (!file_exists(_PS_BO_ALL_THEMES_DIR_.$bo_theme.DIRECTORY_SEPARATOR
-			.'template'))
+		if (!file_exists(_PS_BO_ALL_THEMES_DIR_.$bo_theme.DIRECTORY_SEPARATOR.'template'))
 			$bo_theme = 'default';
 
+		$js_path = __PS_BASE_URI__.$admin_webpath.'/themes/'.$bo_theme.'/js/tree.js';
 		if ($this->getContext()->controller->ajax)
-			$html = '<script type="text/javascript" src="'.__PS_BASE_URI__.$admin_webpath
-				.'/themes/'.$bo_theme.'/js/tree.js"></script>';
+			$html = '<script type="text/javascript" src="'.$js_path.'"></script>';
 		else
-			$this->getContext()->controller->addJs(__PS_BASE_URI__.$admin_webpath
-				.'/themes/'.$bo_theme.'/js/tree.js');
+			$this->getContext()->controller->addJs($js_path);
 
 		//Create Tree Template
 		$template = $this->getContext()->smarty->createTemplate(
@@ -338,13 +345,12 @@ class TreeCore
 		}
 		
 		//Assign Tree nodes
-		$template->assign($this->getAttributes())
-			->assign(array(
+		$template->assign($this->getAttributes())->assign(array(
 			'id'    => $this->getId(),
 			'nodes' => $this->renderNodes($data)
 		));
 
-		return (isset($html)?$html:'').$template->fetch();
+		return (isset($html) ? $html : '').$template->fetch();
 	}
 
 	public function renderNodes($data = null)

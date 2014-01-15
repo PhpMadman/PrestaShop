@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -26,7 +26,6 @@
 {block name="override_tpl"}
 	<script type="text/javascript">
 		var errorEmpty = '{l s='Please name your mapping configuration in order to save it.' js=1}';
-		var token = '{$token}';
 		var current = 0;
 		function showTable(nb) {
 			$('#btn_left').disabled = null;
@@ -95,7 +94,6 @@
 			{l s='Column'} <span id="missing_column">&nbsp;</span> {l s='must be set'}
 		</div>
 		<form action="{$current}&token={$token}" method="post" id="import_form" name="import_form" class="form-horizontal">
-			<input type="hidden" name="submitImportFile" value="1" />
 			<input type="hidden" name="csv" value="{$fields_value.csv}" />
 			<input type="hidden" name="convert" value="{$fields_value.convert}" />
 			<input type="hidden" name="regenerate" value="{$fields_value.regenerate}" />

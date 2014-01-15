@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -39,18 +39,15 @@ class AdminDashboardControllerCore extends AdminController
 
 	public function setMedia()
 	{
-		$admin_webpath = str_ireplace(_PS_ROOT_DIR_, '', _PS_ADMIN_DIR_);
-		$admin_webpath = preg_replace('/^'.preg_quote(DIRECTORY_SEPARATOR, '/').'/', '', $admin_webpath);
 		parent::setMedia();
+
 		$this->addJqueryUI('ui.datepicker');
 		$this->addJS(array(
-			_PS_JS_DIR_.'/vendor/d3.js',
-			__PS_BASE_URI__.$admin_webpath.'/themes/'.$this->bo_theme.'/js/vendor/nv.d3.min.js',
+			_PS_JS_DIR_.'vendor/d3.v3.min.js',
+			__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$this->bo_theme.'/js/vendor/nv.d3.min.js',
 			_PS_JS_DIR_.'/admin-dashboard.js',
 		));
-		$this->addCSS(array(
-			__PS_BASE_URI__.$admin_webpath.'/themes/'.$this->bo_theme.'/css/vendor/nv.d3.css',
-		));
+		$this->addCSS(__PS_BASE_URI__.$this->admin_webpath.'/themes/'.$this->bo_theme.'/css/vendor/nv.d3.css');
 	}
 
 	public function initPageHeaderToolbar()
@@ -69,16 +66,16 @@ class AdminDashboardControllerCore extends AdminController
 		$modules = Module::getModulesOnDisk(true);
 		
 		$forms = array(
-			'payment' => array('title' => $this->l('Average bank fees per payment method')),
-			'carriers' => array('title' => $this->l('Average shipping fees per shipping method')),
-			'other' => array('title' => $this->l('Other settings')),
-			'expenses' => array('title' => $this->l('Other expenses'))
+			'payment' => array('title' => $this->l('Average bank fees per payment method'), 'id' => 'payment'),
+			'carriers' => array('title' => $this->l('Average shipping fees per shipping method'), 'id' => 'carriers'),
+			'other' => array('title' => $this->l('Other settings'), 'id' => 'other'),
+			'expenses' => array('title' => $this->l('Other expenses (monthly)'), 'id' => 'expenses')
 		);
 		foreach ($forms as &$form)
 		{
 			$form['icon'] = 'tab-preferences';
 			$form['fields'] = array();
-			$form['submit'] = array('title' => $this->l('Save'), 'class' => 'btn btn-default');
+			$form['submit'] = array('title' => $this->l('Save'));
 		}
 
 		foreach ($modules as $module)
@@ -327,7 +324,7 @@ class AdminDashboardControllerCore extends AdminController
 		if (!$return['has_errors'])
 		{
 			$rss = simpleXML_load_file(_PS_ROOT_DIR_.'/config/xml/blog-'.$this->context->language->iso_code.'.xml');
-			$articles_limit = 3;
+			$articles_limit = 2;
 			foreach ($rss->channel->item as $item)
 			{
 				if ($articles_limit > 0 && Validate::isCleanHtml((string)$item->title) && Validate::isCleanHtml((string)$item->description))
@@ -351,7 +348,7 @@ class AdminDashboardControllerCore extends AdminController
 		$module = Tools::getValue('module');
 		$hook = Tools::getValue('hook');
 		$configs = Tools::getValue('configs');
-		
+
 		$params = array(
 			'date_from' => $this->context->employee->stats_date_from,
 			'date_to' => $this->context->employee->stats_date_to
@@ -365,14 +362,14 @@ class AdminDashboardControllerCore extends AdminController
 			{
 				if (Validate::isLoadedObject($module_obj) && method_exists($module_obj, 'saveDashConfig'))
 					$return['has_errors'] = $module_obj->saveDashConfig($configs);
+				else if (is_array($configs) && count($configs))
+					foreach ($configs as $name => $value)
+						if (Validate::isConfigName($name))
+							Configuration::updateValue($name, $value);
 			}
 			else
 				$return['has_errors'] = true;
 		}
-		else if (is_array($configs) && count($configs))
-				foreach ($configs as $name => $value)
-					if (Validate::isConfigName($name))
-						Configuration::updateValue($name, $value);
 		
 		if (Validate::isHookName($hook) && method_exists($module_obj, $hook))
 			$return['widget_html'] = $module_obj->$hook($params);

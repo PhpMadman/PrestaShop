@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -54,13 +54,6 @@ class AdminTabsControllerCore extends AdminController
 			'name' => array(
 				'title' => $this->l('Name')
 			),
-			'logo' => array(
-				'title' => $this->l('Icon'),
-				'image' => 't',
-				'image_id' => 'class_name',
-				'orderby' => false,
-				'search' => false
-			),
 			'module' => array(
 				'title' => $this->l('Module')
 			),
@@ -90,13 +83,13 @@ class AdminTabsControllerCore extends AdminController
 		if ($this->display == 'details')
 			$this->page_header_toolbar_btn['back_to_list'] = array(
 				'href' => Context::getContext()->link->getAdminLink('AdminTabs'),
-				'desc' => $this->l('Back to list'),
+				'desc' => $this->l('Back to list', null, null, false),
 				'icon' => 'process-icon-back'
 			);
 		elseif(empty($this->display))
 			$this->page_header_toolbar_btn['new_menu'] = array(
-				'href' => self::$currentIndex.'&amp;addtab&amp;token='.$this->token,
-				'desc' => $this->l('Add new menu'),
+				'href' => self::$currentIndex.'&addtab&token='.$this->token,
+				'desc' => $this->l('Add new menu', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		
@@ -154,12 +147,6 @@ class AdminTabsControllerCore extends AdminController
 					'name' => 'module'
 				),
 				array(
-					'type' => 'file',
-					'label' => $this->l('Icon:'),
-					'name' => 'icon',
-					'hint' => $this->l('Upload a logo from your computer (.gif, .jpg, .jpeg or .png).')
-				),
-				array(
 					'type' => 'switch',
 					'label' => $this->l('Status:'),
 					'name' => 'active',
@@ -181,8 +168,7 @@ class AdminTabsControllerCore extends AdminController
 				),
 			),
 			'submit' => array(
-				'title' => $this->l('   Save   '),
-				'class' => 'btn btn-default'
+				'title' => $this->l('Save'),
 			)
 		);
 

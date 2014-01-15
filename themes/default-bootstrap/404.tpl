@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -33,10 +33,10 @@
 	</p>
 
 	<h3>{l s='To find a product, please type its name in the field below.'}</h3>
-	<form action="{$link->getPageLink('search')|escape:'html'}" method="post" class="std">
+	<form action="{$link->getPageLink('search')|escape:'html':'UTF-8'}" method="post" class="std">
 		<fieldset>
 			<div>
-				<label for="search">{l s='Search our product catalog:'}</label>
+				<label for="search_query">{l s='Search our product catalog:'}</label>
 				<input id="search_query" name="search_query" type="text" class="form-control grey" />
                 <button type="submit" name="Submit" value="OK" class="btn btn-default button button-small"><span>{l s='Ok'}</span></button>
 			</div>

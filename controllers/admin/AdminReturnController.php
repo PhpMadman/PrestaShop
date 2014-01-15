@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -50,7 +50,7 @@ class AdminReturnControllerCore extends AdminController
 					'PS_ORDER_RETURN' => array('title' => $this->l('Enable returns:'), 'desc' => $this->l('Would you like to allow merchandise returns in your shop?'), 'cast' => 'intval', 'type' => 'bool'),
 					'PS_ORDER_RETURN_NB_DAYS' => array('title' => $this->l('Time limit of validity:'), 'desc' => $this->l('How many days after the delivery date does the customer have to return a product?'), 'cast' => 'intval', 'type' => 'text', 'size' => '2'),
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 		);
 
@@ -116,8 +116,7 @@ class AdminReturnControllerCore extends AdminController
 				),
 			),
 			'submit' => array(
-				'title' => $this->l('   Save   '),
-				'class' => 'button'
+				'title' => $this->l('Save'),
 			)
 		);
 

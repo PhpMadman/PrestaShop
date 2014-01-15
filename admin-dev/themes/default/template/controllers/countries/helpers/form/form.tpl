@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -64,13 +64,13 @@
 						<span class="switch prestashop-switch">
 							<input type="radio" name="{$input.name}" id="{$input.name}_on" value="1">
 							<label class="radio" for="{$input.name}_on">
-								<i class="icon-check-sign color_success"></i> {l s='Yes'}
+								{l s='Yes'}
 							</label>
 							<input type="radio" name="{$input.name}" id="{$input.name}_off" value="0" checked="checked">
 							<label class="radio" for="{$input.name}_off">
-								<i class="icon-ban-circle color_danger"></i> {l s='No'}
+								{l s='No'}
 							</label>
-							<a class="slide-button btn btn-default"></a>
+							<a class="slide-button btn"></a>
 						</span>
 					</div>
 				</div>

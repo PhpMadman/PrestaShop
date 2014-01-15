@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -26,11 +26,44 @@
 $(document).ready(
 	function ()
 	{
+		$('a').each(function()
+		{
+			var href = this.href;
+			var search = this.search;
+			var href_add = 'live_configurator=1'
+				+ '&id_shop=' + get('id_shop')
+				+ '&id_employee=' + get('id_employee')
+				+ '&theme=' + get('theme')
+				+ '&theme_font=' + get('theme_font')
+				+ '&live_configurator_token=' + get('live_configurator_token');
+			
+			if (href != undefined && href != '#' && href.substr(0, baseDir.length) == baseDir)
+			{
+				if (search.length == 0)
+					this.search = href_add;
+				else
+					this.search += '&' + href_add;
+			}
+		});
+
 		$('#color-box').find('li').click(
 			function()
 			{
-				$('#theme').val($(this).attr('class'));
-				$(this).closest('form').submit();
+				location.href = location.href.replace(/&theme=[^&]*/, '')+'&theme='+$(this).attr('class');
+			}
+		);
+
+		$('#reset').click(
+			function()
+			{
+				location.href = location.href.replace(/&theme=[^&]*/, '').replace(/&theme_font=[^&]*/, '');
+			}
+		);
+
+		$('#font').change(
+			function()
+			{
+				location.href = location.href.replace(/&theme_font=[^&]*/, '')+'&theme_font='+$('#font option:selected').val();
 			}
 		);
 
@@ -81,20 +114,17 @@ $(document).ready(
 				}
 			}
 		);
-
-		$('#font').change(
-			function()
-			{
-				$(document).find('*:not(i)').css('font-family', $('#font option:selected').text());
-			}
-		);
-
-		$('#reset').click(
-			function()
-			{
-				$('#theme').val('');
-				$(this).closest('form').submit();
-			}
-		);
 	}
 );
+
+function get(name)
+{
+	var regexS = "[\\?&]" + name + "=([^&#]*)";
+	var regex = new RegExp(regexS);
+	var results = regex.exec(window.location.href);
+
+	if (results == null)
+		return "";
+	else
+		return results[1];
+}

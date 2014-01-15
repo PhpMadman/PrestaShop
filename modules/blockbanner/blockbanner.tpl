@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,23 +18,14 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-
-<!-- Block stores module -->
-<div id="banner_block_top">
-	<div class="banner-top">
-	<div class="container">
-	  <a href="{$banner_link}" title="{$banner_desc}">
-		{if isset($banner_img)}
-			<img class="img-responsive" src="{$module_dir}{$banner_img}" alt="{$banner_desc}" title="{$banner_desc}"/>
-		{else}
-			{$banner_desc}
-		{/if}
-	  </a>
-	</div>
-  </div>
-</div>
-<!-- /Block stores module -->
+<a href="{$banner_link}" title="{$banner_desc}">
+{if isset($banner_img)}
+	<img class="img-responsive" src="{$banner_img}" alt="{$banner_desc}" title="{$banner_desc}" width="1170" height="65" />
+{else}
+	{$banner_desc}
+{/if}
+</a>

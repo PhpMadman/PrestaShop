@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -56,7 +56,7 @@ function bindDatepicker($id, $time)
 function includeDatepicker($id, $time = false)
 {
 	Tools::displayAsDeprecated();
-	echo '<script type="text/javascript" src="'.__PS_BASE_URI__.'js/jquery/jquery-ui.will.be.removed.in.1.6.js"></script>';
+	echo '<script type="text/javascript" src="'.__PS_BASE_URI__.'js/jquery/ui/jquery.ui.core.min.js"></script>';
 	echo '<link type="text/css" rel="stylesheet" href="'.__PS_BASE_URI__.'js/jquery/ui/themes/ui-lightness/jquery.ui.theme.css" />';
 	echo '<link type="text/css" rel="stylesheet" href="'.__PS_BASE_URI__.'js/jquery/ui/themes/ui-lightness/jquery.ui.datepicker.css" />';	
 	$iso = Db::getInstance()->getValue('SELECT iso_code FROM '._DB_PREFIX_.'lang WHERE `id_lang` = '.(int)Context::getContext()->language->id);
@@ -446,23 +446,6 @@ function runAdminTab($tab, $ajaxMode = false)
 				if (count($tabs) - 1 > $key)
 					$bread .= '</a>';
 			}
-
-			// @TODO : a way to desactivate this feature
-			if (!$ajaxMode)
-				echo'<script type="text/javascript">
-
-				$(function() {
-					$.ajax({
-						type: \'POST\',
-						url: \'ajax.php\',
-						data: \'helpAccess=1&item='.$item['class_name'].'&isoUser='.$isoUser.'&country='.Context::getContext()->country->iso_code.'&version='._PS_VERSION_.'\',
-						async : true,
-						success: function(msg) {
-							$("#help-button").html(msg);
-							$("#help-button").fadeIn("slow");
-						}
-					});
-				});</script>';
 
 			if (!$ajaxMode)
 				echo '<div class="path_bar">

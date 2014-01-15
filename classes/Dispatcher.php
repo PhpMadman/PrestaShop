@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -169,7 +169,8 @@ class DispatcherCore
 	/**
 	 * @var string Set default controller, which will be used if http parameter 'controller' is empty
 	 */
-	protected $default_controller = 'index';
+	protected $default_controller;
+	protected $use_default_controller = false;
 
 	/**
 	 * @var string Controller to use if found controller doesn't exist
@@ -205,25 +206,16 @@ class DispatcherCore
 		{
 			$this->front_controller = self::FC_ADMIN;
 			$this->controller_not_found = 'adminnotfound';
-			if (isset(Context::getContext()->employee) && Validate::isLoadedObject(Context::getContext()->employee) && isset(Context::getContext()->employee->default_tab))
-			{
-				$tab = new Tab((int)Context::getContext()->employee->default_tab);
-				$this->default_controller = $tab->class_name;
-			}
-			else		
-				$this->default_controller = 'admindashboard';
 		}
 		elseif (Tools::getValue('fc') == 'module')
 		{
 			$this->front_controller = self::FC_MODULE;
 			$this->controller_not_found = 'pagenotfound';
-			$this->default_controller = 'default';
 		}
 		else
 		{
 			$this->front_controller = self::FC_FRONT;
 			$this->controller_not_found = 'pagenotfound';
-			$this->default_controller = 'index';
 		}
 		
 		$this->setRequestUri();
@@ -238,6 +230,25 @@ class DispatcherCore
 		$this->loadRoutes();
 	}
 
+	public function useDefaultController()
+	{
+		$this->use_default_controller = true;
+		if ($this->default_controller === null)
+		{
+			if (defined('_PS_ADMIN_DIR_'))
+			{
+				$this->default_controller = 'admindashboard';
+				if (isset(Context::getContext()->employee) && Validate::isLoadedObject(Context::getContext()->employee) && isset(Context::getContext()->employee->default_tab))
+					$this->default_controller = Tab::getClassNameById((int)Context::getContext()->employee->default_tab);
+			}
+			elseif (Tools::getValue('fc') == 'module')
+				$this->default_controller = 'default';
+			else
+				$this->default_controller = 'index';
+		}
+		return $this->default_controller;
+	}
+	
 	/**
 	 * Find the controller and instantiate it
 	 */
@@ -248,7 +259,7 @@ class DispatcherCore
 		// Get current controller
 		$this->getController();
 		if (!$this->controller)
-			$this->controller = $this->default_controller;
+			$this->controller = $this->useDefaultController();
 		// Dispatch with right front controller
 		switch ($this->front_controller)
 		{
@@ -289,7 +300,10 @@ class DispatcherCore
 
 			// Dispatch back office controller + module back office controller
 			case self::FC_ADMIN :
-				$tab = Tab::getInstanceFromClassName($this->controller);
+				if ($this->use_default_controller && !Tools::getValue('token'))
+					Tools::redirectAdmin('index.php?controller='.$this->controller.'&token='.Tools::getAdminTokenLite($this->controller));
+
+				$tab = Tab::getInstanceFromClassName($this->controller, Configuration::get('PS_LANG_DEFAULT'));
 				$retrocompatibility_admin_tab = null;
 
 				if ($tab->module)
@@ -316,9 +330,14 @@ class DispatcherCore
 				else
 				{
 					$controllers = Dispatcher::getControllers(array(_PS_ADMIN_DIR_.'/tabs/', _PS_ADMIN_CONTROLLER_DIR_, _PS_OVERRIDE_DIR_.'controllers/admin/'));
-
 					if (!isset($controllers[strtolower($this->controller)]))
+					{
+						// If this is a parent tab, load the first child
+						if (Validate::isLoadedObject($tab) && $tab->id_parent == 0 && ($tabs = Tab::getTabs(Context::getContext()->language->id, $tab->id)) && isset($tabs[0]))
+							Tools::redirectAdmin(Context::getContext()->link->getAdminLink($tabs[0]['class_name']));
 						$this->controller = $this->controller_not_found;
+					}
+
 					$controller_class = $controllers[strtolower($this->controller)];
 					$params_hook_action_dispatcher = array('controller_type' => self::FC_ADMIN, 'controller_class' => $controller_class, 'is_module' => 0);
 
@@ -751,14 +770,10 @@ class DispatcherCore
 			}
 			
 			if ($controller == 'index' || $this->request_uri == '/index.php') 
-				$controller = $this->default_controller;
-			$this->controller = $controller;
+				$controller = $this->useDefaultController();
 		}
-		// Default mode, take controller from url
-		else
-			$this->controller = $controller;
 
-		$this->controller = str_replace('-', '', $this->controller);
+		$this->controller = str_replace('-', '', $controller);
 		$_GET['controller'] = $this->controller;
 		return $this->controller;
 	}

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,7 +45,7 @@ class StatsCarrier extends ModuleGraph
 		parent::__construct();
 
 		$this->displayName = $this->l('Carrier distribution');
-		$this->description = $this->l('Display each carriers\' distribution. ');
+		$this->description = $this->l('Adds a graph displaying each carriers\' distribution to the Stats dashboard.');
 	}
 
 	public function install()
@@ -85,7 +85,7 @@ class StatsCarrier extends ModuleGraph
 			</form>
 
 			<div class="alert alert-info">
-				'.$this->l('This graph represents the carrier distribution for your orders. You can also narrow the focus of the graph to display distribution for a particular state.').'
+				'.$this->l('This graph represents the carrier distribution for your orders. You can also narrow the focus of the graph to display distribution for a particular order status.').'
 			</div>
 			<div class="row row-margin-bottom">
 				<div class="col-lg-12">

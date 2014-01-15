@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,32 +18,31 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
 {if !$simple_header}
-	<script type="text/javascript">
-		$(document).ready(function() {
-			$('table.{$list_id} .filter').keypress(function(event){
-				formSubmit(event, 'submitFilterButton{$list_id}')
-			})
-		});
-	</script>
-
 	{* Display column names and arrows for ordering (ASC, DESC) *}
 	{if $is_order_position}
 		<script type="text/javascript" src="../js/jquery/plugins/jquery.tablednd.js"></script>
 		<script type="text/javascript">
-			var token = '{$token}';
-			var come_from = '{$list_id}';
+			var come_from = '{$list_id|addslashes}';
 			var alternate = {if $order_way == 'DESC'}'1'{else}'0'{/if};
 		</script>
 		<script type="text/javascript" src="../js/admin-dnd.js"></script>
 	{/if}
 	<script type="text/javascript">
-		$(function() {
+		$(document).ready(function() {
+			$('table.{$list_id} .filter').keypress(function(event){
+				formSubmit(event, 'submitFilterButton{$list_id}')
+			})
+
+			$('#submitFilterButton{$list_id}').click(function() {
+				$('#submitFilter{$list_id}').val(1);
+			});
+
 			if ($("table.{$list_id} .datepicker").length > 0)
 				$("table.{$list_id} .datepicker").datepicker({
 					prevText: '',
@@ -181,6 +180,7 @@
 <div class="panel col-lg-12">
 	{if isset($title)}<h3>{if isset($icon)}<i class="{$icon}"></i> {/if}{if is_array($title)}{$title|end}{else}{$title}{/if}</h3>{/if}
 {/if}
+	{block name="preTable"}{/block}
 	<div class="table-responsive clearfix{if isset($use_overflow) && $use_overflow} overflow-y{/if}">
 		<table
 			{if $table_id} id={$table_id}{/if}
@@ -231,9 +231,9 @@
 					<th>
 						<span class="title_box">
 						{if $shop_link_type == 'shop'}
-						{l s='Shop'}
+							{l s='Shop'}
 						{else}
-						{l s='Group shop'}
+							{l s='Group shop'}
 						{/if}
 						</span>
 					</th>
@@ -256,7 +256,7 @@
 							--
 						{else}
 							{if $params.type == 'bool'}
-								<select class="filter fixed-width-sm" onchange="$('#submitFilterButton{$list_id}').focus();$('#submitFilterButton{$list_id}').click();" name="{$list_id}Filter_{$key}">
+								<select class="filter fixed-width-sm" name="{$list_id}Filter_{$key}">
 									<option value="">-</option>
 									<option value="1" {if $params.value == 1} selected="selected" {/if}>{l s='Yes'}</option>
 									<option value="0" {if $params.value == 0 && $params.value != ''} selected="selected" {/if}>{l s='No'}</option>

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -35,20 +35,21 @@ class BlockBestSellers extends Module
 	{
 		$this->name = 'blockbestsellers';
 		$this->tab = 'front_office_features';
-		$this->version = '1.4';
+		$this->version = '1.5';
 		$this->author = 'PrestaShop';
 		$this->need_instance = 0;
 		$this->bootstrap = true;
 
 		parent::__construct();	
 
-		$this->displayName = $this->l('Top-seller block');
-		$this->description = $this->l('Add a block displaying your store\'s top-selling products.');
+		$this->displayName = $this->l('Top-sellers block');
+		$this->description = $this->l('Adds a block displaying your store\'s top-selling products.');
 	}
 
 	public function install()
 	{
 		$this->_clearCache('blockbestsellers.tpl');
+		$this->_clearCache('blockbestsellers-home.tpl');
 		$this->_clearCache('tab.tpl');
 		
 		if (!parent::install()
@@ -62,12 +63,24 @@ class BlockBestSellers extends Module
 			|| !ProductSale::fillProductSales()
 		)
 			return false;
+
+		// Hook the module either on the left or right column
+		$theme = new Theme(Context::getContext()->shop->id_theme);
+		if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+			&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+		{
+			// If there are no colums implemented by the template, throw an error and uninstall the module
+			$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+			parent::uninstall();
+			return false;
+		}
 		return true;
 	}
 	
 	public function uninstall()
 	{
 		$this->_clearCache('blockbestsellers.tpl');
+		$this->_clearCache('blockbestsellers-home.tpl');
 		$this->_clearCache('tab.tpl');
 		
 		return parent::uninstall();
@@ -76,24 +89,28 @@ class BlockBestSellers extends Module
 	public function hookAddProduct($params)
 	{
 		$this->_clearCache('blockbestsellers.tpl');
+		$this->_clearCache('blockbestsellers-home.tpl');
 		$this->_clearCache('tab.tpl');
 	}
 
 	public function hookUpdateProduct($params)
 	{
 		$this->_clearCache('blockbestsellers.tpl');
+		$this->_clearCache('blockbestsellers-home.tpl');
 		$this->_clearCache('tab.tpl');
 	}
 
 	public function hookDeleteProduct($params)
 	{
 		$this->_clearCache('blockbestsellers.tpl');
+		$this->_clearCache('blockbestsellers-home.tpl');
 		$this->_clearCache('tab.tpl');
 	}
 
 	public function hookActionOrderStatusPostUpdate($params)
 	{
 		$this->_clearCache('blockbestsellers.tpl');
+		$this->_clearCache('blockbestsellers-home.tpl');
 		$this->_clearCache('tab.tpl');
 	}
 
@@ -117,7 +134,7 @@ class BlockBestSellers extends Module
 			'form' => array(
 				'legend' => array(
 					'title' => $this->l('Settings'),
-					'icon' => 'icon-star-empty'
+					'icon' => 'icon-cogs'
 				),
 				'input' => array(
 					array(
@@ -140,8 +157,7 @@ class BlockBestSellers extends Module
 					)
 				),
 				'submit' => array(
-					'title' => $this->l('Save'),
-					'class' => 'btn btn-default'
+					'title' => $this->l('Save')
 				)
 			)
 		);
@@ -186,13 +202,13 @@ class BlockBestSellers extends Module
 
 	public function hookdisplayHomeTabContent($params)
 	{
-		if (!$this->isCached('blockbestsellers.tpl', $this->getCacheId('blockbestsellers-home')))
+		if (!$this->isCached('blockbestsellers-home.tpl', $this->getCacheId('blockbestsellers-home')))
 		{
 			$this->smarty->assign(array(
 				'best_sellers' => BlockBestSellers::$cache_best_sellers,
 				'homeSize' => Image::getSize(ImageType::getFormatedName('home'))));
 		}
-		return $this->display(__FILE__, 'blockbestsellers.tpl', $this->getCacheId('blockbestsellers-home'));
+		return $this->display(__FILE__, 'blockbestsellers-home.tpl', $this->getCacheId('blockbestsellers-home'));
 	}
 
 	public function hookRightColumn($params)

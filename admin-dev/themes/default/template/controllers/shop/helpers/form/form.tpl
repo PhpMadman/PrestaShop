@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -73,20 +73,20 @@
 	<div class="panel">
 		<h3><i class="icon-cloud-download"></i> {l s='Import data from another shop'}</h3>
 		{foreach $form_import as $key => $field}
-		<div class="row">
+		<div class="form-group">
 		{if $key == 'radio'}
 			<label class="control-label col-lg-3">{$field.label} :</label>
 			<div class="col-lg-2">
 				<span class="switch prestashop-switch">
 					<input type="radio" name="{$field.name}" id="{$field.name}_on" value="1" {if $field.value } checked="checked" {/if}>
-					<label class="radio" for="{$field.name}_on">
-						<i class="icon-check-sign color_success"></i> {l s='Yes'}
+					<label for="{$field.name}_on">
+						{l s='Yes'}
 					</label>
 					<input type="radio" name="{$field.name}" id="{$field.name}_off" value="0"  {if !$field.value } checked="checked" {/if}>
-					<label class="radio" for="{$field.name}_off">
-						<i class="icon-ban-circle color_danger"></i> {l s='No'}
+					<label for="{$field.name}_off">
+						{l s='No'}
 					</label>
-					<a class="slide-button btn btn-default"></a>
+					<a class="slide-button btn"></a>
 				</span>
 			</div>
 		{elseif $key == 'select'}

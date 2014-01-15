@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -26,7 +26,7 @@
 {if count($list)}
 {foreach $list AS $index => $tr}
 	<tr
-	{if $position_identifier}id="tr_{$id_category}_{$tr.$identifier}_{if isset($tr.position['position'])}{$tr.position['position']}{else}0{/if}"{/if}
+	{if $position_identifier}id="tr_{$position_group_identifier}_{$tr.$identifier}_{if isset($tr.position['position'])}{$tr.position['position']}{else}0{/if}"{/if}
 	class="{if isset($tr.class)} {$tr.class}{/if} {if $tr@iteration is odd by 1}odd{/if}"
 	{if isset($tr.color) && $color_on_bg}style="background-color: {$tr.color}"{/if}
 
@@ -47,7 +47,7 @@
 			{block name="open_td"}
 				<td
 					{if isset($params.position)}
-						id="td_{if !empty($id_category)}{$id_category}{else}0{/if}_{$tr.$identifier}"
+						id="td_{if !empty($position_group_identifier)}{$position_group_identifier}{else}0{/if}_{$tr.$identifier}"
 					{/if}
 					class="{if !$no_link}pointer{/if}
 					{if isset($params.position) && $order_by == 'position'  && $order_way != 'DESC'} dragHandle{/if}
@@ -69,9 +69,9 @@
 						{$tr.$key}
 					{elseif isset($params.activeVisu)}
 						{if $tr.$key}
-							<span class="label label-success"><i class="icon-check-sign"></i> {l s='Enabled'}</span>
+							<i class="icon-check-ok"></i> {l s='Enabled'}
 						{else}
-							<span class="label label-warning"><i class="icon-ban-circle"></i> {l s='Disabled'}</span>
+							<i class="icon-remove"></i> {l s='Disabled'}
 						{/if}
 
 					{elseif isset($params.position)}
@@ -96,14 +96,14 @@
 								<img src="../img/admin/{$tr[$key]['src']}" alt="{$tr[$key]['alt']}" title="{$tr[$key]['alt']}" />
 							{/if}
 						{/if}
-					{elseif isset($params.price)}
-						{$tr.$key}
+					{elseif isset($params.type) && $params.type == 'price'}
+						{displayPrice price=$tr.$key}
 					{elseif isset($params.float)}
 						{$tr.$key}
 					{elseif isset($params.type) && $params.type == 'date'}
-						{$tr.$key}
+						{dateFormat date=$tr.$key full=0}
 					{elseif isset($params.type) && $params.type == 'datetime'}
-						{$tr.$key}
+						{dateFormat date=$tr.$key full=1}
 					{elseif isset($params.type) && $params.type == 'decimal'}
 						{$tr.$key|string_format:"%.2f"}
 					{elseif isset($params.type) && $params.type == 'percent'}
@@ -112,9 +112,17 @@
 					{elseif isset($params.type) && $params.type == 'editable' && isset($tr.id)}
 						<input type="text" name="{$key}_{$tr.id}" value="{$tr.$key|escape:'html':'UTF-8'}" class="{$key}" />
 					{elseif isset($params.callback)}
-						{$tr.$key}
+						{if isset($params.maxlength) && Tools::strlen($tr.$key) > $params.maxlength}
+							<span title="{$tr.$key}">{$tr.$key|truncate:$params.maxlength:'...'}</span>
+						{else}
+							{$tr.$key}
+						{/if}
 					{elseif $key == 'color'}
+						{if !is_array($tr.$key)}
 						<div style="background-color: {$tr.$key};" class="attributes-color-container"></div>
+						{else} {*TEXTURE*}
+						<img src="{$tr.$key.texture}" alt="{$tr.name}" class="attributes-color-container" />
+						{/if}
 					{elseif isset($params.maxlength) && Tools::strlen($tr.$key) > $params.maxlength}
 						<span title="{$tr.$key|escape:'html':'UTF-8'}">{$tr.$key|truncate:$params.maxlength:'...'|escape:'html':'UTF-8'}</span>
 					{else}

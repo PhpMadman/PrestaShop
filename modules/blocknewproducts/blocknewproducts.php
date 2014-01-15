@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -33,12 +33,12 @@ class BlockNewProducts extends Module
 	{
 		$this->name = 'blocknewproducts';
 		$this->tab = 'front_office_features';
-		$this->version = '1.5';
+		$this->version = '1.7';
 		$this->author = 'PrestaShop';
 		$this->need_instance = 0;
 
 		$this->bootstrap = true;
-		parent::__construct();	
+		parent::__construct();
 
 		$this->displayName = $this->l('New products block');
 		$this->description = $this->l('Displays a block featuring your store\'s newest products.');
@@ -46,23 +46,40 @@ class BlockNewProducts extends Module
 
 	public function install()
 	{
-		if (!parent::install()
-			|| !$this->registerHook('header')
-			|| !$this->registerHook('addproduct')
-			|| !$this->registerHook('updateproduct')
-			|| !$this->registerHook('deleteproduct')
-			|| !Configuration::updateValue('NEW_PRODUCTS_NBR', 5)
-			|| !$this->registerHook('displayHomeTab')
-			|| !$this->registerHook('displayHomeTabContent')
-		)
-			return false;
+		$success = (parent::install()
+			&& $this->registerHook('header')
+			&& $this->registerHook('addproduct')
+			&& $this->registerHook('updateproduct')
+			&& $this->registerHook('deleteproduct')
+			&& Configuration::updateValue('NEW_PRODUCTS_NBR', 5)
+			&& $this->registerHook('displayHomeTab')
+			&& $this->registerHook('displayHomeTabContent')
+		);
+
+		if ($success)
+		{
+			// Hook the module either on the left or right column
+			$theme = new Theme(Context::getContext()->shop->id_theme);
+			if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+				&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+			{
+				// If there are no colums implemented by the template, throw an error and uninstall the module
+				$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+				parent::uninstall();
+				return false;
+			}
+		}
+
 		$this->_clearCache('blocknewproducts.tpl');
-		return true;
+		$this->_clearCache('blocknewproducts_home.tpl');
+
+		return $success;
 	}
-	
+
 	public function uninstall()
 	{
 		$this->_clearCache('blocknewproducts.tpl');
+		$this->_clearCache('blocknewproducts_home.tpl');
 		$this->_clearCache('tab.tpl');
 		return parent::uninstall();
 	}
@@ -78,6 +95,7 @@ class BlockNewProducts extends Module
 				$output .= $this->displayError($this->l('Invalid number.'));
 			else
 			{
+				Configuration::updateValue('PS_NB_DAYS_NEW_PRODUCT', (int)(Tools::getValue('PS_NB_DAYS_NEW_PRODUCT')));
 				Configuration::updateValue('PS_BLOCK_NEWPRODUCTS_DISPLAY', (int)(Tools::getValue('PS_BLOCK_NEWPRODUCTS_DISPLAY')));
 				Configuration::updateValue('NEW_PRODUCTS_NBR', (int)($productNbr));
 				$output .= $this->displayConfirmation($this->l('Settings updated'));
@@ -85,22 +103,30 @@ class BlockNewProducts extends Module
 		}
 		return $output.$this->renderForm();
 	}
-	
+
+	private function getNewProducts()
+	{
+		if (!Configuration::get('NEW_PRODUCTS_NBR'))
+			return;
+		$newProducts = false;
+		if (Configuration::get('PS_NB_DAYS_NEW_PRODUCT'))
+			$newProducts = Product::getNewProducts((int) $this->context->language->id, 0, (int)Configuration::get('NEW_PRODUCTS_NBR'));
+
+		if (!$newProducts && !Configuration::get('PS_BLOCK_NEWPRODUCTS_DISPLAY'))
+			return;
+		return $newProducts;
+	}
+
 	public function hookRightColumn($params)
 	{
 		if (!$this->isCached('blocknewproducts.tpl', $this->getCacheId()))
 		{
-			if (!Configuration::get('NEW_PRODUCTS_NBR'))
-				return;
-			$newProducts = false;
-			if (Configuration::get('PS_NB_DAYS_NEW_PRODUCT'))
-				$newProducts = Product::getNewProducts((int) $params['cookie']->id_lang, 0, (int)Configuration::get('NEW_PRODUCTS_NBR'));
-			if (!$newProducts && !Configuration::get('PS_BLOCK_NEWPRODUCTS_DISPLAY'))
-				return;
+			$newProducts = $this->getNewProducts();
+
 			$this->smarty->assign(array(
-				'new_products' => $newProducts,
-				'mediumSize' => Image::getSize(ImageType::getFormatedName('medium')),
-			));
+									   'new_products' => $newProducts,
+									   'mediumSize' => Image::getSize(ImageType::getFormatedName('medium')),
+								  ));
 		}
 		return $this->display(__FILE__, 'blocknewproducts.tpl', $this->getCacheId());
 	}
@@ -121,10 +147,19 @@ class BlockNewProducts extends Module
 	{
 		return $this->display(__FILE__, 'tab.tpl', $this->getCacheId('blocknewproducts-tab'));
 	}
-	
+
 	public function hookdisplayHomeTabContent($params)
 	{
-		return $this->hookRightColumn($params);
+		if (!$this->isCached('blocknewproducts_home.tpl', $this->getCacheId()))
+		{
+			$newProducts = $this->getNewProducts();
+
+			$this->smarty->assign(array(
+									   'new_products' => $newProducts,
+									   'mediumSize' => Image::getSize(ImageType::getFormatedName('medium')),
+								  ));
+		}
+		return $this->display(__FILE__, 'blocknewproducts_home.tpl', $this->getCacheId());
 	}
 
 	public function hookHeader($params)
@@ -135,16 +170,19 @@ class BlockNewProducts extends Module
 	public function hookAddProduct($params)
 	{
 		$this->_clearCache('blocknewproducts.tpl');
+		$this->_clearCache('blocknewproducts_home.tpl');
 	}
 
 	public function hookUpdateProduct($params)
 	{
 		$this->_clearCache('blocknewproducts.tpl');
+		$this->_clearCache('blocknewproducts_home.tpl');
 	}
 
 	public function hookDeleteProduct($params)
 	{
 		$this->_clearCache('blocknewproducts.tpl');
+		$this->_clearCache('blocknewproducts_home.tpl');
 	}
 
 	public function renderForm()
@@ -164,30 +202,36 @@ class BlockNewProducts extends Module
 						'desc' => $this->l('Define the number of products to be displayed in this block.')
 					),
 					array(
+						'type'  => 'text',
+						'label' => $this->l('Number of days for which the product is considered \'new\''),
+						'name'  => 'PS_NB_DAYS_NEW_PRODUCT',
+						'class' => 'fixed-width-xs',
+					),
+					array(
 						'type' => 'switch',
 						'label' => $this->l('Always display this block'),
 						'name' => 'PS_BLOCK_NEWPRODUCTS_DISPLAY',
-						'desc' => $this->l('Show the block even if no products are available.'),
+						'desc' => $this->l('Show the block even if no new products are available.'),
 						'values' => array(
-									array(
-										'id' => 'active_on',
-										'value' => 1,
-										'label' => $this->l('Enabled')
-									),
-									array(
-										'id' => 'active_off',
-										'value' => 0,
-										'label' => $this->l('Disabled')
-									)
-								),
+							array(
+								'id' => 'active_on',
+								'value' => 1,
+								'label' => $this->l('Enabled')
+							),
+							array(
+								'id' => 'active_off',
+								'value' => 0,
+								'label' => $this->l('Disabled')
+							)
+						),
 					)
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
-		
+
 		$helper = new HelperForm();
 		$helper->show_toolbar = false;
 		$helper->table =  $this->table;
@@ -206,10 +250,11 @@ class BlockNewProducts extends Module
 
 		return $helper->generateForm(array($fields_form));
 	}
-	
+
 	public function getConfigFieldsValues()
-	{		
+	{
 		return array(
+			'PS_NB_DAYS_NEW_PRODUCT' => Tools::getValue('PS_NB_DAYS_NEW_PRODUCT', Configuration::get('PS_NB_DAYS_NEW_PRODUCT')),
 			'PS_BLOCK_NEWPRODUCTS_DISPLAY' => Tools::getValue('PS_BLOCK_NEWPRODUCTS_DISPLAY', Configuration::get('PS_BLOCK_NEWPRODUCTS_DISPLAY')),
 			'NEW_PRODUCTS_NBR' => Tools::getValue('NEW_PRODUCTS_NBR', Configuration::get('NEW_PRODUCTS_NBR')),
 		);

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,23 +18,24 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-
 <tr>
-	<td class="center">
-		<img width="32" alt="" src="{if isset($module->image)}{$module->image}{else}../modules/{$module->name}/{$module->logo}{/if}">
+	<td class="fixed-width-sm center">
+		<img class="img-thumbnail" alt="{$module->name}" src="{if isset($module->image)}{$module->image}{else}../modules/{$module->name}/{$module->logo}{/if}">
 	</td>
 	<td>
 		<div id="anchor{$module->name|ucfirst}">
 			<span>
-				<span class="hidden">{$module->name}</span>
 				{$module->displayName|truncate:40:'…'} {$module->version}
-				{if isset($module->id) && $module->id gt 0 }
+				{if isset($module->type) && $module->type == 'addonsPartner'}
+					- <a href="#" class="module-badge-partner help-tooltip text-warning" data-title="{l s="This module is available for free thanks to our partner."}"><i class="icon-pushpin"></i> <small>{l s="Partner"}</small></a>
+				{/if}
+				{*if isset($module->id) && $module->id gt 0 }
 					{if $module->active}
 						<span class="label label-success">{l s='Enabled'}</span>
 					{else}
@@ -46,7 +47,7 @@
 					{else}
 						<span class="label label-warning">{l s='Not installed'}</span>
 					{/if}
-				{/if}
+				{/if*}
 			</span>
 			{if isset($module->description) && $module->description ne ''}
 			<p class="text-muted">
@@ -92,7 +93,7 @@
 		<td>&nbsp;</td>
 		<td align="right">
 			<p>
-				<a href="{$module->options.install_url}" class="btn btn-default">
+				<a href="{$module->options.install_url}" class="btn btn-success">
 					<i class="icon-plus-sign-alt"></i>
 					{l s='Install'}
 				</a>

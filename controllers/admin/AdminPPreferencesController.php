@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -103,6 +103,7 @@ class AdminPPreferencesControllerCore extends AdminController
 						'type' => 'bool'
 					)
 				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'order_by_pagination' => array(
 				'title' =>	$this->l('Pagination'),
@@ -132,7 +133,7 @@ class AdminPPreferencesControllerCore extends AdminController
 					),
 					'PS_PRODUCTS_ORDER_WAY' => array(
 						'title' => $this->l('Default order method'),
-						'hint' => $this->l('Default order method for product list'),
+						'hint' => $this->l('Default order method for product list.'),
 						'type' => 'select',
 						'list' => array(
 							array(
@@ -146,7 +147,8 @@ class AdminPPreferencesControllerCore extends AdminController
 						),
 						'identifier' => 'id'
 					)
-				)
+				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'fo_product_page' => array(
 				'title' =>	$this->l('Product page'),
@@ -159,7 +161,7 @@ class AdminPPreferencesControllerCore extends AdminController
 						'type' => 'bool'
 					),
 					'PS_LAST_QTIES' => array(
-						'title' => $this->l('Display remaining quantities when the qty is lower than'),
+						'title' => $this->l('Display remaining quantities when the quantity is lower than'),
 						'hint' => $this->l('Set to "0" to disable this feature.'),
 						'validation' => 'isUnsignedId',
 						'required' => true,
@@ -198,20 +200,21 @@ class AdminPPreferencesControllerCore extends AdminController
 					),
 					'PS_DISPLAY_DISCOUNT_PRICE' => array(
 						'title' => $this->l('Display discounted price'),
-						'desc' => $this->l('Instead of showing the discount (-5%) it will instead show the new price with the discount applied'),
+						'desc' => $this->l('In the volume discounts board, display the new price with the applied discount instead of showing the discount (ie. "-5%").'),
 						'validation' => 'isBool',
 						'cast' => 'intval',
 						'required' => false,
 						'type' => 'bool'
 					),
-				)
+				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'stock' => array(
 				'title' =>	$this->l('Products stock'),
 				'fields' =>	array(
 					'PS_ORDER_OUT_OF_STOCK' => array(
 		 				'title' => $this->l('Allow ordering of out-of-stock products'),
-		 				'hint' => $this->l('Add to cart button is hidden when a product is unavailable'),
+		 				'hint' => $this->l('By default, the Add to Cart button is hidden when a product is unavailable. You can choose to have it displayed in all cases.'),
 		 				'validation' => 'isBool',
 		 				'cast' => 'intval',
 		 				'required' => false,
@@ -229,8 +232,8 @@ class AdminPPreferencesControllerCore extends AdminController
 						)
 					),
 					'PS_ADVANCED_STOCK_MANAGEMENT' => array(
-						'title' => $this->l('Enable advanced-stock management'),
-						'hint' => $this->l('Allows you to manage physical stock, warehouses and supply orders.'),
+						'title' => $this->l('Enable advanced stock management'),
+						'hint' => $this->l('Allows you to manage physical stock, warehouses and supply orders in a new Stock menu.'),
 						'validation' => 'isBool',
 						'cast' => 'intval',
 						'required' => false,
@@ -239,7 +242,7 @@ class AdminPPreferencesControllerCore extends AdminController
 					),
 				),
 				'bottom' => '<script type="text/javascript">stockManagementActivationAuthorization();</script>',
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 		);
 	}

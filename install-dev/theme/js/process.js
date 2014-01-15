@@ -17,7 +17,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -96,8 +96,7 @@ function process_install(step)
 			}
 		},
 		// An error HTTP (page not found, json not valid, etc.) occured during this step
-		error: function()
-		{
+		error: function() {
 			install_error(step);
 		}
 	});
@@ -146,15 +145,11 @@ function process_install_subtask(step, current_subtask)
 				else
 					process_install_subtask(step, current_subtask);
 			}
-			// An error occured during this step
-			else
-			{
+			else 
 				install_error(step, (json) ? json.message : '');
-			}
 		},
 		// An error HTTP (page not found, json not valid, etc.) occured during this step
-		error: function()
-		{
+		error: function() {
 			install_error(step);
 		}
 	});

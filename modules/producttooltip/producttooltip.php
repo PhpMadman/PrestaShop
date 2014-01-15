@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -38,16 +38,16 @@ class ProductToolTip extends Module
 		$this->need_instance = 0;
 
 		$this->bootstrap = true;
-		parent::__construct();	
+		parent::__construct();
 
 		$this->displayName = $this->l('Product tooltips');
-		$this->description = $this->l('Show how many people are watching a product page, last sale and last cart added.');
+		$this->description = $this->l('Shows information on a product page: how many people are viewing it, the last time it was sold and the last time it was added to a cart.');
 	}
 
 	public function install()
 	{
-	 	if (!parent::install())
-	 		return false;
+		if (!parent::install())
+			return false;
 
 		/* Default configuration values */
 		Configuration::updateValue('PS_PTOOLTIP_PEOPLE', 1);
@@ -56,7 +56,7 @@ class ProductToolTip extends Module
 		Configuration::updateValue('PS_PTOOLTIP_DAYS', 3);
 		Configuration::updateValue('PS_PTOOLTIP_LIFETIME', 30);
 
-	 	return $this->registerHook('header') AND $this->registerHook('productfooter');
+		return $this->registerHook('header') AND $this->registerHook('productfooter');
 	}
 
 	public function uninstall()
@@ -92,7 +92,7 @@ class ProductToolTip extends Module
 
 	public function hookHeader($params)
 	{
-		$this->context->controller->addJQueryPlugin('jgrowl');
+		$this->context->controller->addJQueryPlugin('growl');
 	}
 
 	public function hookProductFooter($params)
@@ -148,7 +148,7 @@ class ProductToolTip extends Module
 		if ((isset($nbPeople['nb']) AND $nbPeople['nb'] > 0) OR isset($order['date_add']) OR isset($cart['date_add']))
 			return $this->display(__FILE__, 'producttooltip.tpl');
 	}
-	
+
 	public function renderForm()
 	{
 		$fields_form = array(
@@ -162,39 +162,40 @@ class ProductToolTip extends Module
 						'type' => 'switch',
 						'label' => $this->l('Number of visitors'),
 						'desc' => $this->l('Display the number of visitors who are currently watching this product?').'<br>'.
-								$this->l('If you activate the option above, you must activate the first option of StatData module'),
+							$this->l('If you activate the option above, you must activate the first option ("Save page views for each customer") of the "Data mining for statistics" (StatsData) module.'),
 						'name' => 'PS_PTOOLTIP_PEOPLE',
 						'values' => array(
-									array(
-										'id' => 'active_on',
-										'value' => 1,
-										'label' => $this->l('Enabled')
-									),
-									array(
-										'id' => 'active_off',
-										'value' => 0,
-										'label' => $this->l('Disabled')
-									)
-								),
+							array(
+								'id' => 'active_on',
+								'value' => 1,
+								'label' => $this->l('Enabled')
+							),
+							array(
+								'id' => 'active_off',
+								'value' => 0,
+								'label' => $this->l('Disabled')
+							)
 						),
+					),
 					array(
 						'type' => 'text',
 						'label' => $this->l('Period length'),
-						'desc' => 'For instance, if set to 30 minutes, display the number of visitors in the last 30 minutes.',
+						'desc' => $this->l('Set the reference period length.').'<br>'.
+							$this->l('For instance, if set to 30 minutes, display the number of visitors in the last 30 minutes.'),
 						'name' => 'PS_PTOOLTIP_LIFETIME',
-						'suffix' => 'minutes',
+						'suffix' => $this->l('minutes'),
 						'values' => array(
-									array(
-										'id' => 'active_on',
-										'value' => 1,
-										'label' => $this->l('Enabled')
-									),
-									array(
-										'id' => 'active_off',
-										'value' => 0,
-										'label' => $this->l('Disabled')
-									)
-								),
+							array(
+								'id' => 'active_on',
+								'value' => 1,
+								'label' => $this->l('Enabled')
+							),
+							array(
+								'id' => 'active_off',
+								'value' => 0,
+								'label' => $this->l('Disabled')
+							)
+						),
 					),
 					array(
 						'type' => 'switch',
@@ -202,49 +203,49 @@ class ProductToolTip extends Module
 						'desc' => $this->l('Display the last time the product has been ordered?'),
 						'name' => 'PS_PTOOLTIP_DATE_ORDER',
 						'values' => array(
-									array(
-										'id' => 'active_on',
-										'value' => 1,
-										'label' => $this->l('Enabled')
-									),
-									array(
-										'id' => 'active_off',
-										'value' => 0,
-										'label' => $this->l('Disabled')
-									)
-								),
+							array(
+								'id' => 'active_on',
+								'value' => 1,
+								'label' => $this->l('Enabled')
+							),
+							array(
+								'id' => 'active_off',
+								'value' => 0,
+								'label' => $this->l('Disabled')
+							)
+						),
 					),
 					array(
 						'type' => 'switch',
 						'label' => $this->l('Added to a cart'),
-						'desc' => $this->l('If not ordered yet, display the last time the product has been added to a cart?'),
+						'desc' => $this->l('If the product has not been ordered yet, display the last time the product has been added to a cart?'),
 						'name' => 'PS_PTOOLTIP_DATE_CART',
 						'values' => array(
-									array(
-										'id' => 'active_on',
-										'value' => 1,
-										'label' => $this->l('Enabled')
-									),
-									array(
-										'id' => 'active_off',
-										'value' => 0,
-										'label' => $this->l('Disabled')
-									)
-								),
+							array(
+								'id' => 'active_on',
+								'value' => 1,
+								'label' => $this->l('Enabled')
+							),
+							array(
+								'id' => 'active_off',
+								'value' => 0,
+								'label' => $this->l('Disabled')
+							)
+						),
 					),
 					array(
 						'type' => 'text',
 						'label' => $this->l('Do not display events older than'),
 						'name' => 'PS_PTOOLTIP_DAYS',
-						'suffix' => 'days'
+						'suffix' => $this->l('days')
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
-		
+
 		$helper = new HelperForm();
 		$helper->show_toolbar = false;
 		$helper->table =  $this->table;
@@ -265,7 +266,7 @@ class ProductToolTip extends Module
 
 		return $helper->generateForm(array($fields_form));
 	}
-	
+
 	public function getConfigFieldsValues()
 	{
 		return array(
@@ -277,5 +278,3 @@ class ProductToolTip extends Module
 		);
 	}
 }
-
-

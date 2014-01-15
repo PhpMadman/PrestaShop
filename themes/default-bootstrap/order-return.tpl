@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -94,11 +94,11 @@
 	<div class="box">
     	<h3 class="page-subheading">{l s='Reminder:'}</h3>
 		- {l s='All merchandise must be returned in its original packaging and in its original state.'}
-		<br />- {l s='Please print out the'} <a href="{$link->getPageLink('pdf-order-return', true, NULL, "id_order_return={$orderRet->id|intval}")|escape:'html'}">{l s='PDF return slip'}</a> {l s='and include it with your package.'}
-		<br />- {l s='Please see the PDF return slip'} (<a href="{$link->getPageLink('pdf-order-return', true, NULL, "id_order_return={$orderRet->id|intval}")|escape:'html'}">{l s='for the correct address'}</a>)
+		<br />- {l s='Please print out the'} <a href="{$link->getPageLink('pdf-order-return', true, NULL, "id_order_return={$orderRet->id|intval}")|escape:'html':'UTF-8'}">{l s='PDF return slip'}</a> {l s='and include it with your package.'}
+		<br />- {l s='Please see the PDF return slip'} (<a href="{$link->getPageLink('pdf-order-return', true, NULL, "id_order_return={$orderRet->id|intval}")|escape:'html':'UTF-8'}">{l s='for the correct address'}</a>)
 		<br /><br />
 		{l s='When we receive your package, we will notify you by email. We will then begin processing order reimbursement.'}
-		<br /><br /><a href="{$link->getPageLink('contact', true)|escape:'html'}">{l s='Please let us know if you have any questions.'}</a>
+		<br /><br /><a href="{$link->getPageLink('contact', true)|escape:'html':'UTF-8'}">{l s='Please let us know if you have any questions.'}</a>
 		<br />
 		<p class="bold">{l s='If the conditions of return listed above are not respected, we reserve the right to refuse your package and/or reimbursement.'}</p>
 	</div>

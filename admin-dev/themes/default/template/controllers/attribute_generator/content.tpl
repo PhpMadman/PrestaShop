@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -61,7 +61,6 @@
 	$(document).ready(function() { $('.price_impact').each(function() { calcPrice($(this), false); }); });
 </script>
 
-{include file="page_header_toolbar.tpl" toolbar_btn=$page_header_toolbar_btn title=$page_header_toolbar_title}
 <div class="leadin">{block name="leadin"}{/block}</div>
 
 {if $generate}<div class="module_confirmation conf confirm">{l s='%d product(s) successfully created.' sprintf=$combinations_size}</div>{/if}

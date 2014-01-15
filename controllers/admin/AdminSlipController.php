@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -70,7 +70,7 @@ class AdminSlipControllerCore extends AdminController
 						'type' => 'textLang'
 					)
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			)
 		);
 
@@ -80,8 +80,8 @@ class AdminSlipControllerCore extends AdminController
 	public function initPageHeaderToolbar()
 	{
 		$this->page_header_toolbar_btn['generate_pdf'] = array(
-			'href' => self::$currentIndex.'&amp;token='.$this->token,
-			'desc' => $this->l('Generate PDF'),
+			'href' => self::$currentIndex.'&token='.$this->token,
+			'desc' => $this->l('Generate PDF', null, null, false),
 			'icon' => 'process-icon-save-date'
 		);
 
@@ -115,9 +115,8 @@ class AdminSlipControllerCore extends AdminController
 			),
 			'submit' => array(
 				'title' => $this->l('Generate PDF file'),
-				'class' => 'btn btn-default',
 				'id' => 'submitPrint',
-				'icon' => 'icon-download-alt'
+				'icon' => 'process-icon-download-alt'
 			)
 		);
 
@@ -152,6 +151,7 @@ class AdminSlipControllerCore extends AdminController
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		$this->initToolbar();
 		$this->initPageHeaderToolbar();
 		$this->content .= $this->renderList();

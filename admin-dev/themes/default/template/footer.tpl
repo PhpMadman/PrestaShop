@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -26,12 +26,11 @@
 	</div>
 </div>
 {if $display_footer}
-{hook h="displayBackOfficeFooter"}
-<div id="footer" class="bootstrap">
-	<div class="col-sm-5 hidden-xs">
+<div id="footer" class="bootstrap hide">
+	<div class="col-sm-2 hidden-xs">
 		<a href="http://www.prestashop.com/" target="_blank">PrestaShop&trade; {$ps_version}</a>
 		-
-		<span id="footer-load-time"><i class="icon-time"></i> {l s='Load time: '} {number_format(microtime(true) - $timer_start, 3, '.', '')}s</span>
+		<span id="footer-load-time"><i class="icon-time" title="{l s='Load time: '}"></i> {number_format(microtime(true) - $timer_start, 3, '.', '')}s</span>
 	</div>
 	<div class="col-sm-2 hidden-xs social-networks">
 		<a class="link-social link-twitter" href="https://twitter.com/PrestaShop" target="_blank" title="Twitter">
@@ -48,7 +47,7 @@
 		</a>
 	</div>	
 
-	<div class="col-sm-5">
+	<div class="col-sm-3">
 		<a href="http://www.prestashop.com/en/contact_us?utm_source=backoffice_footer" target="_blank" class="footer_link">
 			<i class="icon-envelope"></i>
 			{l s='Contact'}
@@ -74,8 +73,14 @@
 		<p>
 		{/if}
 	</div>
+	<div class="col-sm-5">
+		{hook h="displayBackOfficeFooter"}
+	</div>
 	<div id="go-top" class="hide"><i class="icon-arrow-up"></i></div>
 </div>
+{/if}
+{if isset($php_errors)}
+	{include file="error.tpl"}
 {/if}
 </body>
 </html>

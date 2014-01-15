@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -41,13 +41,30 @@ class BlockStore extends Module
 		parent::__construct();	
 
 		$this->displayName = $this->l('Store locator block');
-		$this->description = $this->l('Displays a store locator link directly on your webiste.');
+		$this->description = $this->l('Displays an image link to PrestaShop\'s store locator feature.');
 	}
 
 	public function install()
 	{
-		Configuration::updateValue('BLOCKSTORE_IMG', 'store.jpg');
-		return parent::install() && $this->registerHook('rightColumn') && $this->registerHook('header');
+		if (!parent::install())
+			return false;
+
+		// Hook the module either on the left or right column
+		$theme = new Theme(Context::getContext()->shop->id_theme);
+		if ((!$theme->default_right_column || !$this->registerHook('rightColumn'))
+			&& (!$theme->default_left_column || !$this->registerHook('leftColumn')))
+		{
+			// If there are no colums implemented by the template, throw an error and uninstall the module
+			$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+			parent::uninstall();
+			return false;
+		}
+
+		if (file_exists(dirname(__FILE__).'/store.jpg'))
+			Configuration::updateValue('BLOCKSTORE_IMG', 'store.jpg');
+
+		// Hook the module at the end on the header, only if it has been hooked 
+		return $this->registerHook('header');
 	}
 
 	public function uninstall()
@@ -90,7 +107,7 @@ class BlockStore extends Module
 			if (isset($_FILES['BLOCKSTORE_IMG']) && isset($_FILES['BLOCKSTORE_IMG']['tmp_name']) && !empty($_FILES['BLOCKSTORE_IMG']['tmp_name']))
 			{
 				if ($error = ImageManager::validateUpload($_FILES['BLOCKSTORE_IMG'], 4000000))
-					return $this->displayError($this->l('Invalid image'));
+					return $this->displayError($this->l('Invalid image.'));
 				else
 				{
 					$ext = substr($_FILES['BLOCKSTORE_IMG']['name'], strrpos($_FILES['BLOCKSTORE_IMG']['name'], '.') + 1);
@@ -99,9 +116,9 @@ class BlockStore extends Module
 						return $this->displayError($this->l('An error occurred while attempting to upload the file.'));
 					else
 					{
-						if (Configuration::hasContext('BLOCKBLOCKSTORE_IMG', null, Shop::getContext()) && Configuration::get('BLOCKBLOCKSTORE_IMG') != $file_name)
-							@unlink(dirname(__FILE__).'/'.Configuration::get('BLOCKBLOCKSTORE_IMG'));
-						Configuration::updateValue('BLOCKBLOCKSTORE_IMG', $file_name);
+						if (Configuration::hasContext('BLOCKSTORE_IMG', null, Shop::getContext()) && Configuration::get('BLOCKSTORE_IMG') != $file_name)
+							@unlink(dirname(__FILE__).'/'.Configuration::get('BLOCKSTORE_IMG'));
+						Configuration::updateValue('BLOCKSTORE_IMG', $file_name);
 						$this->_clearCache('blockstore.tpl');
 						return $this->displayConfirmation($this->l('The settings have been updated.'));
 					}
@@ -130,13 +147,13 @@ class BlockStore extends Module
 						'type' => 'file',
 						'label' => $this->l('Block image'),
 						'name' => 'BLOCKSTORE_IMG',
-						'desc' => $this->l('( The selected image will be displayed as 174x115 )'),
-						'thumb' => '../modules/'.$this->name.'/'.Configuration::get('BLOCKBLOCKSTORE_IMG'),
+						'desc' => $this->l('( The selected image will be displayed as 174 pixels per 115 pixels).'),
+						'thumb' => '../modules/'.$this->name.'/'.Configuration::get('BLOCKSTORE_IMG'),
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

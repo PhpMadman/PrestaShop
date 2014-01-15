@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -108,9 +108,9 @@ class InstallControllerHttpSystem extends InstallControllerHttp
 						'img_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/img/'),
 						'mails_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/mails/'),
 						'module_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/modules/'),
-						'theme_lang_dir' => $this->l('Recursive write permissions  for %1$s user on %2$s', $user, '~/themes/default/lang/'),
-						'theme_pdf_lang_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/themes/default/pdf/lang/'),
-						'theme_cache_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/themes/default/cache/'),
+						'theme_lang_dir' => $this->l('Recursive write permissions  for %1$s user on %2$s', $user, '~/themes/default-bootstrap/lang/'),
+						'theme_pdf_lang_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/themes/default-bootstrap/pdf/lang/'),
+						'theme_cache_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/themes/default-bootstrap/cache/'),
 						'translations_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/translations/'),
 						'customizable_products_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/upload/'),
 						'virtual_products_dir' => $this->l('Recursive write permissions for %1$s user on %2$s', $user, '~/download/')

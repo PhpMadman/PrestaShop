@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -67,17 +67,42 @@
 				{/if}
 				</td>
 				<td>
-					{foreach from=$languages key=k item=language}
+				
+				<div class="row lang-0" style='display: none;'>
+					<div class="col-lg-9">
+						<textarea class="custom_{$available_feature.id_feature}_ALL textarea-autosize"	name="custom_{$available_feature.id_feature}_ALL"
+								cols="40" style='background-color:#CCF'	rows="1" onkeyup="{foreach from=$languages key=k item=language}$('.custom_{$available_feature.id_feature}_{$language.id_lang}').val($(this).val());{/foreach}" >{$available_feature.val[1].value|escape:'html':'UTF-8'|default:""}</textarea>
+								
+					</div>
+					{if $languages|count > 1}
+						<div class="col-lg-3">
+							<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+										{l s='ALL'}
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
+								{foreach from=$languages item=language}
+									<li>
+										<a href="javascript:void(0);" onclick="restore_lng($(this),{$language.id_lang});">{$language.iso_code}</a>
+									</li>
+								{/foreach}
+							</ul>
+						</div>
+					{/if}
+				</div>
+			
+				{foreach from=$languages key=k item=language}
 					{if $languages|count > 1}
 					<div class="row translatable-field lang-{$language.id_lang}">
 						<div class="col-lg-9">
-					{/if}
-							<textarea
+						{/if}
+						<textarea
 								class="custom_{$available_feature.id_feature}_{$language.id_lang} textarea-autosize"
 								name="custom_{$available_feature.id_feature}_{$language.id_lang}"
 								cols="40"
 								rows="1"
 								onkeyup="if (isArrowKey(event)) return ;$('#feature_{$available_feature.id_feature}_value').val(0);" >{$available_feature.val[$k].value|escape:'html':'UTF-8'|default:""}</textarea>
+								
 					{if $languages|count > 1}
 						</div>
 						<div class="col-lg-3">
@@ -86,6 +111,7 @@
 								<span class="caret"></span>
 							</button>
 							<ul class="dropdown-menu">
+								<li><a href="javascript:void(0);" onclick="all_languages($(this));">{l s='ALL'}</a></li>								
 								{foreach from=$languages item=language}
 								<li>
 									<a href="javascript:hideOtherLanguage({$language.id_lang});">{$language.iso_code}</a>
@@ -112,7 +138,31 @@
 	</a>
 </div>
 {/if}
+{literal}
 <script type="text/javascript">
 	hideOtherLanguage(default_language);
 	$(".textarea-autosize").autosize();
+
+	function all_languages(pos)
+	{
+{/literal}
+{foreach from=$languages key=k item=language}
+		pos.parents('td').find('.lang-{$language.id_lang}').addClass('nolang-{$language.id_lang}').removeClass('lang-{$language.id_lang}');
+{/foreach}
+		pos.parents('td').find('.translatable-field').hide();
+		pos.parents('td').find('.lang-0').show();
+{literal}
+	}
+
+	function restore_lng(pos,i)
+	{
+{/literal}
+{foreach from=$languages key=k item=language}
+		pos.parents('td').find('.nolang-{$language.id_lang}').addClass('lang-{$language.id_lang}').removeClass('nolang-{$language.id_lang}');
+{/foreach}
+{literal}
+		pos.parents('td').find('.lang-0').hide();
+		hideOtherLanguage(i);
+	}
 </script>
+{/literal}

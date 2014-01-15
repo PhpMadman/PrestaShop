@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -89,15 +89,14 @@ class AuthControllerCore extends FrontController
 
 		$this->context->smarty->assign('newsletter', 1);
 
-		if ($back = Tools::safeOutput(Tools::getValue('back')))
-		{
-			$key = Tools::safeOutput(Tools::getValue('key'));
-			if (!empty($key))
-				$back .= (strpos($back, '?') !== false ? '&' : '?').'key='.$key;
-			if ($back == Tools::secureReferrer(Tools::getValue('back')))
-				$this->context->smarty->assign('back', html_entity_decode($back));
-			$this->context->smarty->assign('back', $back);
-		}
+		$back = Tools::getValue('back');
+		$key = Tools::safeOutput(Tools::getValue('key'));
+		if (!empty($key))
+			$back .= (strpos($back, '?') !== false ? '&' : '?').'key='.$key;
+		if ($back == Tools::secureReferrer(Tools::getValue('back')))
+			$this->context->smarty->assign('back', html_entity_decode($back));
+		else
+			$this->context->smarty->assign('back', Tools::safeOutput($back));
 	
 		if (Tools::getValue('display_guest_checkout'))
 		{

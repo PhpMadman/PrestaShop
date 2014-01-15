@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -56,6 +56,11 @@ class Dashproducts extends Module
 	public function hookDashboardZoneTwo($params)
 	{
 		$this->context->smarty->assign(array(
+			'DASHACTIVITY_CART_ACTIVE' => Configuration::get('DASHACTIVITY_CART_ACTIVE'),
+			'DASHACTIVITY_VISITOR_ONLINE' => Configuration::get('DASHACTIVITY_VISITOR_ONLINE'),
+			'DASHPRODUCT_NBR_SHOW_LAST_ORDER' => Configuration::get('DASHPRODUCT_NBR_SHOW_LAST_ORDER'),
+			'DASHPRODUCT_NBR_SHOW_BEST_SELLER' => Configuration::get('DASHPRODUCT_NBR_SHOW_BEST_SELLER'),
+			'DASHPRODUCT_NBR_SHOW_TOP_SEARCH' => Configuration::get('DASHPRODUCT_NBR_SHOW_TOP_SEARCH'),
 			'date_from' => Tools::displayDate($params['date_from']),
 			'date_to' => Tools::displayDate($params['date_to']),
 			'dashproducts_config_form' => $this->renderConfigForm(),
@@ -165,7 +170,7 @@ class Dashproducts extends Module
 			),
 			array(
 				'id' => 'net_profit',
-				'title' => $this->l('Net Profit'),
+				'title' => $this->l('Net profit'),
 				'class' => 'text-center',
 			)
 		);
@@ -469,7 +474,7 @@ class Dashproducts extends Module
 				'input' => array(),
 				'submit' => array(
 					'title' => $this->l('   Save   '),
-					'class' => 'btn btn-default submit_dash_config',
+					'class' => 'btn btn-default pull-right submit_dash_config',
 					'reset' => array(
 						'title' => $this->l('Cancel'),
 						'class' => 'btn btn-default cancel_dash_config',
@@ -479,10 +484,10 @@ class Dashproducts extends Module
 		);
 			
 		$inputs = array(
-			array('label' => $this->l('Number of "Last orders" to display:'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_LAST_ORDER'),
-			array('label' => $this->l('Number of "Best Sellers" to display:'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_BEST_SELLER'),
-			array('label' => $this->l('Number of "Most Viewed" to display:'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_MOST_VIEWED'),
-			array('label' => $this->l('Number of "Top Search" to display:'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_TOP_SEARCH'),
+			array('label' => $this->l('Number of "Recent Orders" to display'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_LAST_ORDER'),
+			array('label' => $this->l('Number of "Best Sellers" to display'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_BEST_SELLER'),
+			array('label' => $this->l('Number of "Most Viewed" to display'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_MOST_VIEWED'),
+			array('label' => $this->l('Number of "Top Search" to display'), 'config_name' => 'DASHPRODUCT_NBR_SHOW_TOP_SEARCH'),
 		);
 		
 		foreach($inputs as $input)

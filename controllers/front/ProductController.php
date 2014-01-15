@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -42,7 +42,7 @@ class ProductControllerCore extends FrontController
 			$this->addCSS(_THEME_CSS_DIR_.'product.css');
 			$this->addJqueryPlugin(array('fancybox', 'idTabs', 'scrollTo', 'serialScroll'));
 			$this->addJS(array(
-				_THEME_JS_DIR_.'tools.js',
+				_THEME_JS_DIR_.'tools.js',  // retro compat themes 1.5
 				_THEME_JS_DIR_.'product.js'
 			));
 		}
@@ -50,7 +50,7 @@ class ProductControllerCore extends FrontController
 		{
 			$this->addJqueryPlugin(array('scrollTo', 'serialScroll'));
 			$this->addJS(array(
-				_THEME_JS_DIR_.'tools.js',
+				_THEME_JS_DIR_.'tools.js',  // retro compat themes 1.5
 				_THEME_MOBILE_JS_DIR_.'product.js',
 				_THEME_MOBILE_JS_DIR_.'jquery.touch-gallery.js'
 			));
@@ -245,7 +245,7 @@ class ProductControllerCore extends FrontController
 
 			$this->context->smarty->assign(array(
 				'stock_management' => Configuration::get('PS_STOCK_MANAGEMENT'),
-				'customizationFields' => ($this->product->customizable) ? $this->product->getCustomizationFields($this->context->language->id) : false,
+				'customizationFields' => $this->product->customizable ? $this->product->getCustomizationFields($this->context->language->id) : false,
 				'accessories' => $this->product->getAccessories($this->context->language->id),
 				'return_link' => $return_link,
 				'product' => $this->product,
@@ -261,6 +261,7 @@ class ProductControllerCore extends FrontController
 				'HOOK_PRODUCT_ACTIONS' => Hook::exec('displayProductButtons', array('product' => $this->product)),
 				'HOOK_PRODUCT_TAB' =>  Hook::exec('displayProductTab', array('product' => $this->product)),
 				'HOOK_PRODUCT_TAB_CONTENT' =>  Hook::exec('displayProductTabContent', array('product' => $this->product)),
+				'HOOK_PRODUCT_CONTENT' =>  Hook::exec('displayProductContent', array('product' => $this->product)),
 				'display_qties' => (int)Configuration::get('PS_DISPLAY_QTIES'),
 				'display_ht' => !Tax::excludeTaxeOption(),
 				'currencySign' => $this->context->currency->sign,
@@ -276,7 +277,8 @@ class ProductControllerCore extends FrontController
 					$this->php_self.'-'.$this->product->link_rewrite,
 					'category-'.$this->category->id,
 					'category-'.$this->category->link_rewrite
-				)
+				),
+				'display_discount_price' => Configuration::get('PS_DISPLAY_DISCOUNT_PRICE'),
 			));
 		}
 		$this->setTemplate(_PS_THEME_DIR_.'product.tpl');
@@ -292,7 +294,7 @@ class ProductControllerCore extends FrontController
 		$id_country = (int)$id_customer ? Customer::getCurrentCountry($id_customer) : Configuration::get('PS_COUNTRY_DEFAULT');
 
 		$group_reduction = GroupReduction::getValueForProduct($this->product->id, $id_group);
-		if ($group_reduction == 0)
+		if ($group_reduction === false)
 			$group_reduction = Group::getReduction((int)$this->context->cookie->id_customer) / 100;
 
 		// Tax
@@ -406,7 +408,7 @@ class ProductControllerCore extends FrontController
 			foreach ($attributes_groups as $k => $row)
 			{
 				// Color management
-				if ((isset($row['attribute_color']) && $row['attribute_color']) || (file_exists(_PS_COL_IMG_DIR_.$row['id_attribute'].'.jpg')))
+				if (isset($row['is_color_group']) && $row['is_color_group'] && (isset($row['attribute_color']) && $row['attribute_color']) || (file_exists(_PS_COL_IMG_DIR_.$row['id_attribute'].'.jpg')))
 				{
 					$colors[$row['id_attribute']]['value'] = $row['attribute_color'];
 					$colors[$row['id_attribute']]['name'] = $row['attribute_name'];
@@ -447,7 +449,10 @@ class ProductControllerCore extends FrontController
 				$combinations[$row['id_product_attribute']]['unit_impact'] = $row['unit_price_impact'];
 				$combinations[$row['id_product_attribute']]['minimal_quantity'] = $row['minimal_quantity'];
 				if ($row['available_date'] != '0000-00-00')
+				{
 					$combinations[$row['id_product_attribute']]['available_date'] = $row['available_date'];
+					$combinations[$row['id_product_attribute']]['date_formatted'] = Tools::displayDate($row['available_date']);
+				}
 				else
 					$combinations[$row['id_product_attribute']]['available_date'] = '';
 
@@ -498,15 +503,17 @@ class ProductControllerCore extends FrontController
 			{
 				$attribute_list = '';
 				foreach ($comb['attributes'] as $id_attribute)
-					$attribute_list .= '\''.(int)$id_attribute.'\',';
+					$attribute_list .= (int)$id_attribute.',';
 				$attribute_list = rtrim($attribute_list, ',');
 				$combinations[$id_product_attribute]['list'] = $attribute_list;
 			}
+
 			$this->context->smarty->assign(array(
 				'groups' => $groups,
-				'combinations' => $combinations,
 				'colors' => (count($colors)) ? $colors : false,
-				'combinationImages' => $combination_images));
+				'combinations' => $combinations,
+				'combinationImages' => $combination_images
+			));
 		}
 	}
 

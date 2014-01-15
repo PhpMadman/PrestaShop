@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -89,8 +89,8 @@ class AdminGendersControllerCore extends AdminController
 	{
 		if(empty($this->display))
 			$this->page_header_toolbar_btn['new_gender'] = array(
-				'href' => self::$currentIndex.'&amp;addgender&amp;token='.$this->token,
-				'desc' => $this->l('Add new title'),
+				'href' => self::$currentIndex.'&addgender&token='.$this->token,
+				'desc' => $this->l('Add new title', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 
@@ -162,7 +162,6 @@ class AdminGendersControllerCore extends AdminController
 			),
 			'submit' => array(
 				'title' => $this->l('Save'),
-				'class' => 'btn btn-default'
 			)
 		);
 

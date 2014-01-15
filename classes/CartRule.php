@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -167,7 +167,7 @@ class CartRuleCore extends ObjectModel
 	 */
 	public static function copyConditions($id_cart_rule_source, $id_cart_rule_destination)
 	{
-		Db::getInstance()->execute('
+		Db::getInstance()->execute(' 
 		INSERT INTO `'._DB_PREFIX_.'cart_rule_shop` (`id_cart_rule`, `id_shop`)
 		(SELECT '.(int)$id_cart_rule_destination.', id_shop FROM `'._DB_PREFIX_.'cart_rule_shop` WHERE `id_cart_rule` = '.(int)$id_cart_rule_source.')');
 		Db::getInstance()->execute('
@@ -187,6 +187,40 @@ class CartRuleCore extends ObjectModel
 		// Todo : should be changed soon, be must be copied too
 		// Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'cart_rule_product_rule` WHERE `id_cart_rule` = '.(int)$this->id);
 		// Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'cart_rule_product_rule_value` WHERE `id_product_rule` NOT IN (SELECT `id_product_rule` FROM `'._DB_PREFIX_.'cart_rule_product_rule`)');
+
+		// Copy products/category filters
+		$products_rules_group_source = Db::getInstance()->ExecuteS('
+		SELECT id_product_rule_group,quantity FROM `'._DB_PREFIX_.'cart_rule_product_rule_group` 
+		WHERE `id_cart_rule` = '.(int)$id_cart_rule_source.' ');
+
+		foreach ($products_rules_group_source as $product_rule_group_source)
+		{
+			Db::getInstance()->execute('
+			INSERT INTO `'._DB_PREFIX_.'cart_rule_product_rule_group` (`id_cart_rule`, `quantity`) 
+			VALUES ('.(int)$id_cart_rule_destination.','.(int)$product_rule_group_source['quantity'].')');
+			$id_product_rule_group_destination = Db::getInstance()->Insert_ID();
+
+			$products_rules_source = Db::getInstance()->ExecuteS('
+			SELECT id_product_rule,type FROM `'._DB_PREFIX_.'cart_rule_product_rule` 
+			WHERE `id_product_rule_group` = '.(int)$product_rule_group_source['id_product_rule_group'].' ');
+
+			foreach ($products_rules_source as $product_rule_source)
+			{
+				Db::getInstance()->execute('
+				INSERT INTO `'._DB_PREFIX_.'cart_rule_product_rule` (`id_product_rule_group`, `type`) 
+				VALUES ('.(int)$id_product_rule_group_destination.',"'.pSQL($product_rule_source['type']).'")');
+				$id_product_rule_destination = Db::getInstance()->Insert_ID();
+
+				$products_rules_values_source = Db::getInstance()->ExecuteS('
+				SELECT id_item FROM `'._DB_PREFIX_.'cart_rule_product_rule_value` 
+				WHERE `id_product_rule` = '.(int)$product_rule_source['id_product_rule'].' ');
+
+				foreach ($products_rules_values_source as $product_rule_value_source)
+					Db::getInstance()->execute('
+					INSERT INTO `'._DB_PREFIX_.'cart_rule_product_rule_value` (`id_product_rule`, `id_item`) 
+					VALUES ('.(int)$id_product_rule_destination.','.(int)$product_rule_value_source['id_item'].')');
+			}
+		}
 	}
 
 	/**
@@ -328,7 +362,7 @@ class CartRuleCore extends ObjectModel
 	public static function deleteByIdCustomer($id_customer)
 	{
 		$return = true;
-		$cart_rules = new Collection('CartRule');
+		$cart_rules = new PrestaShopCollection('CartRule');
 		$cart_rules->where('id_customer', '=', $id_customer);
 		foreach ($cart_rules as $cart_rule)
 			$return &= $cart_rule->delete();
@@ -408,13 +442,8 @@ class CartRuleCore extends ObjectModel
 			LEFT JOIN '._DB_PREFIX_.'order_cart_rule od ON o.id_order = od.id_order
 			WHERE o.id_customer = '.$context->cart->id_customer.'
 			AND od.id_cart_rule = '.(int)$this->id.'
-			AND '.(int)Configuration::get('PS_OS_ERROR').' != (
-				SELECT oh.id_order_state
-				FROM '._DB_PREFIX_.'order_history oh
-				WHERE oh.id_order = o.id_order
-				ORDER BY oh.date_add DESC
-				LIMIT 1
-			)');
+			AND '.(int)Configuration::get('PS_OS_ERROR').' != o.current_state
+			');
 			if ($quantityUsed + 1 > $this->quantity_per_user)
 				return (!$display_error) ? false : Tools::displayError('You cannot use this voucher anymore (usage limit reached)');
 		}

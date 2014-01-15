@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -57,6 +57,21 @@
 			$('select[name=type]').change(function() {
 				addThemeSelect();
 			});
+
+			$('#translations-languages a').click(function(e) {
+				e.preventDefault();
+				$(this).parent().addClass('active').siblings().removeClass('active');
+				$('#language-button').html($(this).html()+' <span class="caret"></span>');
+			});
+
+			$('#modify-translations').click(function(e) {
+				var lang = $('#translations-languages li.active').data('type');
+
+				if (lang == null)
+					return !alert('{l s='Please select your language!'}');
+				
+				chooseTypeTranslation($('#translations-languages li.active').data('type'));
+			});
 		});
 	</script>
 	
@@ -67,13 +82,13 @@
 				{l s='Modify translations'}
 			</h3>
 			<p class="alert alert-info">
-				{l s='Here you can modify translations for every line of code inside PrestaShop.'}<br />
-				{l s='First, select a section (such as Back Office or Installed modules), and then click the flag representing the language you want to edit.'}
+				{l s='Here you can modify translations for every line of text inside PrestaShop.'}<br />
+				{l s='First, select a type of translation (such as "Back Office" or "Installed modules"), and then select the language you want to translate strings in.'}
 			</p>
 			<div class="form-group">
 				<input type="hidden" name="controller" value="AdminTranslations" />
 				<input type="hidden" name="lang" id="translation_lang" value="0" />
-				<label class="control-label col-lg-3" for="type">{l s='Type of translation:'}</label>
+				<label class="control-label col-lg-3" for="type">{l s='Type of translation'}</label>
 				<div class="col-lg-4">
 					<select name="type" id="type">
 						{foreach $translations_type as $type => $array}
@@ -83,7 +98,7 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label class="control-label col-lg-3" for="theme">{l s='Choose your theme:'}</label>
+				<label class="control-label col-lg-3" for="theme">{l s='Select your theme'}</label>
 				<div class="col-lg-4">
 					<select name="theme" id="theme">
 						<option value="">{l s='Core (no theme selected)'}</option>
@@ -94,23 +109,23 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label class="control-label col-lg-3" for="language-button">{l s='Select your language:'}</label>
+				<label class="control-label col-lg-3" for="language-button">{l s='Select your language'}</label>
 				<div class="input-group col-lg-4">
 					<button type="button" id="language-button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-						{l s='Language'}
-						<span class="caret"></span>
+						{l s='Language'} <span class="caret"></span>
 					</button>
-					<ul class="dropdown-menu">
+					<ul class="dropdown-menu" id="translations-languages">
 						{foreach $languages as $language}
-						<li>
-							<a href="javascript:chooseTypeTranslation('{$language['iso_code']}');">
-								{$language['name']}
-							</a>
-						</li>
+						<li data-type="{$language['iso_code']}"><a href="#">{$language['name']}</a></li>
 						{/foreach}
 					</ul>
 				</div>
 				<input type="hidden" name="token" value="{$token}" />
+			</div>
+			<div class="panel-footer">
+				<button type="button" class="btn btn-default pull-right" id="modify-translations">
+					<i class="process-icon-edit"></i> {l s='Modify'}
+				</button>
 			</div>
 		</div>
 	</form>
@@ -122,14 +137,14 @@
 			</h3>
 			<div id="submitAddLangContent" class="form-group">
 				<p class="alert alert-info">
-					{l s='You can add or update a language directly from the PrestaShop website here:'}<br/>
+					{l s='You can add or update a language directly from the PrestaShop website here.'}<br/>
 					{l s='If you choose to update an existing language pack, all of your previous customization\'s in the theme named "Default" will be lost. This includes Front Office expressions and default email templates.'}
 				</p>
 				{if $packs_to_update || $packs_to_install}
-					<label class="control-label col-lg-3" for="params_import_language">{l s='Please select the language you want to add or update:'}</label>
+					<label class="control-label col-lg-3" for="params_import_language">{l s='Please select the language you want to add or update'}</label>
 					<div class="col-lg-9">
 						<div class="row">
-							<div class="col-sm-8">
+							<div class="col-lg-6">
 								<select id="params_import_language" name="params_import_language">
 								<optgroup label="{l s='Update a language'}">
 									{foreach $packs_to_update as $lang_pack}
@@ -143,19 +158,17 @@
 								</optgroup>
 							</select> 
 							</div>
-							<div class="col-sm-4">
-								<button type="submit" name="submitAddLanguage" class="btn btn-default">
-									<i class="icon-plus"></i>
-									{l s='Add or update a language'}
-								</button>
-							</div>
-							
 						</div>
 					</div>
 					
 				{else}
 					<p class="text-danger">{l s='Cannot connect to the PrestaShop website to get the language list.'}</p>
 				{/if}				
+			</div>
+			<div class="panel-footer">
+				<button type="submit" name="submitAddLanguage" class="btn btn-default pull-right">
+					<i class="process-icon-cogs"></i> {l s='Add or update a language'}
+				</button>
 			</div>
 		</div>
 	</form>
@@ -167,11 +180,11 @@
 				{l s='Import a language pack manually'}
 			</h3>
 			<p class="alert alert-info">
-				{l s='If the language file format is: isocode.gzip (e.g. us.gzip), and the language corresponding to this package does not exist, it will automatically be created.'}
+				{l s='If the language file format is ISO_code.gzip (e.g. "us.gzip"), and the language corresponding to this package does not exist, it will automatically be created.'}
 				{l s='Warning: This will replace all of the existing data inside the destination language.'}
 			</p>
 			<div class="form-group">
-				<label for="importLanguage" class="control-label col-lg-3" for="importLanguage">{l s='Language pack to import:'}</label>
+				<label for="importLanguage" class="control-label col-lg-3" for="importLanguage">{l s='Language pack to import'}</label>
 				<div class="col-lg-4">
 					<div class="form-group">
 						<div class="col-lg-12">
@@ -190,7 +203,7 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label for="selectThemeForImport" class="control-label col-lg-3" for="selectThemeForImport">{l s='Select your theme:'}</label>
+				<label for="selectThemeForImport" class="control-label col-lg-3" for="selectThemeForImport">{l s='Select your theme'}</label>
 				<div class="col-lg-4">
 					<select name="theme[]" id="selectThemeForImport" {if count($themes) > 1}multiple="multiple"{/if} >
 						{foreach $themes as $theme}
@@ -199,10 +212,8 @@
 					</select>
 				</div>
 			</div>
-			<div class="form-group">
-				<div class="col-lg-9 pull-right">
-					<input type="submit" value="{l s='   Import   '}" name="submitImport" class="btn btn-default" />
-				</div>
+			<div class="panel-footer">
+				<button type="submit" name="submitImport" class="btn btn-default pull-right"><i class="process-icon-upload"></i> {l s='Import'}</button>
 			</div>
 		</div>
 	</form>
@@ -215,10 +226,10 @@
 			</h3>
 			<p class="alert alert-info">
 				{l s='Export data from one language to a file (language pack).'}<br />
-				{l s='Choose which theme you\'d like to export your translations to. '}
+				{l s='Select which theme you\'d like to export your translations to. '}
 			</p>
 			<div class="form-group">
-				<label class="control-label col-lg-3" for="iso_code">{l s='Language:'}</label>
+				<label class="control-label col-lg-3" for="iso_code">{l s='Language'}</label>
 				<div class="col-lg-4">
 					<select name="iso_code" id="iso_code">
 						{foreach $languages as $language}
@@ -228,7 +239,7 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label class="control-label col-lg-3" for="export-theme">{l s='Choose your theme:'}</label>
+				<label class="control-label col-lg-3" for="export-theme">{l s='Select your theme'}</label>
 				<div class="col-lg-4">
 					<select name="theme" id="export-theme">
 						{foreach $themes as $theme}
@@ -237,10 +248,8 @@
 					</select>
 				</div>
 			</div>
-			<div class="form-group">
-				<div class="col-lg-9 pull-right">
-					<input type="submit" class="btn btn-default" name="submitExport" value="{l s='Export'}" />
-				</div>
+			<div class="panel-footer">
+				<button type="submit" name="submitExport" class="btn btn-default pull-right"><i class="process-icon-download"></i> {l s='Export'}</button>
 			</div>
 		</div>
 	</form>
@@ -257,7 +266,7 @@
 				{l s='If necessary'}, <b><a href="{$url_create_language}" class="btn btn-link"><i class="icon-external-link-sign"></i> {l s='you must first create a new language.'}</a></b>.
 			</p>
 			<div class="form-group">
-				<label class="control-label col-lg-3 required" for="fromLang"> {l s='From:'}</label>
+				<label class="control-label col-lg-3 required" for="fromLang"> {l s='From'}</label>
 				<div class="col-lg-4">
 					<select name="fromLang" id="fromLang">
 						{foreach $languages as $language}
@@ -274,7 +283,7 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label class="control-label col-lg-3" for="toLang">{l s='To:'}</label>
+				<label class="control-label col-lg-3" for="toLang">{l s='To'}</label>
 				<div class="col-lg-4">
 					<select name="toLang" id="toLang">
 						{foreach $languages as $language}
@@ -291,15 +300,13 @@
 				</div>			
 			</div>
 			<div class="form-group">
-				<div class="col-lg-9 pull-right">
-					<input type="submit" value="{l s='Copy'}" name="submitCopyLang" class="btn btn-default" />
-				</div>
-			</div>
-			<div class="form-group">
 				<p class="col-lg-12 text-muted required">
 					<span class="text-danger">*</span>
 					{l s='Language files must be complete to allow copying of translations.'}
 				</p>
+			</div>
+			<div class="panel-footer">
+				<button type="submit" name="submitCopyLang" class="btn btn-default pull-right"><i class="process-icon-duplicate"></i> {l s='Copy'}</button>
 			</div>
 		</div>
 	</form>

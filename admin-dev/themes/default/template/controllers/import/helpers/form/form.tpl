@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 **
 * NOTICE OF LICENSE
 **
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 **
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -48,7 +48,7 @@
 					</li>
 				</ul>
 			</div>
-			<hr>
+			<hr />
 			<form id="preview_import" action="{$current}&token={$token}" method="post" enctype="multipart/form-data" class="form-horizontal">
 				<div class="form-group">
 					<label for="entity" class="control-label col-lg-4">{l s='What kind of entity would you like to import?'} </label>
@@ -71,7 +71,7 @@
 				<div class="alert alert-warning import_supply_orders_details">
 					<p>{l s='Importing Supply Order Details will reset products ordered, if there are any.'}</p>
 				</div>
-				<hr>
+				<hr />
 				<div class="form-group" id="csv_file_uploader">
 					<label for="file" class="control-label col-lg-4">{l s='Select your CSV file'}</label>
 					<div class="col-lg-8">
@@ -169,7 +169,7 @@
 				</div>
 				<div class="form-group" id="csv_file_selected" style="display: none;">
 					<div class="alert alert-success clearfix">
-						<input type="hidden" value="{$filename}" name="csv" id="csv_selected_value">
+						<input type="hidden" value="{$csv_selected}" name="csv" id="csv_selected_value" />
 						<div class="col-lg-8">
 							<span id="csv_selected_filename">{$csv_selected|escape:'html':'UTF-8'}</span>
 						</div>
@@ -183,7 +183,7 @@
 						</div>
 					</div>
 				</div>
-				<hr>
+				<hr />
 				<div class="form-group">
 					<label for="iso_lang" class="control-label col-lg-4">
 						<span title="" data-toggle="tooltip" class="label-tooltip" data-original-title="{l s='The locale must be installed'}">
@@ -207,7 +207,7 @@
 								<span>{l s='Yes'}</span>
 								<span>{l s='No'}</span>
 							</span>
-							<a class="slide-button btn btn-default"></a>
+							<a class="slide-button btn"></a>
 						</label>
 					</div>
 				</div>
@@ -235,7 +235,7 @@
 								<span>{l s='Yes'}</span>
 								<span>{l s='No'}</span>
 							</span>
-							<a class="slide-button btn btn-default"></a>
+							<a class="slide-button btn"></a>
 						</label>
 					</div>
 				</div>
@@ -248,7 +248,7 @@
 								<span>{l s='Yes'}</span>
 								<span>{l s='No'}</span>
 							</span>
-							<a class="slide-button btn btn-default"></a>
+							<a class="slide-button btn"></a>
 						</label>
 					</div>
 				</div>
@@ -261,7 +261,7 @@
 								<span>{l s='Yes'}</span>
 								<span>{l s='No'}</span>
 							</span>
-							<a class="slide-button btn btn-default"></a>
+							<a class="slide-button btn"></a>
 						</label>
 					</div>
 				</div>
@@ -278,7 +278,7 @@
 								<span>{l s='Yes'}</span>
 								<span>{l s='No'}</span>
 							</span>
-							<a class="slide-button btn btn-default"></a>
+							<a class="slide-button btn"></a>
 						</label>
 					</div>
 				</div>
@@ -377,13 +377,6 @@
 		$('#csv_file_uploader').show();
 	}
 
-	function activeClueTip() {
-		$('.info_import').cluetip({
-			splitTitle: '|',
-			showTitle: false
-		});
-	};
-
 	// add a disabled state when empty history
 	function enableHistory(){
 		if($('.csv-history-nb').text() == 0){
@@ -418,7 +411,6 @@
 						else {
 							$(data.context).find('button').remove();
 
-							console.log(data.result.file);
 							var filename = encodeURIComponent(data.result.file.filename);
 							var row = $('#csv_uploaded_history tr:first').clone();
 
@@ -478,8 +470,6 @@
 		var truncateAuthorized = {$truncateAuthorized|intval};
 
 		enableHistory();
-
-		activeClueTip();
 		
 		$('#preview_import').submit(function(e) {
 			if ($('#truncate').get(0).checked) {
@@ -496,10 +486,10 @@
 
 		$("select#entity").change(function() {
 			if ($("#entity > option:selected").val() == 8 || $("#entity > option:selected").val() == 9) {
-				$("#truncate").closest('.form-group.').hide();
+				$("#truncate").closest('.form-group').hide();
 			}
 			else {
-				$("#truncate").closest('.form-group.').show();
+				$("#truncate").closest('.form-group').show();
 			}
 			if ($("#entity > option:selected").val() == 9) {
 				$(".import_supply_orders_details").show();
@@ -509,10 +499,10 @@
 				$('input[name=multiple_value_separator]').val('{if isset($multiple_value_separator_selected)}{$multiple_value_separator_selected}{else},{/if}');
 			}
 			if ($("#entity > option:selected").val() == 1) {
-				$("#match_ref").closest('.form-group.').show();
+				$("#match_ref").closest('.form-group').show();
 			}
 			else {
-				$("#match_ref").closest('.form-group.').hide();
+				$("#match_ref").closest('.form-group').hide();
 			}
 			if ($("#entity > option:selected").val() == 1 || $("#entity > option:selected").val() == 0) {
 				$(".import_products_categories").show();
@@ -522,18 +512,18 @@
 			}
 			if ($("#entity > option:selected").val() == 0 || $("#entity > option:selected").val() == 1 ||
 				$("#entity > option:selected").val() == 5 || $("#entity > option:selected").val() == 6) {
-					$("#regenerate").closest('.form-group.').show();
+					$("#regenerate").closest('.form-group').show();
 			}
 			else {
-				$("#regenerate").closest('.form-group.').hide();
+				$("#regenerate").closest('.form-group').hide();
 			}
 			if ($("#entity > option:selected").val() == 0 || $("#entity > option:selected").val() == 1 ||
 				$("#entity > option:selected").val() == 3 || $("#entity > option:selected").val() == 5 ||
 				$("#entity > option:selected").val() == 6 || $("#entity > option:selected").val() == 7) {
-				$("#forceIDs").closest('.form-group.').show();
+				$("#forceIDs").closest('.form-group').show();
 			}
 			else {
-				$("#forceIDs").closest('.form-group.').hide();
+				$("#forceIDs").closest('.form-group').hide();
 			}
 
 			$("#entitie").html($("#entity > option:selected").text().toLowerCase());
@@ -553,7 +543,6 @@
 						fields += j[i].field;
 	
 					$("#availableFields").html(fields);
-					activeClueTip();
 				},
 				error: function(j){}			
 			});

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>o
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -54,7 +54,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 					Tools::redirectAdmin(self::$currentIndex.($this->display_key ? '&show_modules='.$this->display_key : '').'&token='.$this->token);
 				}
 				else
-					$this->errors[] = Tools::displayError('This module cannot be loaded');
+					$this->errors[] = Tools::displayError('This module cannot be loaded.');
 			}
 			else
 				$this->errors[] = Tools::displayError('You do not have permission to edit this.');
@@ -72,11 +72,11 @@ class AdminModulesPositionsControllerCore extends AdminController
 				$hook = new Hook($id_hook);
 
 				if (!$id_module || !Validate::isLoadedObject($module))
-					$this->errors[] = Tools::displayError('This module cannot be loaded');
+					$this->errors[] = Tools::displayError('This module cannot be loaded.');
 				elseif (!$id_hook || !Validate::isLoadedObject($hook))
 					$this->errors[] = Tools::displayError('Hook cannot be loaded.');
 				elseif (Hook::getModulesFromHook($id_hook, $id_module))
-					$this->errors[] = Tools::displayError('This module has already been transplanted to this hook');
+					$this->errors[] = Tools::displayError('This module has already been transplanted to this hook.');
 				elseif (!$module->isHookableOn($hook->name))
 					$this->errors[] = Tools::displayError('This module cannot be transplanted to this hook.');
 				// Adding vars...
@@ -94,7 +94,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 						{
 							if (empty($except))
 								unset($exceptions[$key]);
-							else if (!Validate::isFileName($except))
+							elseif (!empty($except) && !Validate::isFileName($except))
 								$this->errors[] = Tools::displayError('No valid value for field exceptions has been defined.');
 						}
 						if (!$this->errors && !$module->registerExceptions($id_hook, $exceptions, Shop::getContextListShopID()))
@@ -120,7 +120,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 				$hook = new Hook($id_hook);
 
 				if (!$id_module || !Validate::isLoadedObject($module))
-					$this->errors[] = Tools::displayError('This module cannot be loaded');
+					$this->errors[] = Tools::displayError('This module cannot be loaded.');
 				elseif (!$id_hook || !Validate::isLoadedObject($hook))
 					$this->errors[] = Tools::displayError('Hook cannot be loaded.');
 				else
@@ -131,10 +131,9 @@ class AdminModulesPositionsControllerCore extends AdminController
 						foreach ($exceptions as $id => $exception)
 						{
 							$exception = explode(',', str_replace(' ', '', $exception));
-
 							// Check files name
 							foreach ($exception as $except)
-								if (!Validate::isFileName($except))
+								if (!empty($except) && !Validate::isFileName($except))
 									$this->errors[] = Tools::displayError('No valid value for field exceptions has been defined.');
 
 							$exceptions[$id] = $exception;
@@ -153,7 +152,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 
 						// Check files name
 						foreach ($exceptions as $except)
-							if (!Validate::isFileName($except))
+							if (!empty($except) && !Validate::isFileName($except))
 								$this->errors[] = Tools::displayError('No valid value for field exceptions has been defined.');
 
 						// Add files exceptions
@@ -178,7 +177,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 				$id_hook = (int)Tools::getValue('id_hook');
 				$hook = new Hook($id_hook);
 				if (!Validate::isLoadedObject($module))
-					$this->errors[] = Tools::displayError('This module cannot be loaded');
+					$this->errors[] = Tools::displayError('This module cannot be loaded.');
 				elseif (!$id_hook || !Validate::isLoadedObject($hook))
 					$this->errors[] = Tools::displayError('Hook cannot be loaded.');
 				else
@@ -207,7 +206,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 					$module = Module::getInstanceById((int)$id_module);
 					$hook = new Hook((int)$id_hook);
 					if (!Validate::isLoadedObject($module))
-						$this->errors[] = Tools::displayError('This module cannot be loaded');
+						$this->errors[] = Tools::displayError('This module cannot be loaded.');
 					elseif (!$id_hook || !Validate::isLoadedObject($hook))
 						$this->errors[] = Tools::displayError('Hook cannot be loaded.');
 					else
@@ -226,7 +225,8 @@ class AdminModulesPositionsControllerCore extends AdminController
 
 	public function initContent()
 	{
-		$this->addJS(__PS_BASE_URI__.'js/vendor/jquery.sortable.js');
+		$this->initTabModuleList();
+		$this->addjqueryPlugin('sortable');
 		$this->initPageHeaderToolbar();
 
 		if (array_key_exists('addToHook', $_GET) || array_key_exists('editGraft', $_GET) || (Tools::isSubmit('submitAddToHook') && $this->errors))
@@ -249,7 +249,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 	{
 		$this->page_header_toolbar_btn['save'] = array(
 			'href' => self::$currentIndex.'&addToHook'.($this->display_key ? '&show_modules='.$this->display_key : '').'&token='.$this->token,
-			'desc' => $this->l('Transplant a module')
+			'desc' => $this->l('Transplant a module', null, null, false)
 		);
 
 		return parent::initPageHeaderToolbar();
@@ -427,7 +427,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 		}
 		
 		$content .= '<p>
-					<select id="em_list_'.$shop_id.'" multiple="multiple">
+					<select size="25" id="em_list_'.$shop_id.'" multiple="multiple">
 					<option disabled="disabled">'.$this->l('___________ CUSTOM ___________').'</option>';
 
 		// @todo do something better with controllers
@@ -463,9 +463,9 @@ class AdminModulesPositionsControllerCore extends AdminController
 				if ($module->updatePosition($id_hook, $way, $position))
 					die(true);
 				else
-					die('{"hasError" : true, "errors" : "Can not update module position"}');
+					die('{"hasError" : true, "errors" : "Cannot update module position."}');
 			else
-				die('{"hasError" : true, "errors" : "This module can not be loaded"}');
+				die('{"hasError" : true, "errors" : "This module cannot be loaded."}');
 		}
 	}
 	
@@ -475,10 +475,10 @@ class AdminModulesPositionsControllerCore extends AdminController
 		{
 			/* PrestaShop demo mode */
 			if (_PS_MODE_DEMO_)
-				die('{"hasError" : true, "errors" : ["Live Edit : This functionnality has been disabled"]}');
+				die('{"hasError" : true, "errors" : ["Live Edit: This functionnality has been disabled."]}');
 
 			if (!count(Tools::getValue('hooks_list')))
-				die('{"hasError" : true, "errors" : ["Live Edit : no module on this page"]}');
+				die('{"hasError" : true, "errors" : ["Live Edit: no module on this page."]}');
 
 			$modules_list = Tools::getValue('modules_list');
 			$hooks_list = Tools::getValue('hooks_list');
@@ -491,7 +491,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 					continue;
 
 				if (!Validate::isModuleName($module))
-						die('{"hasError" : true, "errors" : ["Live Edit : module is invalid"]}');
+						die('{"hasError" : true, "errors" : ["Live Edit: module is invalid."]}');
 						
 				$moduleInstance = Module::getInstanceByName($module);
 				foreach ($hooks_list as $hook_name)
@@ -517,7 +517,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 		{
 			/* PrestaShop demo mode */
 			if (_PS_MODE_DEMO_)
-				die('{"hasError" : true, "errors" : ["Live Edit : This functionnality has been disabled"]}');
+				die('{"hasError" : true, "errors" : ["Live Edit: This functionnality has been disabled."]}');
 			/* PrestaShop demo mode*/
 
 			$hook_name = Tools::getValue('hook');
@@ -544,7 +544,7 @@ class AdminModulesPositionsControllerCore extends AdminController
 		{
 				/* PrestaShop demo mode */
 			if (_PS_MODE_DEMO_)
-				die('{"hasError" : true, "errors" : ["Live Edit : This functionnality has been disabled"]}');
+				die('{"hasError" : true, "errors" : ["Live Edit: This functionnality has been disabled."]}');
 
 			$hooks_list = explode(',', Tools::getValue('hooks_list'));
 			$id_shop = (int)Tools::getValue('id_shop');

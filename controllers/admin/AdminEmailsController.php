@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -33,7 +33,7 @@ class AdminEmailsControllerCore extends AdminController
 		$this->table = 'configuration';
 
 		parent::__construct();
-
+				
 		foreach (Contact::getContacts($this->context->language->id) as $contact)
 			$arr[] = array('email_message' => $contact['id_contact'], 'name' => $contact['name']);
 
@@ -57,9 +57,9 @@ class AdminEmailsControllerCore extends AdminController
 						'type' => 'radio',
 						'required' => true,
 						'choices' => array(
-							3 => $this->l('Never send emails (may be useful for test purpose)'), 
-							1 => $this->l('Use PHP mail() function. Recommended; works in most cases'), 
-							2 => $this->l('Set my own SMTP parameters. For advanced users ONLY')
+							3 => $this->l('Never send emails (may be useful for testing purposes)'), 
+							1 => $this->l('Use PHP\'s mail() function (recommended; works in most cases)'), 
+							2 => $this->l('Set my own SMTP parameters (for advanced users ONLY)')
 						),
 						'js' => array(
 							1 => 'onclick="$(\'#configuration_fieldset_smtp\').slideUp();"', 
@@ -69,19 +69,19 @@ class AdminEmailsControllerCore extends AdminController
 						'visibility' => Shop::CONTEXT_ALL
 					),
 					'PS_MAIL_TYPE' => array('title' => '', 'validation' => 'isGenericName', 'type' => 'radio', 'required' => true, 'choices' => array(
-						Mail::TYPE_HTML => $this->l('Send email in HTML format. '), 
+						Mail::TYPE_HTML => $this->l('Send email in HTML format'), 
 						Mail::TYPE_TEXT => $this->l('Send email in text format'), 
 						Mail::TYPE_BOTH => $this->l('Both')
 						)
 					),
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'smtp' => array(
 				'title' => $this->l('Email'),
 				'fields' =>	array(
 					'PS_MAIL_DOMAIN' => array(
-						'title' => $this->l('Mail domain name:'),
+						'title' => $this->l('Mail domain name'),
 						'hint' => $this->l('Fully qualified domain name (keep this field empty if you don\'t know).'),
 						'empty' => true, 'validation' =>
 						'isUrl',
@@ -89,21 +89,21 @@ class AdminEmailsControllerCore extends AdminController
 						'visibility' => Shop::CONTEXT_ALL
 						),
 					'PS_MAIL_SERVER' => array(
-						'title' => $this->l('SMTP server:'),
-						'hint' => $this->l('IP address or server name (e.g. smtp.mydomain.com)'),
+						'title' => $this->l('SMTP server'),
+						'hint' => $this->l('IP address or server name (e.g. smtp.mydomain.com).'),
 						'validation' => 'isGenericName',
 						'type' => 'text',
 						'visibility' => Shop::CONTEXT_ALL
 						),
 					'PS_MAIL_USER' => array(
-						'title' => $this->l('SMTP user:'),
+						'title' => $this->l('SMTP user'),
 						'hint' => $this->l('Leave blank if not applicable.'),
 						'validation' => 'isGenericName',
 						'type' => 'text',
 						'visibility' => Shop::CONTEXT_ALL
 						),
 					'PS_MAIL_PASSWD' => array(
-						'title' => $this->l('SMTP password:'),
+						'title' => $this->l('SMTP password'),
 						'hint' => $this->l('Leave blank if not applicable.'),
 						'validation' => 'isAnything',
 						'type' => 'password',
@@ -111,8 +111,9 @@ class AdminEmailsControllerCore extends AdminController
 						'autocomplete' => false
 						),
 					'PS_MAIL_SMTP_ENCRYPTION' => array(
-						'title' => $this->l('Encryption:'),
+						'title' => $this->l('Encryption'),
 						'hint' => $this->l('Use an encrypt protocol'),
+						'desc' => Tools::apacheModExists('mod_ssl') ? '/!\\  '.$this->l('SSL mod seems to not be installed on your server.') : '',
 						'type' => 'select',
 						'cast' => 'strval',
 						'identifier' => 'mode',
@@ -133,15 +134,15 @@ class AdminEmailsControllerCore extends AdminController
 						'visibility' => Shop::CONTEXT_ALL
 						),
 					'PS_MAIL_SMTP_PORT' => array(
-						'title' => $this->l('Port:'),
-						'hint' => $this->l('Port number to use'),
+						'title' => $this->l('Port'),
+						'hint' => $this->l('Port number to use.'),
 						'validation' => 'isInt',
 						'type' => 'text',
 						'cast' => 'intval',
 						'visibility' => Shop::CONTEXT_ALL
 						),
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'test' => array(
 				'title' =>	$this->l('Test your email configuration'),
@@ -155,10 +156,16 @@ class AdminEmailsControllerCore extends AdminController
 						),
 				),
 				'bottom' => '<div class="row"><div class="col-lg-9 col-lg-offset-3">
-					<button type="button" class="btn btn-default" name="btEmailTest" id="btEmailTest" onclick="verifyMail();"><i class="icon-envelope"></i> '.$this->l('Send an email test').'</button>
-					<br/><br/>
 					<div class="alert" id="mailResultCheck" style="display:none;"></div>
 				</div></div>',
+				'buttons' => array(
+					array('title' => $this->l('Send an email test'),
+						'icon' => 'process-icon-envelope',
+						'name' => 'btEmailTest',
+						'js' => 'verifyMail()',
+						'class' => 'btn btn-default pull-right'
+					)
+				)
 			)
 		);
 	}
@@ -169,9 +176,8 @@ class AdminEmailsControllerCore extends AdminController
 			return true;
 		else
 			Configuration::updateValue('PS_MAIL_PASSWD', Tools::getValue('PS_MAIL_PASSWD'));
-	}	
-	
-	
+	}
+
 	/**
 	 * AdminController::initContent() override
 	 * @see AdminController::initContent()

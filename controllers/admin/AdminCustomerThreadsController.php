@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,15 +45,15 @@ class AdminCustomerThreadsControllerCore extends AdminController
 		foreach ($languages as $language)
 			$language_array[$language['id_lang']] = $language['name'];
 
-		$images_array = array(
-			'open' => array('src' => 'status_green.png', 'alt' => $this->l('Open')),
-			'closed' => array('src' => 'status_red.png', 'alt' => $this->l('Closed')),
-			'pending1' => array('src' => 'status_orange.png', 'alt' => $this->l('Pending 1')),
-			'pending2' => array('src' => 'status_orange.png', 'alt' => $this->l('Pending 2')),
+		$icon_array = array(
+			'open' => array('class' => 'icon-circle text-success', 'alt' => $this->l('Open')),
+			'closed' => array('class' => 'icon-circle text-danger', 'alt' => $this->l('Closed')),
+			'pending1' => array('class' => 'icon-circle text-warning', 'alt' => $this->l('Pending 1')),
+			'pending2' => array('class' => 'icon-circle text-warning', 'alt' => $this->l('Pending 2')),
 		);
 
 		$status_array = array();
-		foreach ($images_array as $k => $v)
+		foreach ($icon_array as $k => $v)
 			$status_array[$k] = $v['alt'];
 
 		$this->fields_list = array(
@@ -89,7 +89,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 				'title' => $this->l('Status'),
 				'type' => 'select',
 				'list' => $status_array,
-				'icon' => $images_array,
+				'icon' => $icon_array,
 				'align' => 'center',
 				'filter_key' => 'a!status',
 				'filter_type' => 'string',
@@ -108,6 +108,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 			'date_upd' => array(
 				'title' => $this->l('Last message'),
 				'havingFilter' => true,
+				'type' => 'datetime',
 			),
 		);
 
@@ -135,40 +136,41 @@ class AdminCustomerThreadsControllerCore extends AdminController
 							'type' => 'textareaLang',
 							'lang' => true
 						)
-					),
+				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'general' => array(
 				'title' =>	$this->l('Customer service options'),
 				'fields' =>	array(
 					'PS_SAV_IMAP_URL' => array(
 						'title' => $this->l('IMAP URL'),
-						'hint' => $this->l('URL for IMAP server (mail.server.com)'),
+						'hint' => $this->l('URL for your IMAP server (ie.: mail.server.com).'),
 						'type' => 'text'
 					),
 					'PS_SAV_IMAP_PORT' => array(
 						'title' => $this->l('IMAP port'),
-						'hint' => $this->l('Port to use to connect to IMAP server'),
+						'hint' => $this->l('Port to use to connect to your IMAP server.'),
 						'type' => 'text',
 						'defaultValue' => 143,
 					),
 					'PS_SAV_IMAP_USER' => array(
 						'title' => $this->l('IMAP user'),
-						'hint' => $this->l('User to use to connect to IMAP server'),
+						'hint' => $this->l('User to use to connect to your IMAP server.'),
 						'type' => 'text'
 					),
 					'PS_SAV_IMAP_PWD' => array(
 						'title' => $this->l('IMAP password'),
-						'hint' => $this->l('Password used to connect IMAP server'),
+						'hint' => $this->l('Password to use to connect your IMAP server.'),
 						'type' => 'text'
 					),
 					'PS_SAV_IMAP_DELETE_MSG' => array(
 						'title' => $this->l('Delete messages'),
-						'hint' => $this->l('Delete messages after sync. If you do not active this option, the sync will take more time.'),
+						'hint' => $this->l('Delete messages after synchronization. If you do not enable this option, the synchrozination will take more time.'),
 						'type' => 'bool',
 					),
 					'PS_SAV_IMAP_CREATE_THREADS' => array(
 						'title' => $this->l('Create new threads'),
-						'hint' => $this->l('Create new threads for unrecognized emails'),
+						'hint' => $this->l('Create new threads for unrecognized emails.'),
 						'type' => 'bool',
 					),
 					'PS_SAV_IMAP_OPT_NORSH' => array(
@@ -179,17 +181,17 @@ class AdminCustomerThreadsControllerCore extends AdminController
 					'PS_SAV_IMAP_OPT_SSL' => array(
 						'title' => $this->l('IMAP options').' (/ssl)',
 						'type' => 'bool',
-						'hint' => $this->l('Use the Secure Socket Layer to encrypt the session.'),
+						'hint' => $this->l('Use the Secure Socket Layer (TLS/SSL) to encrypt the session.'),
 					),
 					'PS_SAV_IMAP_OPT_VALIDATE-CERT' => array(
 						'title' => $this->l('IMAP options').' (/validate-cert)',
 						'type' => 'bool',
-						'hint' => $this->l('Validate certificates from the TLS/SSL server'),
+						'hint' => $this->l('Validate certificates from the TLS/SSL server.'),
 					),
 					'PS_SAV_IMAP_OPT_NOVALIDATE-CERT' => array(
 						'title' => $this->l('IMAP options').' (/novalidate-cert)',
 						'type' => 'bool',
-						'hint' => $this->l('Do not validate certificates from the TLS/SSL server. This is only needed if a server uses self-signed certificates'),
+						'hint' => $this->l('Do not validate certificates from the TLS/SSL server. This is only needed if a server uses self-signed certificates.'),
 					),
 					'PS_SAV_IMAP_OPT_TLS' => array(
 						'title' => $this->l('IMAP options').' (/tls)',
@@ -202,7 +204,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 						'hint' => $this->l('Do not use start-TLS to encrypt the session, even with servers that support it.'),
 					),
 				),
-				'submit' => array('title' => $this->l('Save'), 'class' => 'button'),
+				'submit' => array('title' => $this->l('Save')),
 			),
 		);
 
@@ -427,7 +429,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
 		return parent::postProcess();
 	}
-
+		
 	public function initContent()
 	{
 		if (isset($_GET['filename']) && file_exists(_PS_UPLOAD_DIR_.$_GET['filename']) && Validate::isFileName($_GET['filename']))
@@ -483,7 +485,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 		$helper->id = 'box-pending-messages';
 		$helper->icon = 'icon-envelope';
 		$helper->color = 'color1';
-		$helper->title = $this->l('Pending Messages', null, null, false);
+		$helper->title = $this->l('Pending Discussion Threads', null, null, false);
 		if (ConfigurationKPI::get('PENDING_MESSAGES') !== false)
 			$helper->value = ConfigurationKPI::get('PENDING_MESSAGES');
 		if (ConfigurationKPI::get('PENDING_MESSAGES_EXPIRE') < $time)
@@ -551,7 +553,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 		if ($thread->status != 'closed')
 			$actions['closed'] = array(
 				'href' => self::$currentIndex.'&viewcustomer_thread&setstatus=2&id_customer_thread='.(int)Tools::getValue('id_customer_thread').'&viewmsg&token='.$this->token,
-				'name' => $this->l('Mark this message as handled.')
+				'name' => $this->l('Mark this message as "handled".')
 			);
 
 		if ($thread->status != 'pending1')
@@ -654,6 +656,8 @@ class AdminCustomerThreadsControllerCore extends AdminController
 			$is_valid_order_id = false;
 
 		$tpl->assign(array(
+			'email_base_url' => Context::getContext()->shop->getBaseUrl().dirname($_SERVER['PHP_SELF']).'/',
+			'link' => Context::getContext()->link,
 			'current' => self::$currentIndex,
 			'token' => $this->token,
 			'message' => $message,
@@ -672,12 +676,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
 	protected function displayButton($content)
 	{
-		return '
-		<div>
-			<p>
-				'.$content.'
-			</p>
-		</div>';
+		return '<div><p>'.$content.'</p></div>';
 	}
 
 	public function renderOptions()
@@ -814,8 +813,13 @@ class AdminCustomerThreadsControllerCore extends AdminController
 				 	//check if subject has id_order
 				 	preg_match('/\#ct([0-9]*)/', $subject, $matches1);
 				 	preg_match('/\#tc([0-9-a-z-A-Z]*)/', $subject, $matches2);
-					$new_ct = (Configuration::get('PS_SAV_IMAP_CREATE_THREADS') && !isset($matches1[1]) && !isset($matches2[1]) && !preg_match('/[no_sync]/', $subject));
-					if (isset($matches1[1]) && isset($matches2[1]) || $new_ct)
+					$matchFound = false;
+					if (isset($matches1[1]) && isset($matches2[1]))
+						$matchFound = true;
+					
+					$new_ct = ( Configuration::get('PS_SAV_IMAP_CREATE_THREADS') && !$matchFound && (strpos($subject, '[no_sync]') == false));				
+					
+					if ( $matchFound || $new_ct)
 					{
 						if ($new_ct)
 						{
@@ -823,15 +827,29 @@ class AdminCustomerThreadsControllerCore extends AdminController
 								|| !Validate::isEmail($from = $result[1]))
 									continue;
 							
-							$contacts = Contact::getCategoriesContacts();
+							// we want to assign unrecognized mails to the right contact category
+							$contacts = Contact::getContacts($this->context->language->id);
 							if (!$contacts)
 								continue;
-							$id_contact = $contacts[0]['id_contact'];
+								
+							foreach ($contacts as $contact) {
+								if (strpos($overview->to , $contact['email']) !== false)
+									$id_contact = $contact['id_contact'];
+							}
+							
+							if (!isset($id_contact)) // if not use the default contact category				
+								$id_contact = $contacts[0]['id_contact'];
+								
+							$customer = new Customer;
+							$client = $customer->getByEmail($from); //check if we already have a customer with this email
 							
 							$ct = new CustomerThread();
+							if (isset($client->id)) //if mail is owned by a customer assign to him
+								$ct->id_customer = $client->id;
 							$ct->email = $from;
 							$ct->id_contact = $id_contact;
 							$ct->id_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+							$ct->id_shop = $this->context->shop->id; //new customer threads for unrecognized mails are not shown without shop id
 							$ct->status = 'open';
 							$ct->token = Tools::passwdGen(12);
 							$ct->add();	
@@ -841,9 +859,14 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
 						if (Validate::isLoadedObject($ct) && ((isset($matches2[1]) && $ct->token == $matches2[1]) || $new_ct))
 						{
+							$message = imap_fetchbody($mbox, $overview->msgno, 1);
+							$message = quoted_printable_decode($message);
+							$message = utf8_encode($message);
+							$message = quoted_printable_decode($message);
+							$message = nl2br($message);
 							$cm = new CustomerMessage();
 							$cm->id_customer_thread = $ct->id;
-							$cm->message = imap_fetchbody($mbox, $overview->msgno, 1);
+							$cm->message = $message;
 							$cm->add();
 						}
 					}

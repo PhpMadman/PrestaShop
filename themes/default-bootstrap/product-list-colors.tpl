@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,13 +18,20 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-<ul id="color_to_pick_list" class="clearfix">
+<ul class="color_to_pick_list clearfix">
 	{foreach from=$colors_list item='color'}
-		<li><a href="{$link->getProductLink($color.id_product, null, null, null, null, null, $color.id_product_attribute)|escape:'html':'UTF-8'}" id="color_{$color.id_product_attribute|intval}" class="color_pick" style="background: {$color.color};"></a></li>
+		<li>
+			<a
+			href="{$link->getProductLink($color.id_product, null, null, null, null, null, $color.id_product_attribute)|escape:'html':'UTF-8'}"
+			id="color_{$color.id_product_attribute|intval}"
+			class="color_pick"
+			style="background: {$color.color};">
+			</a>
+		</li>
 	{/foreach}
 </ul>

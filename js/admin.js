@@ -17,7 +17,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -121,7 +121,7 @@ function str2url(str, encoding, ucfirst)
 
 	// Add special char not used for url rewrite
 	str = str.replace(/[ ]/g, '-');
-	str = str.replace(/[\/\\"'|,;]*/g, '');
+	str = str.replace(/[\/\\"'|,;%]*/g, '');
 
 	if (ucfirst == 1) {
 		var first_char = str.charAt(0);
@@ -355,74 +355,7 @@ function noComma(elem)
  	getE(elem).value = getE(elem).value.replace(new RegExp(',', 'g'), '.');
 }
 
-/* Help boxes */
-if (typeof helpboxes != 'undefined' && helpboxes)
-{
-	$(function()
-	{
-		if ($('input'))
-		{
-			//Display by rollover
-			$('input').focusin(function(){$(this).parent().find('.hint:first').css('display', 'block');});
-			$('input').focusout(function(){$(this).parent().find('.hint:first').css('display', 'none');});
-
-			//display when you press the tab key
-			$('input').keydown(function(e){
-				if (e.keyCode === 9)
-				{
-					$('input').focus(function() {$(this).parent().find('.hint:first').css('display', 'block');});
-					$('input').blur(function() {$(this).parent().find('.hint:first').css('display', 'none');});
-				}
-			});
-		}
-		if ($('select'))
-		{
-			//Display by rollover
-			$('select').focusin(function(){$(this).parent().find('.hint:first').css('display', 'block');});
-			$('select').focusout(function(){$(this).parent().find('.hint:first').css('display', 'none');});
-
-			//display when you press the tab key
-			$('select').keydown(function (e){
-				if (e.keyCode === 9)
-				{
-					$('select').focus(function(){$(this).parent().find('.hint:first').css('display', 'block');});
-					$('select').blur(function(){$(this).parent().find('.hint:first').css('display', 'none');});
-				}
-			});
-		}
-		if ($('span.title_box'))
-		{
-			//Display by rollover
-			$('span.title_box').focusin(function() {
-				//get reference to the hint box
-				var parent = $(this).parent();
-				var box = parent.find('.hint:first');
-
-				if (box.length > 0)
-				{
-					//gets parent position
-					var left_position = parent.offset().left;
-
-					//gets width of the box
-					var box_width = box.width();
-
-					//gets width of the screen
-					var document_width = $(document).width();
-
-					//changes position of the box if needed
-					if (document_width < (left_position + box_width))
-						box.css('margin-left', '-' + box_width + 'px');
-
-					//shows the box
-					box.css('display', 'block');
-				}
-			});
-			$('span.title_box').focusout(function(){$(this).parent().find('.hint:first').css('display', 'none');});
-		}
-	});
-}
-
-/* Code generator for Affiliation and vourchers */
+/* Code generator for Affiliation and vouchers */
 function gencode(size)
 {
 	getE('code').value = '';
@@ -431,39 +364,17 @@ function gencode(size)
 		getE('code').value += chars.charAt(Math.floor(Math.random() * chars.length));
 }
 
-function free_shipping()
-{
-	if (getE('id_discount_type').value == 3 && getE('discount_value').value == '')
-		getE('discount_value').value = '0';
-}
-
-var newWin = null;
-
-function closeWin ()
-{
-	if (newWin != null)
-		if (!newWin.closed)
-			newWin.close();
-}
-
-function openWin(url, title, width, height, top, left)
-{
-	var options;
-	var sizes;
-
-	closeWin();
-	options = 'toolbar=0, location=0, directories=0, statfr=no, menubar=0, scrollbars=yes, resizable=yes';
-	sizes = 'width='+width+', height='+height+', top='+top+', left='+left+'';
-	newWin = window.open(url, title, options+', '+sizes);
-	newWin.focus();
-}
-
+var tpl_viewing_window = null;
 function viewTemplates(id_select, prefix, ext)
 {
 	var loc = $(id_select).val();
 	if (loc != 0)
-		openWin (prefix+loc+ext, 'tpl_viewing', '520', '400', '50', '300');
-	return ;
+	{
+		if (tpl_viewing_window != null && !tpl_viewing_window.closed)
+			tpl_viewing_window.close();
+		tpl_viewing_window = window.open(prefix + loc + ext, 'tpl_viewing', 'toolbar=0,location=0,directories=0,statfr=no,menubar=0,scrollbars=yes,resizable=yes,width=520,height=400,top=50,left=300');
+		tpl_viewing_window.focus();
+	}
 }
 
 function validateImportation(mandatory)
@@ -503,12 +414,6 @@ function validateImportation(mandatory)
 			}
 			return false
 		}
-}
-
-function chooseTypeTranslation(id_lang)
-{
-	getE('translation_lang').value = id_lang;
-	document.getElementById('typeTranslationForm').submit();
 }
 
 function orderDeleteProduct(txtConfirm, txtExplain)
@@ -783,7 +688,7 @@ function doAdminAjax(data, success_func, error_func)
 				return success_func(data);
 
 			data = $.parseJSON(data);
-			if(data.confirmations.length != 0)
+			if (data.confirmations.length != 0)
 				showSuccessMessage(data.confirmations);
 			else
 				showErrorMessage(data.error);
@@ -797,35 +702,23 @@ function doAdminAjax(data, success_func, error_func)
 	});
 }
 
-/** display a success message in a #ajax_confirmation container
- * @param string msg string to display
- */
-function showSuccessMessage(msg, delay)
-{
-	if (!delay)
-		delay = 3000;
-	$("#ajax_confirmation")
-		.html("<div class=\"conf\">"+msg+"</div>").show().delay(delay).fadeOut("slow");
+//display a success/error/notice message
+function showSuccessMessage(msg) {
+	$.growl.notice({ title: "", message:msg});
 }
 
-/** display a warning message in a #ajax_confirmation container
- * @param string msg string to display
- */
-function showErrorMessage(msg, delay)
-{
-	if (!delay)
-		delay = 5000;
-	$("#ajax_confirmation")
-		.html("<div class=\"error\">"+msg+"</div>").show().delay(delay).fadeOut("slow");
+function showErrorMessage(msg) {
+	$.growl.error({ title: "", message:msg});
+}
+
+function showNoticeMessage(msg) {
+	$.growl.notice({ title: "", message:msg});
 }
 
 $(document).ready(function()
 {
 	$('select.chosen').each(function(k, item){
-		$(item).val($(this).find('option[selected=selected]').val());
-		$(item).chosen();
-		if ($(item).hasClass('no-search'))
-			$(item).next().find('.chzn-search').hide();
+		$(item).chosen({disable_search_threshold: 10});
 	});
 
 	$('.isInvisible input, .isInvisible select, .isInvisible textarea').attr('disabled', true);
@@ -847,13 +740,13 @@ $(document).ready(function()
 	});
 
 	$(document).on('keyup change', '.copy2friendlyUrl', function(e){
-		if(!isArrowKey(e))
+		if (!isArrowKey(e))
 			return copy2friendlyURL();
 	});
 
 	// on live will make this binded for dynamic content
 	$(document).on('keyup change', '.updateCurrentText', function(e){
-		if(typeof e == KeyboardEvent)
+		if (typeof e == KeyboardEvent)
 			if(isArrowKey(e))
 				return;
 
@@ -861,7 +754,7 @@ $(document).ready(function()
 	});
 
 	$(document).on('keyup change', '.copyMeta2friendlyURL', function(e){
-		if(!isArrowKey(e))
+		if (!isArrowKey(e))
 			return copyMeta2friendlyURL()
 	});
 
@@ -929,6 +822,75 @@ $(document).ready(function()
 			event.preventDefault();
 			$('#'+list_id+'-empty-filters-alert').show();
 		}
+	});
+
+	var message = $('.toolbarHead');
+	var view = $(window);
+
+	// bind only if message exists. placeholder will be its parent
+	view.bind("scroll resize", function(e)
+	{
+		message.each(function(el){
+			if (message.length)
+			{
+				placeholder = $(this).parent();
+				if (e.type == 'resize')
+					$(this).css('width', $(this).parent().width());
+
+				placeholderTop = placeholder.offset().top;
+				var viewTop = view.scrollTop() + 15;
+				// here we force the toolbar to be "not fixed" when
+				// the height of the window is really small (toolbar hiding the page is not cool)
+				window_is_more_than_twice_the_toolbar  = view.height() > message.parent().height() * 2;
+				if (!$(this).hasClass("fix-toolbar") && (window_is_more_than_twice_the_toolbar && (viewTop > placeholderTop)))
+				{
+					$(this).css('width', $(this).width());
+					// fixing parent height will prevent that annoying "pagequake" thing
+					// the order is important : this has to be set before adding class fix-toolbar 
+					$(this).parent().css('height', $(this).parent().height());
+					$(this).addClass("fix-toolbar");
+				}
+				else if ($(this).hasClass("fix-toolbar") && (!window_is_more_than_twice_the_toolbar || (viewTop <= placeholderTop)) )
+				{
+					$(this).removeClass("fix-toolbar");
+					$(this).removeAttr('style');
+					$(this).parent().removeAttr('style');
+				}
+			}
+		});
+	}); // end bind
+
+	// if count errors
+	$('#hideError').on('click', function(e)
+	{
+		e.preventDefault();
+		$('.error').hide('slow', function (){
+			$('.error').remove();
+		});
+		return false;
+	});
+
+	// if count warnings
+	$(document).on('click', '#linkSeeMore', function(e){
+		e.preventDefault();
+		$('#seeMore').show();
+		$(this).hide();
+		$('#linkHide').show();
+		return false;
+	});
+	$(document).on('click', '#linkHide', function(e){
+		e.preventDefault();
+		$('#seeMore').hide();
+		$(this).hide();
+		$('#linkSeeMore').show();
+		return false;
+	});
+	$(document).on('click', '#hideWarn', function(e){
+		e.preventDefault();
+		$('.warn').hide('slow', function (){
+			$('.warn').remove();
+		});
+		return false;
 	});
 });
 
@@ -1000,8 +962,7 @@ function display_action_details(row_id, controller, token, action, params)
 			'ajax': true
 		};
 
-		$.each(params, function(k, v)
-		{
+		$.each(params, function(k, v) {
 			ajax_params[k] = v;
 		});
 
@@ -1074,7 +1035,7 @@ function display_action_details(row_id, controller, token, action, params)
 					current_element.parent().parent().after(content);
 					current_element.parent().parent().parent().find('.details_'+id).hide();
 				}
-				current_element.data('dataMaped',true);
+				current_element.data('dataMaped', true);
 				current_element.data('opened', false);
 				
 				if (typeof(initTableDnD) != 'undefined')
@@ -1107,9 +1068,6 @@ function quickSelect(elt)
 	else
 		location.href = eltVal;
 }
-
-
-//New Admin fonctions
 
 function hideOtherLanguage(id)
 {
@@ -1166,3 +1124,188 @@ function openModulesList() {
 	}
 	return false;
 }
+
+function ajaxStates(id_state_selected)
+{
+	$.ajax({
+		url: "index.php",
+		cache: false,
+		data: "token="+state_token+"&ajax=1&action=states&tab=AdminStates&no_empty=1&id_country="+$('#id_country').val() + "&id_state=" + $('#id_state').val(),
+		success: function(html)
+		{
+			if (html == 'false')
+			{
+				$("#contains_states").fadeOut();
+				$('#id_state option[value=0]').attr("selected", "selected");
+			}
+			else
+			{
+				$("#id_state").html(html);
+				$("#contains_states").fadeIn();
+				$('#id_state option[value=' + id_state_selected + ']').attr("selected", "selected");
+			}
+		}
+	});
+
+	if (module_dir && vat_number)
+	{
+		$.ajax({
+			type: "GET",
+			url: module_dir + "vatnumber/ajax.php?id_country=" + $('#id_country').val(),
+			success: function(isApplicable)
+			{
+				if(isApplicable == 1)
+					$('#vat_area').show();
+				else
+					$('#vat_area').hide();
+			}
+		});
+	}
+}
+
+function check_for_all_accesses(tabsize, tabnumber)
+{
+	var i = 0;
+	var res = 0;
+	var right = 0;
+	var rights = new Array('view', 'add', 'edit', 'delete', 'all'); 
+
+	while (i != parseInt(tabsize) + 1)
+	{
+		if ($('#view'+i).prop('checked') == false || $('#edit'+i).prop('checked') == false || $('#add'+i).prop('checked') == false || $('#delete'+i).prop('checked') == false)
+			$('#all'+i).attr('checked', false);
+		else
+			$('#all'+i).attr('checked', "checked");
+		i++;
+	}
+	right = 0;
+	while (right != 5)
+	{
+		res = 0;
+		i = 0;
+		while (i != tabsize)
+		{
+			if ($('#'+rights[right]+i).prop('checked') == true)
+				res++;
+			i++;
+		}
+		if (res == tabnumber - 1)
+			$('#'+rights[right]+'all').attr('checked', "checked");
+		else
+			$('#'+rights[right]+'all').attr('checked', false);
+		right++;
+	}
+}
+
+function perfect_access_js_gestion(src, action, id_tab, tabsize, tabnumber, table)
+{
+ 	if (id_tab == '-1' && action == 'all')
+ 	{
+ 		$(table+' .add').attr('checked', src.checked);
+ 		$(table+' .edit').attr('checked', src.checked);
+ 		$(table+' .delete').attr('checked', src.checked);
+		$(table+' .view').attr('checked', src.checked);
+		$(table+' .all').attr('checked', src.checked);
+ 	}
+	else if (action == 'all')
+		$(table+' .'+id_tab).attr('checked', src.checked);
+ 	else if (id_tab == '-1')
+ 		$(table+' .'+action).attr('checked', src.checked);
+	check_for_all_accesses(tabsize, tabnumber);
+}
+
+verifMailREGEX = /^([\w+-]+(?:\.[\w+-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/;
+function verifyMail(testMsg, testSubject)
+{
+	$("#mailResultCheck").removeClass("alert-danger").removeClass('alert-success').html('<img src="../img/admin/ajax-loader.gif" alt="" />');
+	$("#mailResultCheck").slideDown("slow");
+
+	//local verifications
+	if ($("#testEmail[value=]").length > 0)
+	{
+		$("#mailResultCheck").addClass("alert-danger").removeClass("alert-success").removeClass('userInfos').html(errorMail);
+		return false;
+	}
+	else if (!verifMailREGEX.test( $("#testEmail").val() ))
+	{
+		$("#mailResultCheck").addClass("alert-danger").removeClass("alert-success").removeClass('userInfos').html(errorMail);
+		return false;
+	}
+	else
+	{
+		//external verifications and sets
+		$.ajax(
+		{
+		   url: "index.php",
+		   cache: false,
+		   type : "POST",
+		   data:
+			{
+				"mailMethod"	: (($("input[name=PS_MAIL_METHOD]:checked").val() == 2) ? "smtp" : "native"),
+				"smtpSrv"		: $("input[name=PS_MAIL_SERVER]").val(),
+				"testEmail"		: $("#testEmail").val(),
+				"smtpLogin"		: $("input[name=PS_MAIL_USER]").val(),
+				"smtpPassword"	: $("input[name=PS_MAIL_PASSWD]").val(),
+				"smtpPort"		: $("input[name=PS_MAIL_SMTP_PORT]").val(),
+				"smtpEnc"		: $("select[name=PS_MAIL_SMTP_ENCRYPTION]").val(),
+				"testMsg"		: textMsg,
+				"testSubject"	: textSubject,
+				"token"			: token_mail,
+				"ajax"			: 1,
+				"tab"				: 'AdminEmails',
+				"action"			: 'sendMailTest'
+			},
+		   success: function(ret)
+		   {
+				if (ret == "ok")
+				{
+					$("#mailResultCheck").addClass("alert-success").removeClass("alert-danger").removeClass('userInfos').html(textSendOk);
+					mailIsOk = true;
+				}
+				else
+				{
+					mailIsOk = false;
+					$("#mailResultCheck").addClass("alert-danger").removeClass("alert-success").removeClass('userInfos').html(textSendError + '<br />' + ret);
+				}
+		   }
+		 }
+		 );
+	}
+}
+
+function checkLangPack(token){
+	if ($('#iso_code').val().length == 2)
+	{
+		$('#lang_pack_loading').show();
+		$('#lang_pack_msg').hide();
+		doAdminAjax(
+			{
+				controller:'AdminLanguages',
+				action:'checkLangPack',
+				token:token,
+				ajax:1,
+				iso_lang:($('#iso_code').val()).toLowerCase(), 
+				ps_version:$('#ps_version').val()
+			},
+			function(ret)
+			{
+				$('#lang_pack_loading').hide();
+				ret = $.parseJSON(ret);
+				if( ret.status == 'ok')
+				{
+					content = $.parseJSON(ret.content);
+					message = langPackOk + ' <b>'+content['name'] + '</b>) :'
+						+'<br />' + langPackVersion + ' ' + content['version']
+						+ ' <a href="http://www.prestashop.com/download/lang_packs/gzip/' + content['version'] + '/'
+						+ ($('#iso_code').val()).toLowerCase()+'.gzip" target="_blank" class="link">'+download+'</a><br />' + langPackInfo;
+					$('#lang_pack_msg').html(message);
+					$('#lang_pack_msg').show();
+				}
+				else
+					showErrorMessage(ret.error);
+			}
+		 );
+	 }
+}
+
+function redirect(new_page) { window.location = new_page; }

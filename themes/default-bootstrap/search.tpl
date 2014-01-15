@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,16 +18,31 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
 {capture name=path}{l s='Search'}{/capture}
 
-<h1 {if isset($instant_search) && $instant_search}id="instant_search_results"{/if} class="page-heading {if !isset($instant_search) || (isset($instant_search) && !$instant_search)} product-listing{/if}">
-{l s='Search'}&nbsp;{if $nbProducts > 0}<span class="lighter">"{if isset($search_query) && $search_query}{$search_query|escape:'html':'UTF-8'}{elseif $search_tag}{$search_tag|escape:'html':'UTF-8'}{elseif $ref}{$ref|escape:'html':'UTF-8'}{/if}"</span>{/if}
-{if isset($instant_search) && $instant_search}<a href="#" class="close">{l s='Return to the previous page'}</a>{else}<span class="heading-counter">{if $nbProducts == 1}{l s='%d result has been found.' sprintf=$nbProducts|intval}{else}{l s='%d results have been found.' sprintf=$nbProducts|intval}{/if}</span>{/if}
+<h1 
+{if isset($instant_search) && $instant_search}id="instant_search_results"{/if} 
+class="page-heading {if !isset($instant_search) || (isset($instant_search) && !$instant_search)} product-listing{/if}">
+    {l s='Search'}&nbsp;
+    {if $nbProducts > 0}
+        <span class="lighter">
+            "{if isset($search_query) && $search_query}{$search_query|escape:'html':'UTF-8'}{elseif $search_tag}{$search_tag|escape:'html':'UTF-8'}{elseif $ref}{$ref|escape:'html':'UTF-8'}{/if}"
+        </span>
+    {/if}
+    {if isset($instant_search) && $instant_search}
+        <a href="#" class="close">
+            {l s='Return to the previous page'}
+        </a>
+    {else}
+        <span class="heading-counter">
+            {if $nbProducts == 1}{l s='%d result has been found.' sprintf=$nbProducts|intval}{else}{l s='%d results have been found.' sprintf=$nbProducts|intval}{/if}
+        </span>
+    {/if}
 </h1>
 
 {include file="$tpl_dir./errors.tpl"}
@@ -48,21 +63,26 @@
         </p>
     {/if}
     <div class="content_sortPagiBar">
-        
-            <div class="sortPagiBar clearfix {if isset($instant_search) && $instant_search} instant_search{/if}">
-                {include file="$tpl_dir./product-sort.tpl"}
-                {if !isset($instant_search) || (isset($instant_search) && !$instant_search)}{include file="./nbr-product-page.tpl"}{/if}
-            </div>
+        <div class="sortPagiBar clearfix {if isset($instant_search) && $instant_search} instant_search{/if}">
+            {include file="$tpl_dir./product-sort.tpl"}
+            {if !isset($instant_search) || (isset($instant_search) && !$instant_search)}
+                {include file="./nbr-product-page.tpl"}
+            {/if}
+        </div>
     	<div class="top-pagination-content clearfix">
             {include file="./product-compare.tpl"}
-            {if !isset($instant_search) || (isset($instant_search) && !$instant_search)}{include file="$tpl_dir./pagination.tpl"}{/if}
+            {if !isset($instant_search) || (isset($instant_search) && !$instant_search)}
+                {include file="$tpl_dir./pagination.tpl"}
+            {/if}
         </div>
 	</div>
 	{include file="$tpl_dir./product-list.tpl" products=$search_products}
     <div class="content_sortPagiBar">
     	<div class="bottom-pagination-content clearfix">
         	{include file="./product-compare.tpl"}
-        	{if !isset($instant_search) || (isset($instant_search) && !$instant_search)}{include file="$tpl_dir./pagination.tpl"}{/if}
+        	{if !isset($instant_search) || (isset($instant_search) && !$instant_search)}
+                {include file="$tpl_dir./pagination.tpl" paginationId='bottom'}
+            {/if}
         </div>
     </div>
 {/if}

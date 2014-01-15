@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -37,8 +37,8 @@ class BlockFacebook extends Module
 
 		$this->bootstrap = true;
 		parent::__construct();
-		$this->displayName = $this->l('Block Facebook');
-		$this->description = $this->l('Display a block for subscribe to your Facebook page');
+		$this->displayName = $this->l('Facebook block');
+		$this->description = $this->l('Displays a block for subscribing to your Facebook page.');
 	}
 
 
@@ -95,9 +95,9 @@ class BlockFacebook extends Module
 						'name' => 'blockfacebook_url',
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save')
+				)
 			),
 		);
 		

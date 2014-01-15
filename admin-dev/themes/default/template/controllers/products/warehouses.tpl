@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -43,12 +43,9 @@
 			{foreach from=$warehouses item=warehouse name=data}
 			    <div class="panel panel-default">
 					<div class="panel-heading">
-						<h4 class="panel-title">
-							<a class="accordion-toggle" data-toggle="collapse" data-parent="#warehouse-accordion" href="#warehouse-{$warehouse['name']}">{$warehouse['name']}</a>
-						</h4>
+							<a class="accordion-toggle" data-toggle="collapse" data-parent="#warehouse-accordion" href="#warehouse-{$warehouse['id_warehouse']}">{$warehouse['name']}</a>
 					</div>
-					<div id="warehouse-{$warehouse['name']}" class="panel-collapse collapse{if $smarty.foreach.data.first} in{/if}">
-						<div class="panel-body">
+					<div id="warehouse-{$warehouse['id_warehouse']}" class="panel-collapse collapse{if $smarty.foreach.data.first} in{/if}">
 							<table class="table">
 								<thead>
 									<tr>
@@ -90,7 +87,6 @@
 							</tr>-->
 							{/if}
 						</div>
-					</div>
 				</div>
 			{/foreach}
 		</div>

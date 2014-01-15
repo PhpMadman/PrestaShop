@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -191,17 +191,32 @@ class AdminCustomersControllerCore extends AdminController
 	{
 		parent::initToolbarTitle();
 
-		if ($this->display != 'list')
-			if (($customer = $this->loadObject(true)) && Validate::isLoadedObject($customer))
-				$this->toolbar_title[] = Tools::htmlentitiesUTF8(Tools::substr($customer->firstname, 0, 1).'. '.$customer->firstname);
+		switch ($this->display)
+		{
+			case '':
+			case 'list':
+				$this->toolbar_title[] = $this->l('Manage your Customers');
+				break;
+			case 'view':
+				if (($customer = $this->loadObject(true)) && Validate::isLoadedObject($customer))
+					$this->toolbar_title[] = sprintf('Information about Customer: %s', Tools::substr($customer->firstname, 0, 1).'. '.$customer->lastname);
+				break;
+			case 'add':
+			case 'edit':
+				if (($customer = $this->loadObject(true)) && Validate::isLoadedObject($customer))
+					$this->toolbar_title[] = sprintf('Editing Customer: %s', Tools::substr($customer->firstname, 0, 1).'. '.$customer->lastname);
+				else
+					$this->toolbar_title[] = $this->l('Creating a new Customer');
+				break;
+		}
 	}
 
 	public function initPageHeaderToolbar()
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_customer'] = array(
-				'href' => self::$currentIndex.'&amp;addcustomer&amp;token='.$this->token,
-				'desc' => $this->l('Add new customer'),
+				'href' => self::$currentIndex.'&addcustomer&token='.$this->token,
+				'desc' => $this->l('Add new customer', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 
@@ -484,7 +499,7 @@ class AdminCustomersControllerCore extends AdminController
 				'label' => $this->l('Outstanding allowed:'),
 				'name' => 'outstanding_allow_amount',
 				'hint' => $this->l('Valid characters:').' 0-9',
-				'suffix' => '¤'
+				'suffix' => $this->context->currency->sign
 			);
 			$this->fields_form['input'][] = array(
 				'type' => 'text',
@@ -507,8 +522,7 @@ class AdminCustomersControllerCore extends AdminController
 		}
 
 		$this->fields_form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'button'
+			'title' => $this->l('Save'),
 		);
 
 		$birthday = explode('-', $this->getFieldValue($obj, 'birthday'));
@@ -727,10 +741,7 @@ class AdminCustomersControllerCore extends AdminController
 			$connections = array();
 		$total_connections = count($connections);
 		for ($i = 0; $i < $total_connections; $i++)
-		{
-			$connections[$i]['date_add'] = Tools::displayDate($connections[$i]['date_add'],null , true);
 			$connections[$i]['http_referer'] = $connections[$i]['http_referer'] ? preg_replace('/^www./', '', parse_url($connections[$i]['http_referer'], PHP_URL_HOST)) : $this->l('Direct link');
-		}
 		
 		$referrers = Referrer::getReferrers($customer->id);
 		$total_referrers = count($referrers);
@@ -742,7 +753,6 @@ class AdminCustomersControllerCore extends AdminController
 			'customer' => $customer,
 			'gender' => $gender,
 			'gender_image' => $gender_image,
-
 			// General information of the customer
 			'registration_date' => Tools::displayDate($customer->date_add,null , true),
 			'customer_stats' => $customer_stats,
@@ -755,40 +765,29 @@ class AdminCustomersControllerCore extends AdminController
 			'customer_exists' => Customer::customerExists($customer->email),
 			'id_lang' => $customer->id_lang,
 			'customerLanguage' => (new Language($customer->id_lang)),
-
 			// Add a Private note
 			'customer_note' => Tools::htmlentitiesUTF8($customer->note),
-
 			// Messages
 			'messages' => $messages,
-
 			// Groups
 			'groups' => $groups,
-
 			// Orders
 			'orders' => $orders,
 			'orders_ok' => $orders_ok,
 			'orders_ko' => $orders_ko,
 			'total_ok' => Tools::displayPrice($total_ok, $this->context->currency->id),
-
 			// Products
 			'products' => $products,
-
 			// Addresses
 			'addresses' => $customer->getAddresses($this->default_form_language),
-
 			// Discounts
 			'discounts' => CartRule::getCustomerCartRules($this->default_form_language, $customer->id, false, false),
-
 			// Carts
 			'carts' => $carts,
-
 			// Interested
 			'interested' => $interested,
-
 			// Connections
 			'connections' => $connections,
-
 			// Referrers
 			'referrers' => $referrers,
 			'show_toolbar' => true
@@ -836,6 +835,12 @@ class AdminCustomersControllerCore extends AdminController
 			$this->errors[] = Tools::displayError('An account already exists for this email address:').' '.$customer_email;
 			$this->display = 'edit';
 			return $customer;
+		}
+		elseif (trim(Tools::getValue('passwd')) == '')
+		{
+			$this->validateRules();
+			$this->errors[] = Tools::displayError('Password can not be empty.');
+			$this->display = 'edit';
 		}
 		elseif ($customer = parent::processAdd())
 		{

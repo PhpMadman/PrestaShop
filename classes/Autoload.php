@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -50,6 +50,10 @@ class Autoload
 	public $index = array();
 
 	public $_include_override_path = true;
+	
+	protected static $class_aliases = array(
+		'Collection' => 'PrestaShopCollection'
+	);
 
 	protected function __construct()
 	{
@@ -80,41 +84,38 @@ class Autoload
 	 */
 	public function load($classname)
 	{
-		// Smarty uses its own autoloader, so we exclude all Smarty classes
-		if (strpos(strtolower($classname), 'smarty_') === 0)
-			return;
+		// Retrocompatibility 
+		if (isset(Autoload::$class_aliases[$classname]) && !interface_exists($classname, false) && !class_exists($classname, false))
+			eval('class '.$classname.' extends '.Autoload::$class_aliases[$classname].' {}');
 
 		// regenerate the class index if the requested file doesn't exists
-		if ((isset($this->index[$classname]) && $this->index[$classname] && !is_file($this->root_dir.$this->index[$classname]))
-			|| (isset($this->index[$classname.'Core']) && $this->index[$classname.'Core'] && !is_file($this->root_dir.$this->index[$classname.'Core'])))
+		if ((isset($this->index[$classname]) && $this->index[$classname]['path'] && !is_file($this->root_dir.$this->index[$classname]['path']))
+			|| (isset($this->index[$classname.'Core']) && $this->index[$classname.'Core']['path'] && !is_file($this->root_dir.$this->index[$classname.'Core']['path'])))
 			$this->generateIndex();
 
 		// If $classname has not core suffix (E.g. Shop, Product)
 		if (substr($classname, -4) != 'Core')
 		{
 			// If requested class does not exist, load associated core class
-			if (isset($this->index[$classname]) && !$this->index[$classname])
+			if (isset($this->index[$classname]) && !$this->index[$classname]['path'])
 			{
-				require($this->root_dir.$this->index[$classname.'Core']);
+				require($this->root_dir.$this->index[$classname.'Core']['path']);
 
-				// Since the classname does not exists (we only have a classCore class), we have to emulate the declaration of this class
-				$class_infos = new ReflectionClass($classname.'Core');
-
-				if (!$class_infos->isInterface())
-					eval(($class_infos->isAbstract() ? 'abstract ' : '').'class '.$classname.' extends '.$classname.'Core {}');
+				if ($this->index[$classname.'Core']['type'] != 'interface')
+					eval($this->index[$classname.'Core']['type'].' '.$classname.' extends '.$classname.'Core {}');
 			}
 			else
 			{
 				// request a non Core Class load the associated Core class if exists
 				if (isset($this->index[$classname.'Core']))
-					require_once($this->root_dir.$this->index[$classname.'Core']);
+					require_once($this->root_dir.$this->index[$classname.'Core']['path']);
 				if (isset($this->index[$classname]))
-					require_once($this->root_dir.$this->index[$classname]);
+					require_once($this->root_dir.$this->index[$classname]['path']);
 			}
 		}
 		// Call directly ProductCore, ShopCore class
 		else
-			require($this->root_dir.$this->index[$classname]);
+			require($this->root_dir.$this->index[$classname]['path']);
 	}
 
 	/**
@@ -172,13 +173,20 @@ class Autoload
 				else if (substr($file, -4) == '.php')
 				{
 					$content = file_get_contents($this->root_dir.$path.$file);
-			 		$pattern = '#\W((abstract\s+)?class|interface)\s+(?P<classname>'.basename($file, '.php').'(Core)?)'
-			 					.'(\s+extends\s+[a-z][a-z0-9_]*)?(\s+implements\s+[a-z][a-z0-9_]*(\s*,\s*[a-z][a-z0-9_]*)*)?\s*\{#i';
+			 		$pattern = '#\W((abstract\s+)?class|interface)\s+(?P<classname>'.basename($file, '.php').'(?:Core)?)'
+			 					.'(?:\s+extends\s+[a-z][a-z0-9_]*)?(?:\s+implements\s+[a-z][a-z0-9_]*(?:\s*,\s*[a-z][a-z0-9_]*)*)?\s*\{#i';
 			 		if (preg_match($pattern, $content, $m))
 			 		{
-			 			$classes[$m['classname']] = $path.$file;
+			 			$classes[$m['classname']] = array(
+			 				'path' => $path.$file,
+			 				'type' => trim($m[1])
+			 			);
+
 						if (substr($m['classname'], -4) == 'Core')
-							$classes[substr($m['classname'], 0, -4)] = '';
+							$classes[substr($m['classname'], 0, -4)] = array(
+								'path' => '',
+								'type' => $classes[$m['classname']]['type']
+							);
 			 		}
 				}
 			}
@@ -189,6 +197,6 @@ class Autoload
 
 	public function getClassPath($classname)
 	{
-		return isset($this->index[$classname]) ? $this->index[$classname] : null;
+		return (isset($this->index[$classname]) && isset($this->index[$classname]['path'])) ? $this->index[$classname]['path'] : null;
 	}
 }

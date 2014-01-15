@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -70,23 +70,13 @@
 	<div class="alert alert-warning">
 		<button type="button" class="close" data-dismiss="alert">&times;</button>
 		{if count($warnings) > 1}
-			{l s='There are %d warnings.' sprintf=count($warnings)}
-			<span id="labelSeeMore">
-				<a id="linkSeeMore" href="#" class="btn btn-default"><i class="icon-plus-sign-alt"></i> {l s='Click here to see more'}</a>
-				<a id="linkHide" href="#" class="btn btn-default" style="display:none"><i class="icon-minus-sign-alt"></i> {l s='Hide warning'}</a>
-			</span>
-			<ul {if count($warnings) > 1}style="display:none;"{/if} id="seeMore" class="list-unstyled">
-			{foreach $warnings as $warning}
-				<li>{$warning}</li>
-			{/foreach}
-			</ul>
-		{else}
-			<ul class="list-unstyled">
-			{foreach $warnings as $warning}
-				<li>{$warning}</li>
-			{/foreach}
-			</ul>
+			<strong>{l s='There are %d warnings:' sprintf=count($warnings)}</strong>
 		{/if}
+		<ul class="list-unstyled">
+			{foreach $warnings as $warning}
+				<li>{$warning}</li>
+			{/foreach}
+		</ul>
 	</div>
 {/if}
 {$page}

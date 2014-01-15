@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -121,14 +121,15 @@ class HookCore extends ObjectModel
 		{
 			// Get all hook ID by name and alias
 			$hook_ids = array();
-			$result = Db::getInstance()->ExecuteS('
+			$db = Db::getInstance();
+			$result = $db->ExecuteS('
 			SELECT `id_hook`, `name`
 			FROM `'._DB_PREFIX_.'hook`
 			UNION
 			SELECT `id_hook`, ha.`alias` as name
 			FROM `'._DB_PREFIX_.'hook_alias` ha
-			INNER JOIN `'._DB_PREFIX_.'hook` h ON ha.name = h.name');
-			foreach ($result as $row)
+			INNER JOIN `'._DB_PREFIX_.'hook` h ON ha.name = h.name', false);
+			while ($row = $db->nextRow($result))
 				$hook_ids[strtolower($row['name'])] = $row['id_hook'];
 			Cache::store($cache_id, $hook_ids);
 		}
@@ -285,36 +286,36 @@ class HookCore extends ObjectModel
 		{
 			$frontend = true;
 			$groups = array();
+			$use_groups = Group::isFeatureActive();
 			if (isset($context->employee))
-			{
-				$shop_list = array((int)$context->shop->id);
 				$frontend = false;
-			}
 			else
 			{
-				// Get shops and groups list
-				$shop_list = Shop::getContextListShopID();
-				if (isset($context->customer) && $context->customer->isLogged())
-					$groups = $context->customer->getGroups();
-				elseif (isset($context->customer) && $context->customer->isLogged(true))
-					$groups = array((int)Configuration::get('PS_GUEST_GROUP'));
-				else
-					$groups = array((int)Configuration::get('PS_UNIDENTIFIED_GROUP'));
+				// Get groups list
+				if ($use_groups)
+				{
+					if (isset($context->customer) && $context->customer->isLogged())
+						$groups = $context->customer->getGroups();
+					elseif (isset($context->customer) && $context->customer->isLogged(true))
+						$groups = array((int)Configuration::get('PS_GUEST_GROUP'));
+					else
+						$groups = array((int)Configuration::get('PS_UNIDENTIFIED_GROUP'));
+				}
 			}
 			
 			// SQL Request
 			$sql = new DbQuery();
 			$sql->select('h.`name` as hook, m.`id_module`, h.`id_hook`, m.`name` as module, h.`live_edit`');
 			$sql->from('module', 'm');
+			$sql->join(Shop::addSqlAssociation('module', 'm', true, 'module_shop.enable_device & '.(int)Context::getContext()->getDevice()));
+			$sql->innerJoin('module_shop', 'ms', 'ms.`id_module` = m.`id_module`');
 			$sql->innerJoin('hook_module', 'hm', 'hm.`id_module` = m.`id_module`');
 			$sql->innerJoin('hook', 'h', 'hm.`id_hook` = h.`id_hook`');
-			$sql->where('(SELECT COUNT(*) FROM '._DB_PREFIX_.'module_shop ms WHERE ms.id_module = m.id_module AND ms.id_shop IN ('.implode(', ', $shop_list).')) = '.count($shop_list));
 			if ($hook_name != 'displayPayment')
 				$sql->where('h.name != "displayPayment"');
 			// For payment modules, we check that they are available in the contextual country
 			elseif ($frontend)
 			{
-				$sql->where(Module::getPaypalIgnore());
 				if (Validate::isLoadedObject($context->country))
 					$sql->where('(h.name = "displayPayment" AND (SELECT id_country FROM '._DB_PREFIX_.'module_country mc WHERE mc.id_module = m.id_module AND id_country = '.(int)$context->country->id.' AND id_shop = '.(int)$context->shop->id.' LIMIT 1) = '.(int)$context->country->id.')');
 				if (Validate::isLoadedObject($context->currency))
@@ -325,14 +326,17 @@ class HookCore extends ObjectModel
 
 			if ($frontend)
 			{
-				$sql->leftJoin('module_group', 'mg', 'mg.`id_module` = m.`id_module`');
-				if (Validate::isLoadedObject($context->shop))
-					$sql->where('mg.id_shop = '.((int)$context->shop->id).' AND  mg.`id_group` IN ('.implode(', ', $groups).')');
-				else
-					$sql->where('mg.`id_group` IN ('.implode(', ', $groups).')');
-				$sql->groupBy('hm.id_hook, hm.id_module');
+				if ($use_groups)
+				{
+					$sql->leftJoin('module_group', 'mg', 'mg.`id_module` = m.`id_module`');
+					if (Validate::isLoadedObject($context->shop))
+						$sql->where('mg.id_shop = '.((int)$context->shop->id).' AND  mg.`id_group` IN ('.implode(', ', $groups).')');
+					else
+						$sql->where('mg.`id_group` IN ('.implode(', ', $groups).')');
+				}
 			}
 
+			$sql->groupBy('hm.id_hook, hm.id_module');
 			$sql->orderBy('hm.`position`');
 
 			$list = array();
@@ -363,7 +367,7 @@ class HookCore extends ObjectModel
 		// If hook_name is given, just get list of modules for this hook
 		if ($hook_name)
 		{
-			$retro_hook_name = Hook::getRetroHookName($hook_name);
+			$retro_hook_name = strtolower(Hook::getRetroHookName($hook_name));
 			$hook_name = strtolower($hook_name);
 
 			$return = array();
@@ -391,7 +395,7 @@ class HookCore extends ObjectModel
 	 * @param int $id_module Execute hook for this module only
 	 * @return string modules output
 	 */
-	public static function exec($hook_name, $hook_args = array(), $id_module = null, $array_return = false, $check_exceptions = true, $use_push = false)
+	public static function exec($hook_name, $hook_args = array(), $id_module = null, $array_return = false, $check_exceptions = true, $use_push = false, $id_shop = null)
 	{
 		static $disable_non_native_modules = null;
 		if ($disable_non_native_modules === null)
@@ -428,6 +432,21 @@ class HookCore extends ObjectModel
 
 		if ($disable_non_native_modules && !isset(Hook::$native_module))
 			Hook::$native_module = Module::getNativeModuleList();
+
+		$different_shop = false;
+		if ($id_shop !== null && Validate::isUnsignedId($id_shop) && $id_shop != $context->shop->getContextShopID())
+		{
+			$old_context_shop_id = $context->shop->getContextShopID();
+			$old_context = $context->shop->getContext();
+			$old_shop = clone $context->shop;
+			$shop = new Shop((int)$id_shop);
+			if (Validate::isLoadedObject($shop))
+			{
+				$context->shop = $shop;
+				$context->shop->setContext(Shop::CONTEXT_SHOP, $shop->id);
+				$different_shop = true;
+			}
+		}
 
 		foreach ($module_list as $array)
 		{
@@ -466,6 +485,7 @@ class HookCore extends ObjectModel
 			// Check which / if method is callable
 			$hook_callable = is_callable(array($moduleInstance, 'hook'.$hook_name));
 			$hook_retro_callable = is_callable(array($moduleInstance, 'hook'.$retro_hook_name));
+
 			if (($hook_callable || $hook_retro_callable) && Module::preCall($moduleInstance->name))
 			{
 				$hook_args['altern'] = ++$altern;
@@ -490,6 +510,13 @@ class HookCore extends ObjectModel
 					$output .= $display;
 			}
 		}
+
+		if ($different_shop)
+		{
+			$context->shop = $old_shop;
+			$context->shop->setContext($old_context, $shop->id);
+		}
+
 		if ($array_return)
 			return $output;
 		else

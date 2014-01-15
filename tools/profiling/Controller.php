@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -122,9 +122,9 @@ abstract class Controller extends ControllerCore
 
 	private function displayRowsBrowsed($n)
 	{
-		if ($n > 200)
+		if ($n > 400)
 			return '<span style="color:red">'.$n.' rows browsed</span>';
-		if ($n > 50)
+		if ($n > 100)
 			return '<span style="color:orange">'.$n.'  rows browsed</span>';
 		return '<span style="color:green">'.$n.' row'.($n == 1 ? '' : 's').' browsed</span>';
 	}
@@ -176,9 +176,7 @@ abstract class Controller extends ControllerCore
 
 	public function __construct()
 	{
-
-		// error management
-		set_error_handler('developpementErrorHandler');
+		//set_error_handler('developpementErrorHandler');
 		ini_set('html_errors', 'on');
 		ini_set('display_errors', 'on');
 		error_reporting(E_ALL | E_STRICT);
@@ -490,7 +488,7 @@ abstract class Controller extends ControllerCore
 			<div class="rte" style="text-align:left;padding:8px">
 			<h3><a name="doubles">Doubles (IDs replaced by "XX") (total = '.$count.')</a></h3>';
 		foreach ($queries as $q => $nb)
-			if($nb > 1)
+			if ($nb > 1)
 				echo $hr.'<b '.$this->getQueryColor($nb).'>'.$nb.'</b> '.$q;
 		echo '</div>
 		<div class="rte" style="text-align:left;padding:8px">

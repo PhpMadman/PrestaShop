@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -49,6 +49,8 @@ class HelperFormCore extends Helper
 	public $languages = null;
 	public $default_form_language = null;
 	public $allow_employee_form_lang = null;
+	public $show_cancel_button = false;
+	public $back_url = '#';
 
 	public function __construct()
 	{
@@ -68,8 +70,6 @@ class HelperFormCore extends Helper
 		$this->tpl = $this->createTemplate($this->base_tpl);
 		if (is_null($this->submit_action))
 			$this->submit_action = 'submitAdd'.$this->table;
-
-		$this->context->controller->addJS(_PS_JS_DIR_.'form.js');
 
 		$categories = true;
 		$color = true;
@@ -222,6 +222,8 @@ class HelperFormCore extends Helper
 			'module_dir' => _MODULE_DIR_,
 			'base_url' => $this->context->shop->getBaseURL(),
 			'contains_states' => (isset($this->fields_value['id_country']) && isset($this->fields_value['id_state'])) ? Country::containsStates($this->fields_value['id_country']) : null,
+			'show_cancel_button' => $this->show_cancel_button,
+			'back_url' => $this->back_url
 		));
 		return parent::generate();
 	}

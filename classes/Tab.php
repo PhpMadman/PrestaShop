@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -60,7 +60,7 @@ class TabCore extends ObjectModel
 			'active' => 	array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
 
 			// Lang fields
-			'name' => 		array('type' => self::TYPE_STRING, 'lang' => true, 'required' => true, 'validate' => 'isGenericName', 'size' => 32),
+			'name' => 		array('type' => self::TYPE_STRING, 'lang' => true, 'required' => true, 'validate' => 'isTabName', 'size' => 64),
 		),
 	);
 
@@ -295,7 +295,7 @@ class TabCore extends ObjectModel
 		if (!Validate::isModuleName($module))
 			return array();
 
-		$tabs = new Collection('Tab', (int)$id_lang);
+		$tabs = new PrestaShopCollection('Tab', (int)$id_lang);
 		$tabs->where('module', '=', $module);
 		return $tabs;
 	}

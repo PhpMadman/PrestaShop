@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -120,8 +120,8 @@ class AdminSpecificPriceRuleControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_specific_price_rule'] = array(
-				'href' => self::$currentIndex.'&amp;addspecific_price_rule&amp;token='.$this->token,
-				'desc' => $this->l('Add new catalog price rule'),
+				'href' => self::$currentIndex.'&addspecific_price_rule&token='.$this->token,
+				'desc' => $this->l('Add new catalog price rule', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 
@@ -264,8 +264,7 @@ class AdminSpecificPriceRuleControllerCore extends AdminController
 				),
 			),
 			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default'
+				'title' => $this->l('Save')
 			),
 		);
 		if (($value = $this->getFieldValue($this->object, 'price')) != -1)	

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -173,25 +173,26 @@
 			</div>
 			{/if}
 		</div>
+		<div id="login-footer" class="animated fadeIn">
+			<p class="text-center text-muted">
+				<a href="http://www.prestashop.com/" onclick="return !window.open(this.href);">
+					&copy; PrestaShop&#8482; 2007-{$smarty.now|date_format:"%Y"} - All rights reserved
+				</a>
+			</p>
+			<p class="text-center">
+				<a class="link-social link-twitter" href="https://twitter.com/PrestaShop" target="_blank" title="Twitter">
+					<i class="icon-twitter"></i>
+				</a>
+				<a class="link-social link-facebook" href="https://www.facebook.com/prestashop" target="_blank" title="Facebook">
+					<i class="icon-facebook"></i>
+				</a>
+				<a class="link-social link-github" href="https://github.com/PrestaShop/PrestaShop/" target="_blank" title="Github">
+					<i class="icon-github"></i>
+				</a>
+				<a class="link-social link-google" href="https://plus.google.com/+prestashop/" target="_blank" title="Google">
+					<i class="icon-google-plus"></i>
+				</a>
+			</p>
+		</div>
 	</div>
-	<div id="login-footer" class="animated fadeIn">
-		<p class="text-center text-muted">
-			<a href="http://www.prestashop.com/" onclick="return !window.open(this.href);">
-				&copy; PrestaShop&#8482; 2005-{$smarty.now|date_format:"%Y"} - All rights reserved
-			</a>
-		</p>
-		<p class="text-center">
-			<a class="link-social link-twitter" href="https://twitter.com/PrestaShop" target="_blank" title="Twitter">
-				<i class="icon-twitter"></i>
-			</a>
-			<a class="link-social link-facebook" href="https://www.facebook.com/prestashop" target="_blank" title="Facebook">
-				<i class="icon-facebook"></i>
-			</a>
-			<a class="link-social link-github" href="https://github.com/PrestaShop/PrestaShop/" target="_blank" title="Github">
-				<i class="icon-github"></i>
-			</a>
-			<a class="link-social link-google" href="https://plus.google.com/+prestashop/" target="_blank" title="Google">
-				<i class="icon-google-plus"></i>
-			</a>
-		</p>
-	</div>
+	

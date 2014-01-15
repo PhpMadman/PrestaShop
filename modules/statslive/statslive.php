@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -42,7 +42,7 @@ class StatsLive extends Module
 		parent::__construct();
 
 		$this->displayName = $this->l('Visitors online');
-		$this->description = $this->l('Display the list of customers and visitors currently online.');
+		$this->description = $this->l('Adds a list of customers and visitors who are currently online to the Stats dashboard.');
 	}
 
 	public function install()
@@ -100,7 +100,7 @@ class StatsLive extends Module
 	private function getVisitorsOnline()
 	{
 		if ($maintenance_ips = Configuration::get('PS_MAINTENANCE_IP'))
-			$maintenance_ips = implode(',', array_map('ip2long', array_map('trim', explode(',', $maintenance_ips))));
+			$maintenance_ips = implode(',', array_map('ip2long', array_filter(array_map('trim', explode(',', $maintenance_ips)))));
 
 		if (Configuration::get('PS_STATSDATA_CUSTOMER_PAGESVIEWS'))
 		{
@@ -146,7 +146,7 @@ class StatsLive extends Module
 		if (!Configuration::get('PS_STATSDATA_CUSTOMER_PAGESVIEWS'))
 			$this->html .= '
 				<div class="alert alert-info">'.
-					$this->l('You must activate the option "pages viewed for each customer" in the "Stats data-mining" module in order to see the pages viewed by your customers.').'
+					$this->l('You must activate the "Save page views for each customer" option in the "Data mining for statstics" (StatsData) module in order to see the pages viewed by your customers.').'
 				</div>';
 		$this->html .= '
 			<h4> '.$this->l('Customers online').'</h4>';
@@ -214,7 +214,7 @@ class StatsLive extends Module
 		else
 			$this->html .= '<p class="alert alert-warning">'.$this->l('There are no visitors online.').'</p>
 			<h4>'.$this->l('Notice').'</h4>
-			<p class="alert alert-info">'.$this->l('Maintenance IP(s) are excluded from the online visitors.').'</p>
+			<p class="alert alert-info">'.$this->l('Maintenance IPs are excluded from the online visitors.').'</p>
 			<a class="btn btn-default" href="index.php?controller=AdminMaintenance&token='.Tools::getAdminTokenLite('AdminMaintenance').'">
 				<i class="icon-share-alt"></i> '.$this->l('Add or remove an IP address.').'
 			</a>

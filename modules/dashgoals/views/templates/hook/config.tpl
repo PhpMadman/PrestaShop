@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -68,6 +68,8 @@
 				{/foreach}
 			</tbody>
 		</table>
-		<button class="btn btn-default" name="submitDashGoals" type="submit"><i class="icon-save"></i> {l s='Save' mod='dashgoals'}</button>
+		<div class="panel-footer">
+			<button class="btn btn-default pull-right" name="submitDashGoals" type="submit"><i class="process-icon-save"></i> {l s='Save' mod='dashgoals'}</button>
+		</div>
 	</form>
 </section>

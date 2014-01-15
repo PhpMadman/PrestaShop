@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -256,14 +256,6 @@ var ajaxCart = {
 						.fadeOut(100, function() {
 							ajaxCart.updateCartInformation(jsonData, addedFromProductPage);
 							$(this).remove();
-							if (!jsonData.hasError)
-							{
-								$('.crossseling').html(jsonData.crossSelling)
-								$(jsonData.products).each(function(){
-									if (this.id != undefined && this.id == parseInt(idProduct))
-										ajaxCart.updateLayer(this);
-								});
-							}
 						});
 				}
 				else
@@ -473,8 +465,8 @@ var ajaxCart = {
 					var productAttributeId = (this.hasAttributes ? parseInt(this.attributes) : 0);
 					var content =  '<dt class="hidden" id="cart_block_product_' + domIdProduct + '">';
 					content += '<span class="quantity-formated"><span class="quantity">' + this.quantity + '</span>x</span>';
-					var min = this.name.indexOf(';', 10);
-					var name = (this.name.length > 12 ? this.name.substring(0, ((min - 10) <= 7) ? min : 10) + '...' : this.name);
+					var name = $('<span />').html(this.name).text();
+					name = (name.length > 12 ? name.substring(0, 10) + '...' : name);
 					content += '<a href="' + this.link + '" title="' + this.name + '" class="cart_block_product_name">' + name + '</a>';
 
 					if (typeof(this.is_gift) == 'undefined' || this.is_gift == 0)
@@ -592,25 +584,6 @@ var ajaxCart = {
 		return (content);
 	},
 
-	updateLayer : function(product) {
-		$('#layer_cart_product_title').text(product.name);
-		$('#layer_cart_product_attributes').text('');
-		if (product.hasAttributes && product.hasAttributes == true)
-			$('#layer_cart_product_attributes').html(product.attributes);
-		$('#layer_cart_product_price').text(product.price);
-		$('#layer_cart_product_quantity').text(product.quantity);
-		$('.layer_cart_img').prop({'src' : product.image, 'alt' : product.name, 'title' : product.name});
-		var h = parseInt($(window).height());
-		var s = parseInt($(window).scrollTop());
-		var t = $('#layer_cart').outerHeight(true);
-		if (t < h)
-			var n = parseInt(((h-t) / 2) + s) + 'px';
-		$('.layer_cart_overlay').css('width',$('body').width());
-		$('.layer_cart_overlay').css('height',$('body').height());
-		$('.layer_cart_overlay').show();
-		$('#layer_cart').css({'top': n}).fadeIn('fast');
-		crossselling_serialScroll();
-	},
 
 	//genarally update the display of the cart
 	updateCart : function(jsonData) {
@@ -645,6 +618,7 @@ var ajaxCart = {
 	//update general cart informations everywhere in the page
 	updateCartEverywhere : function(jsonData) {
 		$('.ajax_cart_total').text($.trim(jsonData.productTotal));
+
 		if (parseFloat(jsonData.shippingCostFloat) > 0 || jsonData.nbTotalProducts < 1)
 			$('.ajax_cart_shipping_cost').text(jsonData.shippingCost);
 		else if (typeof(freeShippingTranslation) != 'undefined')
@@ -652,16 +626,6 @@ var ajaxCart = {
 		$('.ajax_cart_tax_cost').text(jsonData.taxCost);
 		$('.cart_block_wrapping_cost').text(jsonData.wrappingCost);
 		$('.ajax_block_cart_total').text(jsonData.total);
-		$('.ajax_block_products_total').text(jsonData.productTotal);
-        $('.ajax_total_price_wt').text(jsonData.total_price_wt);
-
-		if (parseFloat(jsonData.freeShippingFloat) > 0)
-		{
-			$('.ajax_cart_free_shipping').html(jsonData.freeShipping);
-			$('.freeshipping').fadeIn(0);
-		}
-		else if (parseFloat(jsonData.freeShippingFloat) == 0)
-			$('.freeshipping').fadeOut(0);
 
 		this.nb_total_products = jsonData.nbTotalProducts;
 
@@ -703,8 +667,24 @@ var ajaxCart = {
 	}
 };
 
-$(document).ready(function()
-{
+function HoverWatcher(selector){
+	this.hovering = false;
+	var self = this;
+
+	this.isHoveringOver = function() {
+		return self.hovering;
+	}
+
+	$(selector).hover(function() {
+		self.hovering = true;
+	}, function() {
+		self.hovering = false;
+	})
+}
+
+//when document is loaded...
+$(document).ready(function(){
+	// expand/collapse management
 	$('#block_cart_collapse').click(function(){
 			ajaxCart.collapse();
 	});
@@ -779,56 +759,4 @@ $(document).ready(function()
 		$(this).attr('disabled', true).removeClass('exclusive').addClass('exclusive_disabled');
 		$(this).closest("form").get(0).submit();
 	});
-
-	$('#layer_cart .cross, #layer_cart .continue, .layer_cart_overlay').click(function(){
-		$('.layer_cart_overlay').hide(); $('#layer_cart').fadeOut('fast'); return false;
-	});
 });
-
-function HoverWatcher(selector){
-	this.hovering = false;
-	var self = this;
-
-	this.isHoveringOver = function() {
-		return self.hovering;
-	}
-
-	$(selector).hover(function() {
-		self.hovering = true;
-	}, function() {
-		self.hovering = false;
-	})
-}
-
-function crossselling_serialScrollFixLock(event, targeted, scrolled, items, position)
-{
-	serialScrollNbImages = $('#blockcart_list li:visible').length;
-	serialScrollNbImagesDisplayed = 4;
-	
-	var leftArrow = position == 0 ? true : false;
-	var rightArrow = position + serialScrollNbImagesDisplayed >= serialScrollNbImages ? true : false;
-	
-	$('#blockcart_scroll_left').css('cursor', leftArrow ? 'default' : 'pointer').css('display', leftArrow ? 'none' : 'block').fadeTo(0, leftArrow ? 0 : 1);		
-	$('#blockcart_scroll_right').css('cursor', rightArrow ? 'default' : 'pointer').fadeTo(0, rightArrow ? 0 : 1).css('display', rightArrow ? 'none' : 'block');
-	return true;
-}
-
-function crossselling_serialScroll()
-{
-	$('#blockcart_list').serialScroll({
-		items:'li:visible',
-		prev:'#blockcart_scroll_left',
-		next:'#blockcart_scroll_right',
-		axis:'x',
-		offset:0,
-		start:0,
-		stop:true,
-		onBefore:crossselling_serialScrollFixLock,
-		duration:300,
-		step: 1,
-		lazy: true,
-		lock: false,
-		force:false
-	});
-	$('#blockcart_list').trigger('goto', 0);
-}

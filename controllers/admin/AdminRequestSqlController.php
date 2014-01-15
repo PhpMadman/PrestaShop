@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -63,7 +63,7 @@ class AdminRequestSqlControllerCore extends AdminController
 						'visibility' => Shop::CONTEXT_ALL
 					)
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			)
 		);
 
@@ -146,8 +146,7 @@ class AdminRequestSqlControllerCore extends AdminController
 				)
 			),
 			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'button'
+				'title' => $this->l('Save')
 			)
 		);
 
@@ -265,6 +264,7 @@ class AdminRequestSqlControllerCore extends AdminController
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		// toolbar (save, cancel, new, ..)
 		$this->initToolbar();
 		$this->initPageHeaderToolbar();
@@ -303,8 +303,8 @@ class AdminRequestSqlControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_request'] = array(
-				'href' => self::$currentIndex.'&amp;addrequest_sql&amp;token='.$this->token,
-				'desc' => $this->l('Add new SQL request'),
+				'href' => self::$currentIndex.'&addrequest_sql&token='.$this->token,
+				'desc' => $this->l('Add new SQL request', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 

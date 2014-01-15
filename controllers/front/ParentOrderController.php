@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -111,7 +111,9 @@ class ParentOrderControllerCore extends FrontController
 							else
 							{
 								$this->context->cart->addCartRule($cartRule->id);
-								Tools::redirect('index.php?controller=order-opc');
+								if (Configuration::get('PS_ORDER_PROCESS_TYPE') == 1)
+									Tools::redirect('index.php?controller=order-opc&addingCartRule=1');
+								Tools::redirect('index.php?controller=order&addingCartRule=1');
 							}
 						}
 						else
@@ -145,7 +147,7 @@ class ParentOrderControllerCore extends FrontController
 			$this->addCSS(_THEME_CSS_DIR_.'addresses.css');
 
 		// Adding JS files
-		$this->addJS(_THEME_JS_DIR_.'tools.js');
+		$this->addJS(_THEME_JS_DIR_.'tools.js');  // retro compat themes 1.5
 		if ((Configuration::get('PS_ORDER_PROCESS_TYPE') == 0 && Tools::getValue('step') == 1) || Configuration::get('PS_ORDER_PROCESS_TYPE') == 1)
 			$this->addJS(_THEME_JS_DIR_.'order-address.js');
 		$this->addJqueryPlugin('fancybox');

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,11 +18,12 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <div class="box box-small clearfix">
+{if isset($order)}
 <form id="submitReorder" action="{if isset($opc) && $opc}{$link->getPageLink('order-opc', true)}{else}{$link->getPageLink('order', true)}{/if}" method="post" class="submit">
 		<input type="hidden" value="{$order->id}" name="id_order"/>
 		
@@ -38,17 +39,17 @@
     <p><strong class="dark">{l s='Payment method'}</strong> <span class="color-myaccount">{$order->payment|escape:'html':'UTF-8'}</span></p>
     {if $invoice AND $invoiceAllowed}
     <p>
-		{if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_INVOICE_DELIVERED')}
-			{foreach $invoices item=pdfInvoice}
-				<i class="icon-file-text"></i>
-				<a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order_invoice={$pdfInvoice->number|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">
-				{l s='Invoice for Delivery Slip'} {$pdfInvoice->delivery_number}</a>
-				<br>
-			{/foreach}
-		{else}
-			<i class="icon-file-text"></i>
-			<a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order={$order->id|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">{l s='Download your invoice as a PDF file.'}</a>
-		{/if}
+                {if Configuration::get('PS_EDS') && Configuration::get('PS_EDS_INVOICE_DELIVERED')}
+                        {foreach $invoices item=pdfInvoice}
+                                <i class="icon-file-text"></i>
+                                <a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order_invoice={$pdfInvoice->number|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">
+                                {l s='Invoice for Delivery Slip'} {$pdfInvoice->delivery_number}</a>
+                                <br>
+                        {/foreach}
+                {else}
+                        <i class="icon-file-text"></i>
+                        <a target="_blank" href="{$link->getPageLink('pdf-invoice', true)}?id_order={$order->id|intval}{if $is_guest}&secure_key={$order->secure_key}{/if}">{l s='Download your invoice as a PDF file.'}</a>
+                {/if}
     </p>
     {/if}
     {if $order->recyclable}
@@ -121,7 +122,7 @@
     </div>
 </div>
 {$HOOK_ORDERDETAILDISPLAYED}
-{if !$is_guest}<form action="{$link->getPageLink('order-follow', true)|escape:'html'}" method="post">{/if}
+{if !$is_guest}<form action="{$link->getPageLink('order-follow', true)|escape:'html':'UTF-8'}" method="post">{/if}
 <div id="order-detail-content" class="table_block table-responsive">
 	<table class="table table-bordered">
 		<thead>
@@ -224,7 +225,7 @@
 							</td>
 						{/if}
 						<td>
-							<label for="cb_{$product.id_order_detail|intval}">
+							<label class="price" for="cb_{$product.id_order_detail|intval}">
 								{if $group_use_tax}
 									{convertPriceWithCurrency price=$product.unit_price_tax_incl currency=$currency}
 								{else}
@@ -233,7 +234,7 @@
 							</label>
 						</td>
 						<td>
-							<label for="cb_{$product.id_order_detail|intval}">
+							<label class="price" for="cb_{$product.id_order_detail|intval}">
 								{if isset($customizedDatas.$productId.$productAttributeId)}
 									{if $group_use_tax}
 										{convertPriceWithCurrency price=$product.total_customization_wt currency=$currency}
@@ -294,16 +295,16 @@
 							<label for="cb_{$product.id_order_detail|intval}">
 								{if $product.download_hash && $invoice && $product.display_filename != '' && $product.product_quantity_refunded == 0 && $product.product_quantity_return == 0}
 									{if isset($is_guest) && $is_guest}
-									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&amp;id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html'}" title="{l s='Download this product'}">
+									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&amp;id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}">
 									{else}
-										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html'}" title="{l s='Download this product'}">
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}">
 									{/if}
 										<img src="{$img_dir}icon/download_product.gif" class="icon" alt="{l s='Download product'}" />
 									</a>
 									{if isset($is_guest) && $is_guest}
-										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html'}" title="{l s='Download this product'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
+										<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}&id_order={$order->id}&secure_key={$order->secure_key}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
 									{else}
-									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html'}" title="{l s='Download this product'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
+									<a href="{$link->getPageLink('get-file', true, NULL, "key={$product.filename|escape:'html':'UTF-8'}-{$product.download_hash|escape:'html':'UTF-8'}")|escape:'html':'UTF-8'}" title="{l s='Download this product'}"> {$product.product_name|escape:'html':'UTF-8'} 	</a>
 									{/if}
 								{else}
 									{$product.product_name|escape:'html':'UTF-8'}
@@ -322,7 +323,7 @@
 								{$product['qty_returned']}
 							</td>
 						{/if}
-						<td>
+						<td class="price">
 							<label for="cb_{$product.id_order_detail|intval}">
 							{if $group_use_tax}
 								{convertPriceWithCurrency price=$product.unit_price_tax_incl currency=$currency}
@@ -331,7 +332,7 @@
 							{/if}
 							</label>
 						</td>
-						<td>
+						<td class="price">
 							<label for="cb_{$product.id_order_detail|intval}">
 							{if $group_use_tax}
 								{convertPriceWithCurrency price=$product.total_price_tax_incl currency=$currency}
@@ -658,6 +659,20 @@
 
 {/if}
 
+{if $return_allowed}
+	<div id="returnOrderMessage">
+		<h3 class="page-heading bottom-indent">{l s='Merchandise return'}</h3>
+		<p>{l s='If you wish to return one or more products, please mark the corresponding boxes and provide an explanation for the return. When complete, click the button below.'}</p>
+		<p class="form-group">
+			<textarea class="form-control" cols="67" rows="3" name="returnText"></textarea>
+		</p>
+		<p class="form-group">
+            <button type="submit" name="submitReturnMerchandise" class="btn btn-default button button-small"><span>{l s='Make an RMA slip'}<i class="icon-chevron-right right"></i></span></button>
+			<input type="hidden" class="hidden" value="{$order->id|intval}" name="id_order" />
+		</p>
+	</div>
+{/if}
+</form>
 {if $order->getShipping()|count > 0}
 	<table class="table table-bordered footab">
 		<thead>
@@ -684,20 +699,6 @@
 		</tbody>
 	</table>
 {/if}
-	{if $return_allowed}
-	<div id="returnOrderMessage">
-		<h3 class="page-heading bottom-indent">{l s='Merchandise return'}</h3>
-		<p>{l s='If you wish to return one or more products, please mark the corresponding boxes and provide an explanation for the return. When complete, click the button below.'}</p>
-		<p class="form-group">
-			<textarea class="form-control" cols="67" rows="3" name="returnText"></textarea>
-		</p>
-		<p class="form-group">
-            <button type="submit" name="submitReturnMerchandise" class="btn btn-default button button-small"><span>{l s='Make an RMA slip'}<i class="icon-chevron-right right"></i></span></button>
-			<input type="hidden" class="hidden" value="{$order->id|intval}" name="id_order" />
-		</p>
-	</div>
-	{/if}
-	</form>
 {if !$is_guest}
 	{if count($messages)}
 	<h3 class="page-heading">{l s='Messages'}</h3>
@@ -747,7 +748,7 @@
 		{l s='Message successfully sent'}
 	</p>
 	{/if}
-	<form action="{$link->getPageLink('order-detail', true)|escape:'html'}" method="post" class="std" id="sendOrderMessage">
+	<form action="{$link->getPageLink('order-detail', true)|escape:'html':'UTF-8'}" method="post" class="std" id="sendOrderMessage">
 		<h3 class="page-heading bottom-indent">{l s='Add a message'}</h3>
 		<p>{l s='If you would like to add a comment about your order, please write it in the field below.'}</p>
 		<p class="form-group">
@@ -770,4 +771,5 @@
 	</form>
 {else}
 <p class="alert alert-info"><i class="icon-info-sign"></i>{l s='You cannot return merchandise with a guest account'}</p>
+{/if}
 {/if}

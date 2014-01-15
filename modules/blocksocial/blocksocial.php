@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -39,18 +39,18 @@ class blocksocial extends Module
 		parent::__construct();	
 
 		$this->displayName = $this->l('Social networking block');
-		$this->description = $this->l('Allows you to add information about your brand\'s social networking sites.');
+		$this->description = $this->l('Allows you to add information about your brand\'s social networking accounts.');
 	}
 	
 	public function install()
 	{
-		return (parent::install() AND Configuration::updateValue('blocksocial_facebook', '') && Configuration::updateValue('blocksocial_twitter', '') && Configuration::updateValue('blocksocial_rss', '') && $this->registerHook('displayHeader') && $this->registerHook('displayFooter'));
+		return (parent::install() AND Configuration::updateValue('BLOCKSOCIAL_FACEBOOK', '') && Configuration::updateValue('BLOCKSOCIAL_TWITTER', '') && Configuration::updateValue('BLOCKSOCIAL_RSS', '') && $this->registerHook('displayHeader') && $this->registerHook('displayFooter'));
 	}
 	
 	public function uninstall()
 	{
-		//Delete configuration			
-		return (Configuration::deleteByName('blocksocial_facebook') AND Configuration::deleteByName('blocksocial_twitter') AND Configuration::deleteByName('blocksocial_rss') AND parent::uninstall());
+		//Delete configuration
+		return (Configuration::deleteByName('BLOCKSOCIAL_FACEBOOK') AND Configuration::deleteByName('BLOCKSOCIAL_TWITTER') AND Configuration::deleteByName('BLOCKSOCIAL_RSS') AND parent::uninstall());
 	}
 	
 	public function getContent()
@@ -59,9 +59,12 @@ class blocksocial extends Module
 		$output = '';
 		if (Tools::isSubmit('submitModule'))
 		{	
-			Configuration::updateValue('blocksocial_facebook', (($_POST['blocksocial_facebook'] != '') ? $_POST['blocksocial_facebook']: ''));
-			Configuration::updateValue('blocksocial_twitter', (($_POST['blocksocial_twitter'] != '') ? $_POST['blocksocial_twitter']: ''));		
-			Configuration::updateValue('blocksocial_rss', (($_POST['blocksocial_rss'] != '') ? $_POST['blocksocial_rss']: ''));				
+			Configuration::updateValue('BLOCKSOCIAL_FACEBOOK', (($_POST['blocksocial_facebook'] != '') ? $_POST['blocksocial_facebook']: ''));
+			Configuration::updateValue('BLOCKSOCIAL_TWITTER', (($_POST['blocksocial_twitter'] != '') ? $_POST['blocksocial_twitter']: ''));
+			Configuration::updateValue('BLOCKSOCIAL_RSS', (($_POST['blocksocial_rss'] != '') ? $_POST['blocksocial_rss']: ''));
+			Configuration::updateValue('BLOCKSOCIAL_YOUTUBE', (($_POST['blocksocial_youtube'] != '') ? $_POST['blocksocial_youtube']: ''));
+			Configuration::updateValue('BLOCKSOCIAL_GOOGLE_PLUS', (($_POST['blocksocial_google_plus'] != '') ? $_POST['blocksocial_google_plus']: ''));
+			Configuration::updateValue('BLOCKSOCIAL_PINTEREST', (($_POST['blocksocial_pinterest'] != '') ? $_POST['blocksocial_pinterest']: ''));
 			$this->_clearCache('blocksocial.tpl');
 			$output .= $this->displayConfirmation($this->l('Configuration updated'));
 		}
@@ -78,9 +81,12 @@ class blocksocial extends Module
 	{
 		if (!$this->isCached('blocksocial.tpl', $this->getCacheId()))
 			$this->smarty->assign(array(
-				'facebook_url' => Configuration::get('blocksocial_facebook'),
-				'twitter_url' => Configuration::get('blocksocial_twitter'),
-				'rss_url' => Configuration::get('blocksocial_rss')
+				'facebook_url' => Configuration::get('BLOCKSOCIAL_FACEBOOK'),
+				'twitter_url' => Configuration::get('BLOCKSOCIAL_TWITTER'),
+				'rss_url' => Configuration::get('BLOCKSOCIAL_RSS'),
+				'youtube_url' => Configuration::get('BLOCKSOCIAL_YOUTUBE'),
+				'google_plus_url' => Configuration::get('BLOCKSOCIAL_GOOGLE_PLUS'),
+				'pinterest_url' => Configuration::get('BLOCKSOCIAL_PINTEREST'),
 			));
 
 		return $this->display(__FILE__, 'blocksocial.tpl', $this->getCacheId());
@@ -97,26 +103,44 @@ class blocksocial extends Module
 				'input' => array(
 					array(
 						'type' => 'text',
-						'label' => $this->l('Facebook URL:'),
+						'label' => $this->l('Facebook URL'),
 						'name' => 'blocksocial_facebook',
-						'desc' => $this->l('Create a title for the block (default: \'RSS feed\')'),
+						'desc' => $this->l('Your Facebook fan page.'),
 					),
 					array(
 						'type' => 'text',
-						'label' => $this->l('Twitter URL:'),
+						'label' => $this->l('Twitter URL'),
 						'name' => 'blocksocial_twitter',
-						'desc' => $this->l('Add the URL of the feed you want to use (sample: http://news.google.com/?output=rss)'),
+						'desc' => $this->l('Your official Twitter accounts.'),
 					),
 					array(
 						'type' => 'text',
-						'label' => $this->l('RSS URL:'),
+						'label' => $this->l('RSS URL'),
 						'name' => 'blocksocial_rss',
-						'desc' => $this->l('Number of threads displayed by the block (default value: 5)'),
+						'desc' => $this->l('The RSS feed of your choice (your blog, your store, etc.).'),
+					),
+					array(
+						'type' => 'text',
+						'label' => $this->l('YouTube URL'),
+						'name' => 'blocksocial_youtube',
+						'desc' => $this->l('Your official YouTube account.'),
+					),
+					array(
+						'type' => 'text',
+						'label' => $this->l('Google Plus URL:'),
+						'name' => 'blocksocial_google_plus',
+						'desc' => $this->l('You official Google Plus page.'),
+					),
+					array(
+						'type' => 'text',
+						'label' => $this->l('Pinterest URL:'),
+						'name' => 'blocksocial_pinterest',
+						'desc' => $this->l('Your official Pinterest account.'),
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		
@@ -142,9 +166,12 @@ class blocksocial extends Module
 	public function getConfigFieldsValues()
 	{
 		return array(
-			'blocksocial_facebook' => Tools::getValue('blocksocial_facebook', Configuration::get('blocksocial_facebook')),
-			'blocksocial_twitter' => Tools::getValue('blocksocial_twitter', Configuration::get('blocksocial_twitter')),
-			'blocksocial_rss' => Tools::getValue('blocksocial_rss', Configuration::get('blocksocial_rss')),
+			'blocksocial_facebook' => Tools::getValue('blocksocial_facebook', Configuration::get('BLOCKSOCIAL_FACEBOOK')),
+			'blocksocial_twitter' => Tools::getValue('blocksocial_twitter', Configuration::get('BLOCKSOCIAL_TWITTER')),
+			'blocksocial_rss' => Tools::getValue('blocksocial_rss', Configuration::get('BLOCKSOCIAL_RSS')),
+			'blocksocial_youtube' => Tools::getValue('blocksocial_youtube', Configuration::get('BLOCKSOCIAL_YOUTUBE')),
+			'blocksocial_google_plus' => Tools::getValue('blocksocial_google_plus', Configuration::get('BLOCKSOCIAL_GOOGLE_PLUS')),
+			'blocksocial_pinterest' => Tools::getValue('blocksocial_pinterest', Configuration::get('BLOCKSOCIAL_PINTEREST')),
 		);
 	}
 

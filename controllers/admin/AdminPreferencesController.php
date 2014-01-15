@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -92,7 +92,7 @@ class AdminPreferencesControllerCore extends AdminController
 			if (Configuration::get('PS_SSL_ENABLED'))
 				$fields['PS_SSL_ENABLED_EVERYWHERE'] = array(
 					'title' => $this->l('Force the SSL on all the pages'),
-					'desc' => $this->l('Force all your store to use SSL'),
+					'desc' => $this->l('Force all your store to use SSL.'),
 					'validation' => 'isBool',
 					'cast' => 'intval',
 					'type' => 'bool',
@@ -110,8 +110,8 @@ class AdminPreferencesControllerCore extends AdminController
 					'visibility' => Shop::CONTEXT_ALL
 				),
 				'PS_ALLOW_HTML_IFRAME' => array(
-					'title' => $this->l('Allow iframes on html fields'),
-					'desc' => $this->l('Allow iframes on fields like product description. We recommend that you leave this option disabled'),
+					'title' => $this->l('Allow iframes on HTML fields'),
+					'desc' => $this->l('Allow iframes on text fields like product description. We recommend that you leave this option disabled.'),
 					'validation' => 'isBool',
 					'cast' => 'intval',
 					'type' => 'bool',
@@ -119,7 +119,7 @@ class AdminPreferencesControllerCore extends AdminController
 				),
 				'PS_PRICE_ROUND_MODE' => array(
 					'title' => $this->l('Round mode'),
-					'desc' => $this->l('You can choose how to round prices: Always round superior, always round inferior or classic rounding.'),
+					'desc' => $this->l('You can choose how to round prices: always round up, always round down or classic rounding (up if > .5, down if < .5).'),
 					'validation' => 'isInt',
 					'cast' => 'intval',
 					'type' => 'select',
@@ -128,7 +128,7 @@ class AdminPreferencesControllerCore extends AdminController
 				),
 				'PS_DISPLAY_SUPPLIERS' => array(
 					'title' => $this->l('Display suppliers and manufacturers'),
-					'desc' => $this->l('Display the suppliers and manufacturers lists even if corresponding blocks are disabled.'),
+					'desc' => $this->l('Enable suppliers and manufacturers pages on your Front Office even when their respective modules are disabled.'),
 					'validation' => 'isBool',
 					'cast' => 'intval',
 					'type' => 'bool'
@@ -164,7 +164,7 @@ class AdminPreferencesControllerCore extends AdminController
 					'title' =>	$this->l('General'),
 					'icon' =>	'icon-cogs',
 					'fields' =>	$fields,
-					'submit' => array('title' => $this->l('Save   '), 'class' => 'button'),
+					'submit' => array('title' => $this->l('Save')),
 				),
 			);
 		}

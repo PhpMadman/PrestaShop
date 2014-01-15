@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -29,32 +29,40 @@ if (!defined('_PS_VERSION_'))
 
 class BlockViewed extends Module
 {
-	private $_html = '';
-	private $_postErrors = array();
 
 	public function __construct()
 	{
 		$this->name = 'blockviewed';
 		$this->tab = 'front_office_features';
-		$this->version = 0.9;
+		$this->version = 1;
 		$this->author = 'PrestaShop';
 		$this->need_instance = 0;
 
 		$this->bootstrap = true;
 		parent::__construct();	
 
-		$this->displayName = $this->l('Viewed products block.');
+		$this->displayName = $this->l('Viewed products block');
 		$this->description = $this->l('Adds a block displaying recently viewed products.');
 	}
 
 	public function install()
 	{
-		if (!parent::install()
-			|| !$this->registerHook('leftColumn')
-			|| !$this->registerHook('header')
-			|| !Configuration::updateValue('PRODUCTS_VIEWED_NBR', 2))
-			return false;
-		return true;
+		$success = (parent::install() && $this->registerHook('header') && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 2));
+
+		if ($success)
+		{
+			// Hook the module either on the left or right column
+			$theme = new Theme(Context::getContext()->shop->id_theme);
+			if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+				&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+			{
+				// If there are no colums implemented by the template, throw an error and uninstall the module
+				$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+				parent::uninstall();
+				return false;
+			}
+		}
+		return $success;
 	}
 
 	public function getContent()
@@ -69,7 +77,7 @@ class BlockViewed extends Module
 			else
 			{
 				Configuration::updateValue('PRODUCTS_VIEWED_NBR', (int)$productNbr);
-				$output .= $this->displayConfirmation($this->l('Settings updated'));
+				$output .= $this->displayConfirmation($this->l('Settings updated.'));
 			}
 		}
 		return $output.$this->renderForm();
@@ -77,16 +85,7 @@ class BlockViewed extends Module
 
 	public function hookRightColumn($params)
 	{
-		$id_product = (int)Tools::getValue('id_product');
 		$productsViewed = (isset($params['cookie']->viewed) && !empty($params['cookie']->viewed)) ? array_slice(array_reverse(explode(',', $params['cookie']->viewed)), 0, Configuration::get('PRODUCTS_VIEWED_NBR')) : array();
-
-		if ($id_product && !in_array($id_product, $productsViewed))
-		{
-			if(isset($params['cookie']->viewed) && !empty($params['cookie']->viewed))
-		  		$params['cookie']->viewed .= ',' . (int)$id_product;
-			else
-		  		$params['cookie']->viewed = (int)$id_product;
-		}
 
 		if (count($productsViewed))
 		{
@@ -140,14 +139,6 @@ class BlockViewed extends Module
 				}
 			}
 
-			if ($id_product && !in_array($id_product, $productsViewed))
-			{
-				// Check if the user to the right of access to this product
-				$product = new Product((int)$id_product);
-				if ($product->checkAccess((int)$this->context->customer->id))
-					array_unshift($productsViewed, $id_product);
-			}
-
 			if (!count($productsViewedObj))
 				return;
 
@@ -167,6 +158,20 @@ class BlockViewed extends Module
 
 	public function hookHeader($params)
 	{
+		$id_product = (int)Tools::getValue('id_product');
+		$productsViewed = (isset($params['cookie']->viewed) && !empty($params['cookie']->viewed)) ? array_slice(array_reverse(explode(',', $params['cookie']->viewed)), 0, Configuration::get('PRODUCTS_VIEWED_NBR')) : array();
+
+		if ($id_product && !in_array($id_product, $productsViewed))
+		{
+			$product = new Product((int)$id_product);
+			if ($product->checkAccess((int)$this->context->customer->id))
+			{
+				if (isset($params['cookie']->viewed) && !empty($params['cookie']->viewed))
+					$params['cookie']->viewed .= ','.(int)$id_product;
+				else
+					$params['cookie']->viewed = (int)$id_product;
+			}
+		}
 		$this->context->controller->addCSS(($this->_path).'blockviewed.css', 'all');
 	}
 	
@@ -181,7 +186,7 @@ class BlockViewed extends Module
 				'input' => array(
 					array(
 						'type' => 'text',
-						'label' => $this->l('Products to display.'),
+						'label' => $this->l('Products to display'),
 						'name' => 'PRODUCTS_VIEWED_NBR',
 						'class' => 'fixed-width-xs',
 						'desc' => $this->l('Define the number of products displayed in this block.')
@@ -189,9 +194,9 @@ class BlockViewed extends Module
 				),
 				'submit' => array(
 					'title' => $this->l('Save'),
-					'class' => 'btn btn-default')
-				),
-			);
+				)
+			),
+		);
 			
 		$helper = new HelperForm();
 		$helper->show_toolbar = false;

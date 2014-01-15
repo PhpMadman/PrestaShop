@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -33,7 +33,7 @@
 			{if isset($file.delete_url)}
 			<p>
 				<a class="btn btn-default" href="{$file.delete_url}">
-				<i class="icon-trash"></i> {l s='Delete'}
+					<i class="icon-trash"></i> {l s='Delete'}
 				</a>
 			</p>
 			{/if}
@@ -107,6 +107,7 @@
 
 		$('#{$id}').fileupload({
 			dataType: 'json',
+			async: false,
 			autoUpload: false,
 			singleFileUploads: true,
 			{if isset($post_max_size)}maxFileSize: {$post_max_size},{/if}

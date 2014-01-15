@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -68,6 +68,8 @@ abstract class ModuleCore
 
 	/** @var string Fill it if the module is installed but not yet set up */
 	public $warning;
+
+	public $enable_device = 7;
 
 	/** @var array to store the limited country */
 	public $limited_countries = array();
@@ -122,6 +124,8 @@ abstract class ModuleCore
 	/** @var currentSmartySubTemplate */	
 	protected $current_subtemplate = null;
 	
+	protected static $update_translations_after_install = true;
+
 	/** @var allow push */
 	public $allow_push;
 	
@@ -239,7 +243,7 @@ abstract class ModuleCore
 			$this->installOverrides();
 		} catch (Exception $e) {
 			$this->_errors[] = sprintf(Tools::displayError('Unable to install override: %s'), $e->getMessage());
-			//$this->uninstallOverrides(); remove this line because if module a install an override, then module b install same override, this line will remove override of module a (if you find a bug related to this line please don't forget what i say before)
+			$this->uninstallOverrides();
 			return false;
 		}
 
@@ -279,7 +283,21 @@ abstract class ModuleCore
 		// Adding Restrictions for client groups
 		Group::addRestrictionsForModule($this->id, Shop::getShops(true, null, true));
 		Hook::exec('actionModuleInstallAfter', array('object' => $this));
+
+		if (Module::$update_translations_after_install)
+			$this->updateModuleTranslations();
+
 		return true;
+	}
+	
+	public static function updateTranslationsAfterInstall($update = true)
+	{
+		Module::$update_translations_after_install = (bool)$update;
+	}
+
+	public function updateModuleTranslations()
+	{
+		return Language::updateModulesTranslations(array($this->name));
 	}
 
 	/**
@@ -598,6 +616,30 @@ abstract class ModuleCore
 				));
 
 		return true;
+	}
+	
+	public function enableDevice($device)
+	{
+		Db::getInstance()->execute('
+			UPDATE '._DB_PREFIX_.'module_shop
+			SET enable_device = enable_device + '.(int)$device.'
+			WHERE enable_device &~ '.(int)$device.' AND id_module='.(int)$this->id.
+			Shop::addSqlRestriction()
+		);
+
+		return true;
+	}
+	
+	public function disableDevice($device)
+	{
+		Db::getInstance()->execute('
+			UPDATE '._DB_PREFIX_.'module_shop
+			SET enable_device = enable_device - '.(int)$device.'
+			WHERE enable_device & '.(int)$device.' AND id_module='.(int)$this->id.
+			Shop::addSqlRestriction()
+		);
+
+		return true;		
 	}
 
 	/**
@@ -1006,9 +1048,10 @@ abstract class ModuleCore
 		
 		$modules_installed = array();
 		$result = Db::getInstance()->executeS('
-		SELECT name, version, interest
-		FROM `'._DB_PREFIX_.'module`
-		LEFT JOIN `'._DB_PREFIX_.'module_preference` ON (`module` = `name` AND `id_employee` = '.(int)$id_employee.')');
+		SELECT m.name, m.version, mp.interest, module_shop.enable_device
+		FROM `'._DB_PREFIX_.'module` m
+		'.Shop::addSqlAssociation('module', 'm').'
+		LEFT JOIN `'._DB_PREFIX_.'module_preference` mp ON (mp.`module` = m.`name` AND mp.`id_employee` = '.(int)$id_employee.')');
 		foreach ($result as $row)
 			$modules_installed[$row['name']] = $row;
 
@@ -1239,6 +1282,7 @@ abstract class ModuleCore
 				$module->installed = true;
 				$module->database_version = $modules_installed[$module->name]['version'];
 				$module->interest = $modules_installed[$module->name]['interest'];
+				$module->enable_device = $modules_installed[$module->name]['enable_device'];
 			}
 			else
 			{
@@ -1368,13 +1412,13 @@ abstract class ModuleCore
 	{
 		return true;
 	}
-	
+
+	/*
+		@deprecated since 1.6.0.2
+	*/
 	public static function getPaypalIgnore()
 	{
-		$iso_code = Country::getIsoById((int)Configuration::get('PS_COUNTRY_DEFAULT'));
-		$paypal_countries = array('ES', 'FR', 'PL', 'IT');
-		if (Context::getContext()->getMobileDevice() && Context::getContext()->shop->getTheme() == 'default' && in_array($iso_code, $paypal_countries))
-			return 'm.`name` = \'paypal\'';
+		Tools::displayAsDeprecated();
 	}
 
 	/**
@@ -1389,11 +1433,13 @@ abstract class ModuleCore
 		if (isset($context->cart))
 			$billing = new Address((int)$context->cart->id_address_invoice);
 
+		$use_groups = Group::isFeatureActive();
+
 		$frontend = true;
 		$groups = array();
 		if (isset($context->employee))
 			$frontend = false;
-		elseif (isset($context->customer))
+		elseif (isset($context->customer) && $use_groups)
 		{
 			$groups = $context->customer->getGroups();
 			if (!count($groups))
@@ -1405,21 +1451,19 @@ abstract class ModuleCore
 			$hookPayment = 'displayPayment';
 
 		$list = Shop::getContextListShopID();
-		if ($paypal_condition = Module::getPaypalIgnore())
-			$paypal_condition = ' AND '.$paypal_condition;
 			
 		return Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('SELECT DISTINCT m.`id_module`, h.`id_hook`, m.`name`, hm.`position`
 		FROM `'._DB_PREFIX_.'module` m
 		'.($frontend ? 'LEFT JOIN `'._DB_PREFIX_.'module_country` mc ON (m.`id_module` = mc.`id_module` AND mc.id_shop = '.(int)$context->shop->id.')' : '').'
-		'.($frontend ? 'INNER JOIN `'._DB_PREFIX_.'module_group` mg ON (m.`id_module` = mg.`id_module` AND mg.id_shop = '.(int)$context->shop->id.')' : '').'
-		'.($frontend && isset($context->customer) ? 'INNER JOIN `'._DB_PREFIX_.'customer_group` cg on (cg.`id_group` = mg.`id_group`AND cg.`id_customer` = '.(int)$context->customer->id.')' : '').'
+		'.($frontend && $use_groups ? 'INNER JOIN `'._DB_PREFIX_.'module_group` mg ON (m.`id_module` = mg.`id_module` AND mg.id_shop = '.(int)$context->shop->id.')' : '').'
+		'.($frontend && isset($context->customer) && $use_groups ? 'INNER JOIN `'._DB_PREFIX_.'customer_group` cg on (cg.`id_group` = mg.`id_group`AND cg.`id_customer` = '.(int)$context->customer->id.')' : '').'
 		LEFT JOIN `'._DB_PREFIX_.'hook_module` hm ON hm.`id_module` = m.`id_module`
 		LEFT JOIN `'._DB_PREFIX_.'hook` h ON hm.`id_hook` = h.`id_hook`
 		WHERE h.`name` = \''.pSQL($hookPayment).'\'
 		'.(isset($billing) && $frontend ? 'AND mc.id_country = '.(int)$billing->id_country : '').'
 		AND (SELECT COUNT(*) FROM '._DB_PREFIX_.'module_shop ms WHERE ms.id_module = m.id_module AND ms.id_shop IN('.implode(', ', $list).')) = '.count($list).'
 		AND hm.id_shop IN('.implode(', ', $list).')
-		'.((count($groups) && $frontend) ? 'AND (mg.`id_group` IN ('.implode(', ', $groups).'))' : '').$paypal_condition.'
+		'.((count($groups) && $frontend && $use_groups) ? 'AND (mg.`id_group` IN ('.implode(', ', $groups).'))' : '').'
 		GROUP BY hm.id_hook, hm.id_module
 		ORDER BY hm.`position`, m.`name` DESC');
 	}
@@ -1535,8 +1579,10 @@ abstract class ModuleCore
 	public function displayError($error)
 	{
 	 	$output = '
+	 	<div class="bootstrap">
 		<div class="module_error alert alert-danger">
 			'.$error.'
+		</div>
 		</div>';
 		$this->error = true;
 		return $output;
@@ -1545,8 +1591,10 @@ abstract class ModuleCore
 	public function displayConfirmation($string)
 	{
 	 	$output = '
+	 	<div class="bootstrap">
 		<div class="module_confirmation conf confirm alert alert-success">
 			'.$string.'
+		</div>
 		</div>';
 		return $output;
 	}
@@ -1565,8 +1613,9 @@ abstract class ModuleCore
 			$exceptionsCache = array();
 			$sql = 'SELECT * FROM `'._DB_PREFIX_.'hook_module_exceptions`
 				WHERE `id_shop` IN ('.implode(', ', Shop::getContextListShopID()).')';
-			$result = Db::getInstance()->executeS($sql);
-			foreach ($result as $row)
+			$db = Db::getInstance();
+			$result = $db->executeS($sql, false);
+			while ($row = $db->nextRow($result))
 			{
 				if (!$row['file_name'])
 					continue;
@@ -2020,6 +2069,7 @@ abstract class ModuleCore
 			if (Autoload::getInstance()->getClassPath($class.'Core'))
 				$result &= $this->removeOverride($class);
 		}
+
 		return $result;
 	}
 
@@ -2123,7 +2173,17 @@ abstract class ModuleCore
 
 			$method = $override_class->getMethod($method->getName());
 			$length = $method->getEndLine() - $method->getStartLine() + 1;
-			array_splice($override_file, $method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'));
+			
+			$module_method = $module_class->getMethod($method->getName());
+			$module_length = $module_method->getEndLine() - $module_method->getStartLine() + 1;
+
+			$override_file_orig = $override_file;
+
+			$orig_content = preg_replace("/\s/", '', implode('', array_splice($override_file, $method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'))));
+			$module_content = preg_replace("/\s/", '', implode('', array_splice($module_file, $module_method->getStartLine() - 1, $length, array_pad(array(), $length, '#--remove--#'))));
+
+			if (md5($module_content) != md5($orig_content))
+				$override_file = $override_file_orig;
 		}
 
 		// Remove properties from override file
@@ -2151,6 +2211,9 @@ abstract class ModuleCore
 			$code .= $line;
 		}
 		file_put_contents($override_path, $code);
+
+		// Re-generate the class index
+		Autoload::getInstance()->generateIndex();
 
 		return true;
 	}

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -103,7 +103,7 @@ class Blocknewsletter extends Module
 			
 			$voucher = Tools::getValue('NW_VOUCHER_CODE');
 			if ($voucher && !Validate::isDiscountName($voucher))
-				$this->_html .= $this->displayError($this->l('The coucher code is invalid.'));
+				$this->_html .= $this->displayError($this->l('The voucher code is invalid.'));
 			else
 			{
 				Configuration::updateValue('NW_VOUCHER_CODE', pSQL($voucher));
@@ -152,26 +152,20 @@ class Blocknewsletter extends Module
 	private function newsletterRegistration()
 	{
 		if (empty($_POST['email']) || !Validate::isEmail($_POST['email']))
-			return $this->error = $this->l('Invalid email address');
+			return $this->error = $this->l('Invalid email address.');
 
 		/* Unsubscription */
 		else if ($_POST['action'] == '1')
 		{
 			$register_status = $this->isNewsletterRegistered($_POST['email']);
+
 			if ($register_status < 1)
 				return $this->error = $this->l('This email address is not registered.');
-			else if ($register_status == self::GUEST_REGISTERED)
-			{
-				if (!Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'newsletter WHERE `email` = \''.pSQL($_POST['email']).'\' AND id_shop = '.$this->context->shop->id))
-					return $this->error = $this->l('An error occurred while attempting to unsubscribe.');
-				return $this->valid = $this->l('Unsubscription successful');
-			}
-			else if ($register_status == self::CUSTOMER_REGISTERED)
-			{
-				if (!Db::getInstance()->execute('UPDATE '._DB_PREFIX_.'customer SET `newsletter` = 0 WHERE `email` = \''.pSQL($_POST['email']).'\' AND id_shop = '.$this->context->shop->id))
-					return $this->error = $this->l('An error occurred while attempting to unsubscribe.');
-				return $this->valid = $this->l('Unsubscription successful');
-			}
+
+			if (!$this->unregister($_POST['email'], $register_status))
+				return $this->error = $this->l('An error occurred while attempting to unsubscribe.');
+
+			return $this->valid = $this->l('Unsubscription successful.');
 		}
 		/* Subscription */
 		else if ($_POST['action'] == '0')
@@ -236,15 +230,26 @@ class Blocknewsletter extends Module
 	 */
 	protected function register($email, $register_status)
 	{
-		if ($register_status == self::GUEST_NOT_REGISTERED)
-		{
-			if (!$this->registerGuest(Tools::getValue('email')))
-				return false;
+		if ($register_status == self::GUEST_NOT_REGISTERED) {
+			return $this->registerGuest($email);
 		}
-		else if ($register_status == self::CUSTOMER_NOT_REGISTERED)
-		{
-		 	if (!$this->registerUser(Tools::getValue('email')))
-	 			return false;
+
+		if ($register_status == self::CUSTOMER_NOT_REGISTERED) {
+	 		return $this->registerUser($email);
+		}
+
+		return false;
+	}
+
+	protected function unregister($email, $register_status) {
+		if ($register_status == self::GUEST_REGISTERED) {
+			$sql = 'DELETE FROM '._DB_PREFIX_.'newsletter WHERE `email` = \''.pSQL($_POST['email']).'\' AND id_shop = '.$this->context->shop->id;
+		} else if ($register_status == self::CUSTOMER_REGISTERED) {
+			$sql = 'UPDATE '._DB_PREFIX_.'customer SET `newsletter` = 0 WHERE `email` = \''.pSQL($_POST['email']).'\' AND id_shop = '.$this->context->shop->id;
+		}
+
+		if (!isset($sql) || !Db::getInstance()->execute($sql)) {
+			return false;
 		}
 
 		return true;
@@ -484,6 +489,7 @@ class Blocknewsletter extends Module
 	public function hookDisplayHeader($params)
 	{
 		$this->context->controller->addCSS($this->_path.'blocknewsletter.css', 'all');
+		$this->context->controller->addJS($this->_path.'blocknewsletter.js');
 	}
 
 	/**
@@ -520,12 +526,12 @@ class Blocknewsletter extends Module
 									array(
 										'id' => 'active_on',
 										'value' => 1,
-										'label' => $this->l('Enabled')
+										'label' => $this->l('Yes')
 									),
 									array(
 										'id' => 'active_off',
 										'value' => 0,
-										'label' => $this->l('Disabled')
+										'label' => $this->l('No')
 									)
 								),
 					),
@@ -537,12 +543,12 @@ class Blocknewsletter extends Module
 									array(
 										'id' => 'active_on',
 										'value' => 1,
-										'label' => $this->l('Enabled')
+										'label' => $this->l('Yes')
 									),
 									array(
 										'id' => 'active_off',
 										'value' => 0,
-										'label' => $this->l('Disabled')
+										'label' => $this->l('No')
 									)
 								),
 					),
@@ -554,9 +560,9 @@ class Blocknewsletter extends Module
 						'desc' => $this->l('Leave blank to disable by default.')
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,14 +19,10 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-
-//
-// IMPORTANT : don't forget to delete the underscore _ in the file name if you want to use it !
-//
 
 class Hook extends HookCore
 {
@@ -42,12 +38,12 @@ class Hook extends HookCore
 	{
 		return self::$hookMemoryUsage;
 	}
-	
-	public static function exec($hook_name, $hook_args = array(), $id_module = null, $array_return = false, $check_exceptions = true, $use_push = false)
+
+	public static function exec($hook_name, $hook_args = array(), $id_module = null, $array_return = false, $check_exceptions = true, $use_push = false, $id_shop = null)
 	{
 		$memoryUsage = memory_get_usage();
 		$t0 = microtime(true);
-		$result = parent::exec($hook_name, $hook_args, $id_module, $array_return, $check_exceptions, $use_push);
+		$result = parent::exec($hook_name, $hook_args, $id_module, $array_return, $check_exceptions, $use_push, $id_shop);
 		self::$hookTime[$hook_name] = microtime(true) - $t0;
 		self::$hookMemoryUsage[$hook_name] = memory_get_usage() - $memoryUsage;
 		return $result;

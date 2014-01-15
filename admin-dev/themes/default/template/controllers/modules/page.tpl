@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,11 +18,12 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-{include file='controllers/modules/top.tpl'}
+
+{$kpis}
 
 {if $add_permission eq '1'}
 <div id="module_install" class="row" style="{if !isset($smarty.post.downloadflag)}display: none;{/if}">
@@ -72,7 +73,7 @@
 	{l s='An upgrade is available for some of your modules!'}
 	<ul>
 	{foreach from=$upgrade_available item='module'}
-		<li> &raquo; <a href="{$currentIndex|escape:htmlall}&token={$token|escape:htmlall}&anchor=anchor{$module.anchor|escape:htmlall}"><b>{$module.name|escape:htmlall}</b></a></li>
+		<li><a href="{$currentIndex|escape:'html':'UTF-8'}&token={$token|escape:'html':'UTF-8'}&anchor={$module.anchor|escape:'html':'UTF-8'}"><b>{$module.displayName|escape:'html':'UTF-8'}</b></a></li>
 	{/foreach}
 	</ul>
 </div>
@@ -95,7 +96,7 @@
 						</div>
 					</form>
 					<a class="categoryModuleFilterLink list-group-item {if isset($categoryFiltered.favorites)}active{/if}" href="{$currentIndex}&token={$token}&filterCategory=favorites">
-						{l s='Favorites'} <span class="badge pull-right">{$nb_modules_favorites}</span>
+						{l s='Favorites'} <span id="favorite-count" class="badge pull-right">{$nb_modules_favorites}</span>
 					</a>
 					<a class="categoryModuleFilterLink list-group-item {if count($categoryFiltered) lte 0}active{/if}" href="{$currentIndex}&token={$token}&unfilterCategory=yes">
 						{l s='All'} <span class="badge pull-right">{$nb_modules}</span>

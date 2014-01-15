@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -56,7 +56,6 @@ class AdminCurrenciesControllerCore extends AdminController
 				'description' => $this->l('Use PrestaShop\'s webservice to update your currency exchange rates. Please use caution, however, rates are provided as-is.'),
 				'submit' => array(
 					'title' => $this->l('Update currency rates'),
-					'class' => 'btn btn-default',
 					'name' => 'SubmitExchangesRates'
 				)
 			),
@@ -226,7 +225,6 @@ class AdminCurrenciesControllerCore extends AdminController
 
 		$this->fields_form['submit'] = array(
 			'title' => $this->l('Save'),
-			'class' => 'btn btn-default'
 		);
 
 		return parent::renderForm();
@@ -348,8 +346,8 @@ class AdminCurrenciesControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_currency'] = array(
-				'href' => self::$currentIndex.'&amp;addcurrency&amp;token='.$this->token,
-				'desc' => $this->l('Add new currency'),
+				'href' => self::$currentIndex.'&addcurrency&token='.$this->token,
+				'desc' => $this->l('Add new currency', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 

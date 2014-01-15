@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,18 +18,33 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <div class="bootstrap">
 	<div class="page-head">
 		<h2 class="page-title">
-			{l s='Configure:'} {$module_display_name} ({$module_name})
+			{l s='Configure module %s' sprintf=$module_display_name}
 		</h2>
+		<ul class="breadcrumb page-breadcrumb">
+			{if $breadcrumbs2.container.name != ''}
+				<li>
+					{if $breadcrumbs2.container.href != ''}<a href="{$breadcrumbs2.container.href|escape}">{/if}
+					{if $breadcrumbs2.container.icon != ''}<i class="{$breadcrumbs2.container.icon|escape}"></i>{/if}
+					{$breadcrumbs2.container.name|escape}
+					{if $breadcrumbs2.container.href != ''}</a>{/if}
+				</li>
+			{/if}
+			<li>{$module_name}</li>
+			<li>
+				<i class="icon-wrench"></i>
+				{l s='Configure'}
+			</li>
+		</ul>
 		<div class="page-bar toolbarBox">
 			<div class="btn-toolbar">
-				<ul class="cc_button nav nav-pills pull-right">
+				<ul class="nav nav-pills pull-right">
 					<li>
 						<a id="desc-module-hook" class="toolbar_btn" href="{$module_disable_link}" title="{l s='Disable'}">
 							<i class="process-icon-off"></i>
@@ -52,7 +67,7 @@
 					<li>
 						<a id="desc-module-hook" class="toolbar_btn" href="{$module_update_link}" title="{l s='Update'}">
 							<i class="process-icon-refresh"></i>
-							<div>{l s='Update'}</div>
+							<div>{l s='Check and update'}</div>
 						</a>
 					</li>
 					{/if}

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -74,6 +74,7 @@
 
 		$('#{$id}').fileupload({
 			dataType: 'json',
+			async: false,
 			autoUpload: false,
 			singleFileUploads: true,
 			maxFileSize: {$post_max_size},
@@ -83,6 +84,7 @@
 			},
 			fail: function (e, data) {
 				$('#{$id}-errors').html(data.errorThrown.message).parent().show();
+				$('#{$id}-files-list').html('').parent().hide();
 			},
 			done: function (e, data) {
 				if (data.result) {
@@ -90,6 +92,7 @@
 						for (var i=0; i<data.result.{$name}.length; i++) {
 							if (typeof data.result.{$name}[i].error !== 'undefined' && data.result.{$name}[i].error != '') {
 								$('#{$id}-errors').html('<strong>'+data.result.{$name}[i].name+'</strong> : '+data.result.{$name}[i].error).parent().show();
+								$('#{$id}-files-list').html('').parent().hide();
 							}
 							else 
 							{
@@ -100,12 +103,15 @@
 								{
 									var response = data.result.{$name}[i];
 									var cover = "icon-check-empty";
+									var legend = '';
 
 									if (response.cover == "1")
 										cover = "icon-check-sign";
 
-									imageLine(response.id, response.path, response.position, cover, response.shops,
-										response.legend[{$default_language|intval}])
+									if (typeof response.legend !== 'undefined' && response.legend != null)
+										legend = response.legend[{$default_language|intval}];
+
+									imageLine(response.id, response.path, response.position, cover, response.shops, legend);
 									$("#countImage").html(parseInt($("#countImage").html()) + 1);
 									$("#img" + id).remove();
 									$("#imageTable").tableDnDUpdate();
@@ -163,6 +169,7 @@
 			
 			if (file.error) {
 				$('#{$id}-errors').append('<div class="row"><strong>'+file.name+'</strong> ('+humanizeSize(file.size)+') : '+file.error+'</div>').parent().show();
+				$('#{$id}-files-list').html('').parent().hide();
 				$(data.context).find('button').trigger('click');
 			}
 		}).on('fileuploadsubmit', function (e, data) {

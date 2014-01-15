@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,7 +45,7 @@ class StatsProduct extends ModuleGraph
 		parent::__construct();
 
 		$this->displayName = $this->l('Product details');
-		$this->description = $this->l('Get detailed statistics for each product.');
+		$this->description = $this->l('Adds detailed statistics for each product to the Stats dashboard.');
 	}
 
 	public function install()
@@ -69,7 +69,7 @@ class StatsProduct extends ModuleGraph
 	public function getTotalSales($id_product)
 	{
 		$dateBetween = ModuleGraph::getDateBetween();
-		$sql = 'SELECT SUM(od.`product_quantity` * od.`product_price`) AS total
+		$sql = 'SELECT SUM(od.`total_price_tax_excl`) AS total
 				FROM `'._DB_PREFIX_.'order_detail` od
 				LEFT JOIN `'._DB_PREFIX_.'orders` o ON o.`id_order` = od.`id_order`
 				WHERE od.`product_id` = '.(int)$id_product.'
@@ -161,13 +161,12 @@ class StatsProduct extends ModuleGraph
 			</div>
 			<h4>'.$this->l('Guide').'</h4>
 			<div class="alert alert-warning">
-				<h4>'.$this->l('Number of purchases compared to number of views.').'</h4>
+				<h4>'.$this->l('Number of purchases compared to number of views').'</h4>
 				<p>
 					'.$this->l('After choosing a category and selecting a product, informational graphs will appear.').'
 					<ul>
-						<li class="bullet">'.$this->l('If you notice that a product is often purchased but viewed infrequently, you should display it more prominently in your Front Office. ').'</li>
-						<li class="bullet">'.$this->l('On the other hand, if a product has many viewings but is not often purchased,
-							we advise you to check or modify this product\'s information, description and photography again.').'
+						<li class="bullet">'.$this->l('If you notice that a product is often purchased but viewed infrequently, you should display it more prominently in your Front Office.').'</li>
+						<li class="bullet">'.$this->l('On the other hand, if a product has many views but is not often purchased, we advise you to check or modify this product\'s information, description and photography again, see if you can find something better.').'
 						</li>
 					</ul>
 				</p>
@@ -175,10 +174,12 @@ class StatsProduct extends ModuleGraph
 		if ($id_product = (int)Tools::getValue('id_product'))
 		{
 			if (Tools::getValue('export'))
+			{
 				if (Tools::getValue('exportType') == 1)
 					$this->csvExport(array('layers' => 2, 'type' => 'line', 'option' => '1-'.$id_product));
-				else if (Tools::getValue('exportType') == 2)
+				elseif (Tools::getValue('exportType') == 2)
 					$this->csvExport(array('type' => 'pie', 'option' => '3-'.$id_product));
+			}
 			$product = new Product($id_product, false, $this->context->language->id);
 			$totalBought = $this->getTotalBought($product->id);
 			$totalSales = $this->getTotalSales($product->id);
@@ -191,10 +192,10 @@ class StatsProduct extends ModuleGraph
 					</div>
 					<div class="col-lg-4">
 						<ul class="list-unstyled">
-							<li>'.$this->l('Total bought:').' '.$totalBought.'</li>
-							<li>'.$this->l('Sales ( Figure does not include tax):').' '.Tools::displayprice($totalSales, $currency).'</li>
-							<li>'.$this->l('Total viewed:').' '.$totalViewed.'</li>
-							<li>'.$this->l('Conversion rate:').' '.number_format($totalViewed ? $totalBought / $totalViewed : 0, 2).'</li>
+							<li>'.$this->l('Total bought').' '.$totalBought.'</li>
+							<li>'.$this->l('Sales (tax excluded)').' '.Tools::displayprice($totalSales, $currency).'</li>
+							<li>'.$this->l('Total viewed').' '.$totalViewed.'</li>
+							<li>'.$this->l('Conversion rate').' '.number_format($totalViewed ? $totalBought / $totalViewed : 0, 2).'</li>
 						</ul>
 						<a class="btn btn-default export-csv" href="'.Tools::safeOutput($_SERVER['REQUEST_URI']).'&export=1&exportType=1">
 							<i class="icon-cloud-upload"></i> '.$this->l('CSV Export').'
@@ -313,7 +314,7 @@ class StatsProduct extends ModuleGraph
 				<thead>
 					<tr>
 						<th>
-							<span class="title_box  active">'.$this->l('Ref.').'</span>
+							<span class="title_box  active">'.$this->l('Reference').'</span>
 						</th>
 						<th>
 							<span class="title_box  active">'.$this->l('Name').'</span>
@@ -379,7 +380,7 @@ class StatsProduct extends ModuleGraph
 							AND dr.`time_start` BETWEEN '.$dateBetween.'
 							AND dr.`time_end` BETWEEN '.$dateBetween.'
 						GROUP BY dr.`time_start`';
-			break;
+				break;
 
 			case 3:
 				$this->_query = 'SELECT product_attribute_id, SUM(od.`product_quantity`) AS total
@@ -391,10 +392,10 @@ class StatsProduct extends ModuleGraph
 							AND o.`date_add` BETWEEN '.$dateBetween.'
 						GROUP BY od.`product_attribute_id`';
 				$this->_titles['main'] = $this->l('Attributes');
-			break;
+				break;
 
 			case 42:
-				$this->_titles['main'][1] = $this->l('Ref.');
+				$this->_titles['main'][1] = $this->l('Reference');
 				$this->_titles['main'][2] = $this->l('Name');
 				$this->_titles['main'][3] = $this->l('Stock');
 				break;

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -53,6 +53,7 @@ class AdminMetaControllerCore extends AdminController
 			'title' => array('title' => $this->l('Title')),
 			'url_rewrite' => array('title' => $this->l('Friendly URL'))
 		);
+		$this->_where = ' AND a.configurable = 1';
 		$this->_group = 'GROUP BY a.id_meta';
 
 		// Options to generate friendly urls
@@ -74,11 +75,16 @@ class AdminMetaControllerCore extends AdminController
 				'type' => 'bool'
 			),
 			'PS_CANONICAL_REDIRECT' => array(
-				'title' => $this->l('Automatically redirect to the canonical URL'),
-				'hint' => $this->l('Recommended, but your theme must be compliant.'),
-				'validation' => 'isBool',
+				'title' => $this->l('Redirect to the canonical URL'),
+				'validation' => 'isUnsignedInt',
 				'cast' => 'intval',
-				'type' => 'bool'
+				'type' => 'select',
+				'list' => array(
+					array('value' => 0, 'name' => $this->l('No redirection (you may have duplicate content issues)')),
+					array('value' => 1, 'name' => $this->l('302 Moved Temporarily (recommended while setting up your store)')),
+					array('value' => 2, 'name' => $this->l('301 Moved Permanently (recommended once you have gone live)'))
+				),
+				'identifier' => 'value',
 			),
 		);
 
@@ -95,7 +101,7 @@ class AdminMetaControllerCore extends AdminController
 
 			$general_fields['PS_HTACCESS_DISABLE_MODSEC'] = array(
 				'title' => $this->l('Disable apache mod security'),
-				'hint' => $this->l('Some features could not work correctly with a specific configuration of apache mod security. We recommend to turn it off.'),
+				'hint' => $this->l('Some features could not work correctly with a specific configuration of Apache mod_security. We recommend to turn it off.'),
 				'validation' => 'isBool',
 				'cast' => 'intval',
 				'type' => 'bool',
@@ -103,9 +109,9 @@ class AdminMetaControllerCore extends AdminController
 		}
 		else
 		{
-			$url_description = $this->l('Before being able to use this tool, you need to:');
+			$url_description = $this->l('Before you can use this tool, you need to:');
 			$url_description .= $this->l('Create a blank .htaccess in your root directory.');
-			$url_description .= $this->l('Give it write permissions (CHMOD 666 on Unix system)');
+			$url_description .= $this->l('Give it write permissions (CHMOD 666 on Unix system).');
 		}
 
 		// Options to generate robot.txt
@@ -117,9 +123,9 @@ class AdminMetaControllerCore extends AdminController
 		}
 		else
 		{
-			$robots_description .= $this->l('Before being able to use this tool, you need to:');
+			$robots_description .= $this->l('Before you can use this tool, you need to:');
 			$robots_description .= $this->l('Create a blank robots.txt file in your root directory.');
-			$robots_description .= $this->l('Give it write permissions (CHMOD 666 on Unix system)');
+			$robots_description .= $this->l('Give it write permissions (CHMOD 666 on Unix system).');
 		}
 
 		$robots_options = array(
@@ -162,6 +168,7 @@ class AdminMetaControllerCore extends AdminController
 						'defaultValue' => $this->url->physical_uri,
 					),
 				);
+				$shop_url_options['submit'] = array('title' => $this->l('Save'));
 			}
 		}
 		else
@@ -173,7 +180,7 @@ class AdminMetaControllerCore extends AdminController
 				'title' =>	$this->l('Set up URLs'),
 				'description' => $url_description,
 				'fields' =>	$general_fields,
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'shop_url' => $shop_url_options
 		);
@@ -184,7 +191,8 @@ class AdminMetaControllerCore extends AdminController
 			$this->fields_options['routes'] = array(
 				'title' =>	$this->l('Schema of URLs'),
 				'description' => $this->l('Change the pattern of your links. There are some available keywords for each route listed below, keywords with * are required. To add a keyword in your URL use {keyword} syntax. You can add text before or after the keyword if the keyword is not empty with syntax {prepend:keyword:append}. For example {-hey-:meta_title} will add "-hey-my-title" in the URL if the meta title is set. Friendly URL and rewriting Apache option must be activated on your web server to use this functionality.'),
-				'fields' => array()
+				'fields' => array(),
+				'submit' => array('title' => $this->l('Save'))
 			);
 			$this->addAllRouteFields();
 		}
@@ -279,13 +287,13 @@ class AdminMetaControllerCore extends AdminController
 							'query' => 'query',
 						),
 					),
-					'hint' => $this->l('Name of the related page'),
+					'hint' => $this->l('Name of the related page.'),
 					'required' => true,
 					'empty_message' => '<p>'.$this->l('There is no page available!').'</p>',
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Page title:'),
+					'label' => $this->l('Page title'),
 					'name' => 'title',
 					'lang' => true,
 					'hint' => array(
@@ -295,41 +303,40 @@ class AdminMetaControllerCore extends AdminController
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Meta description:'),
+					'label' => $this->l('Meta description'),
 					'name' => 'description',
 					'lang' => true,
 					'hint' => array(
-						$this->l('Invalid characters:').' &lt;&gt;;=#{}',
-						$this->l('A short description of your shop')
+						$this->l('A short description of your shop.'),
+						$this->l('Invalid characters:').' &lt;&gt;;=#{}'
 					)
 				),
 				array(
 					'type' => 'tags',
-					'label' => $this->l('Meta keywords:'),
+					'label' => $this->l('Meta keywords'),
 					'name' => 'keywords',
 					'lang' => true,
 					'hint' =>  array(
-						$this->l('Invalid characters:').' &lt;&gt;;=#{}',
-						$this->l('List of keywords for search engines'),
-						$this->l('To add "tags," click in the field, write something, and then press "Enter."')
+						$this->l('List of keywords for search engines.'),
+						$this->l('To add tagsn click in the field, write something, and then press the "Enter" key.'),
+						$this->l('Invalid characters:').' &lt;&gt;;=#{}'
 					)
 				),
 				array(
 					'type' => 'text',
-					'label' => $this->l('Rewritten URL:'),
+					'label' => $this->l('Rewritten URL'),
 					'name' => 'url_rewrite',
 					'lang' => true,
 					'required' => true,
 					'disabled' => (bool)$is_index,
 					'hint' => array(
-						$this->l('Only letters and hyphens are allowed'),
-						$this->l('e.g. "contacts" for http://mysite.com/shop/contacts to redirect to http://mysite.com/shop/contact-form.php'),
+						$this->l('For instance, "contacts" for http://mysite.com/shop/contacts to redirect to http://mysite.com/shop/contact-form.php'),
+						$this->l('Only letters and hyphens are allowed.'),
 					)
 				),
 			),
 			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default'
+				'title' => $this->l('Save')
 			)
 		);
 		return parent::renderForm();
@@ -490,6 +497,11 @@ class AdminMetaControllerCore extends AdminController
 	public function updateOptionPsRewritingSettings()
 	{
 		Configuration::updateValue('PS_REWRITING_SETTINGS', (int)Tools::getValue('PS_REWRITING_SETTINGS'));
+
+		$this->updateOptionDomain(Tools::getValue('domain'));
+		$this->updateOptionDomainSsl(Tools::getValue('domain_ssl'));
+		$this->updateOptionUri(Tools::getValue('uri'));
+
 		if (Tools::generateHtaccess($this->ht_file, null, null, '', Tools::getValue('PS_HTACCESS_DISABLE_MULTIVIEWS'), false, Tools::getValue('PS_HTACCESS_DISABLE_MODSEC')))
 		{
 			Tools::enableCache();

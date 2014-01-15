@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -44,6 +44,12 @@ function initMarkers()
 			createMarker(latlng, name, address, other, id_store, has_store_picture);
 			bounds.extend(latlng);
 		}
+		map.fitBounds(bounds);
+		var zoomOverride = map.getZoom();
+        if(zoomOverride > 10) {
+        zoomOverride = 10;
+        }
+		map.setZoom(zoomOverride);
 	});
 }
 

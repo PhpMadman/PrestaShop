@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -28,17 +28,19 @@
 	<div class="col-lg-6">
 		<table class="table table-bordered">
 			<thead>
-				<th class="fixed-width-xs">
-					<span class="title_box">
-						<input type="checkbox" name="checkme" id="checkme" onclick="checkDelBoxes(this.form, 'groupBox[]', this.checked)" />
-					</span>
-				</th>
-				<th class="fixed-width-xs"><span class="title_box">{l s='ID'}</span></th>
-				<th>
-					<span class="title_box">
-						{l s='Group name'}
-					</span>
-				</th>
+				<tr>
+					<th class="fixed-width-xs">
+						<span class="title_box">
+							<input type="checkbox" name="checkme" id="checkme" onclick="checkDelBoxes(this.form, 'groupBox[]', this.checked)" />
+						</span>
+					</th>
+					<th class="fixed-width-xs"><span class="title_box">{l s='ID'}</span></th>
+					<th>
+						<span class="title_box">
+							{l s='Group name'}
+						</span>
+					</th>
+				</tr>
 			</thead>
 			<tbody>
 			{foreach $groups as $key => $group}

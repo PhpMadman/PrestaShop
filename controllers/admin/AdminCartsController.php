@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -37,6 +37,7 @@ class AdminCartsControllerCore extends AdminController
 		$this->addRowAction('view');
 		$this->addRowAction('delete');
 		$this->allow_export = true;
+		$this->_orderWay = 'DESC';
 
 		$this->_select = 'CONCAT(LEFT(c.`firstname`, 1), \'. \', c.`lastname`) `customer`, a.id_cart total, ca.name carrier, o.id_order, IF(co.id_guest, 1, 0) id_guest';
 		$this->_join = 'LEFT JOIN '._DB_PREFIX_.'customer c ON (c.id_customer = a.id_customer)
@@ -98,8 +99,8 @@ class AdminCartsControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['export_cart'] = array(
-				'href' => self::$currentIndex.'&amp;exportcart&amp;token='.$this->token,
-				'desc' => $this->l('Export carts'),
+				'href' => self::$currentIndex.'&exportcart&token='.$this->token,
+				'desc' => $this->l('Export carts', null, null, false),
 				'icon' => 'process-icon-export'
 			);
 
@@ -701,12 +702,21 @@ class AdminCartsControllerCore extends AdminController
 					$free_shipping = true;
 					break;
 				}
+
+		$addresses = $this->context->customer->getAddresses((int)$this->context->cart->id_lang);
+
+		foreach ($addresses as &$data)
+		{
+			$address = new Address((int)$data['id_address']);
+			$data['formated_address'] = AddressFormat::generateAddress($address, array(), "<br />");
+		}
+
 		return array(
 			'summary' => $this->getCartSummary(),
 			'delivery_option_list' => $this->getDeliveryOptionList(),
 			'cart' => $this->context->cart,
 			'currency' => new Currency($this->context->cart->id_currency),
-			'addresses' => $this->context->customer->getAddresses((int)$this->context->cart->id_lang),
+			'addresses' => $addresses,
 			'id_cart' => $id_cart,
 			'order_message' => $message_content,
 			'link_order' => $this->context->link->getPageLink(

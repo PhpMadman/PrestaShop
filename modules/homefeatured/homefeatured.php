@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -43,8 +43,8 @@ class HomeFeatured extends Module
 		$this->bootstrap = true;
 		parent::__construct();	
 
-		$this->displayName = $this->l('Featured products on the homepage.');
-		$this->description = $this->l('Displays featured products in the middle of your homepage.');
+		$this->displayName = $this->l('Featured products on the homepage');
+		$this->description = $this->l('Displays featured products in the central column of your homepage.');
 	}
 
 	function install()
@@ -97,7 +97,6 @@ class HomeFeatured extends Module
 	public function hookHeader($params)
 	{
 		$this->context->controller->addCSS(($this->_path).'homefeatured.css', 'all');
-		$this->context->controller->addJS(($this->_path).'js/homefeatured.js');
 	}
 
 	public function hookDisplayHomeTab($params)
@@ -105,7 +104,7 @@ class HomeFeatured extends Module
 		return $this->display(__FILE__, 'tab.tpl', $this->getCacheId('homefeatured-tab'));
 	}
 
-	public function hookDisplayHomeTabContent($params)
+	public function hookDisplayHome($params)
 	{
 		if (!$this->isCached('homefeatured.tpl', $this->getCacheId()))
 		{
@@ -122,10 +121,9 @@ class HomeFeatured extends Module
 		return $this->display(__FILE__, 'homefeatured.tpl', $this->getCacheId());
 	}
 	
-	/* Retro Compatibility < 1.6.0.1 */
-	public function hookDisplayHome($params)
+	public function hookDisplayHomeTabContent($params)
 	{
-		return $this->hookDisplayHomeTabContent($params);
+		return $this->hookDisplayHome($params);
 	}
 
 	public function hookAddProduct($params)
@@ -151,19 +149,19 @@ class HomeFeatured extends Module
 					'title' => $this->l('Settings'),
 					'icon' => 'icon-cogs'
 				),
-				'description' => $this->l('To add products to your homepage, simply add them to the "home" category.'),
+				'description' => $this->l('To add products to your homepage, simply add them to the root product category (default: "Home").'),
 				'input' => array(
 					array(
 						'type' => 'text',
-						'label' => $this->l('Define the number of products to be displayed.'),
+						'label' => $this->l('Number of products to be displayed'),
 						'name' => 'HOME_FEATURED_NBR',
 						'class' => 'fixed-width-xs',
-						'desc' => $this->l('Define the number of products that you would like to display on homepage (default: 8).'),
+						'desc' => $this->l('Set the number of products that you would like to display on homepage (default: 8).'),
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -101,7 +101,7 @@ class BlockCart extends Module
 		}
 
 		$total_free_shipping = 0;
-		if ($free_shipping = Tools::convertPrice(floatval(Configuration::get('PS_SHIPPING_FREE_PRICE')), new Currency(intval($params['cart']->id_currency))))
+		if ($free_shipping = Tools::convertPrice(floatval(Configuration::get('PS_SHIPPING_FREE_PRICE')), $currency))
 		{
 			$total_free_shipping =  floatval($free_shipping - ($params['cart']->getOrderTotal(true, Cart::ONLY_PRODUCTS) + $params['cart']->getOrderTotal(true, Cart::ONLY_DISCOUNTS)));
 			$discounts = $params['cart']->getCartRules(CartRule::FILTER_ACTION_SHIPPING);
@@ -141,15 +141,14 @@ class BlockCart extends Module
 		$output = '';
 		if (Tools::isSubmit('submitBlockCart'))
 		{
-			$ajax = Tools::getValue('cart_ajax');
+			$ajax = Tools::getValue('PS_BLOCK_CART_AJAX');
 			if ($ajax != 0 && $ajax != 1)
-				$output .= $this->displayError($this->l('Ajax : Invalid choice.'));
+				$output .= $this->displayError($this->l('Ajax: Invalid choice.'));
 			else
 				Configuration::updateValue('PS_BLOCK_CART_AJAX', (int)($ajax));
-			$output .= $this->displayConfirmation($this->l('Settings updated'));
 
 			if (!($productNbr = Tools::getValue('PS_BLOCK_CART_XSELL_LIMIT')) || empty($productNbr))
-				$output .= $this->displayError($this->l('Please complete the "products to display" field.'));
+				$output .= $this->displayError($this->l('Please complete the "Products to display" field.'));
 			elseif ((int)($productNbr) == 0)
 				$output .= $this->displayError($this->l('Invalid number.'));
 			else
@@ -247,7 +246,7 @@ class BlockCart extends Module
 						'label' => $this->l('Ajax cart'),
 						'name' => 'PS_BLOCK_CART_AJAX',
 						'is_bool' => true,
-						'desc' => $this->l('Activate AJAX mode for cart (compatible with the default theme)'),
+						'desc' => $this->l('Activate Ajax mode for the cart (compatible with the default theme).'),
 						'values' => array(
 									array(
 										'id' => 'active_on',
@@ -263,15 +262,15 @@ class BlockCart extends Module
 						),
 					array(
 						'type' => 'text',
-						'label' => $this->l('Products to display in cross selling'),
+						'label' => $this->l('Products to display in cross-selling'),
 						'name' => 'PS_BLOCK_CART_XSELL_LIMIT',
 						'class' => 'fixed-width-xs',
-						'desc' => $this->l('Define the number of products to be displayed in the cross selling block.')
+						'desc' => $this->l('Define the number of products to be displayed in the cross-selling block.')
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save')
+				)
 			),
 		);
 		

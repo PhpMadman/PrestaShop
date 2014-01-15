@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -45,7 +45,7 @@ class Blockrss extends Module
 		parent::__construct();	
 
 		$this->displayName = $this->l('RSS feed block');
-		$this->description = $this->l('Adds a block displaying an RSS feed.');
+		$this->description = $this->l('Adds a block displaying a RSS feed.');
 
 		$this->version = '1.1';
 		$this->author = 'PrestaShop';
@@ -55,11 +55,24 @@ class Blockrss extends Module
 
  	function install()
  	{
+ 	 	if (!parent::install())
+			return false;
+
+		// Hook the module either on the left or right column
+		$theme = new Theme(Context::getContext()->shop->id_theme);
+		if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+			&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+		{
+			// If there are no colums implemented by the template, throw an error and uninstall the module
+			$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+			parent::uninstall();
+			return false;
+		}
+
 		Configuration::updateValue('RSS_FEED_TITLE', $this->l('RSS feed'));
 		Configuration::updateValue('RSS_FEED_NBR', 5);
- 	 	if (parent::install() == false OR $this->registerHook('leftColumn') == false OR $this->registerHook('header') == false) 
- 	 		return false;
-		return true;
+
+		return $this->registerHook('header');
   	}
 
 	public function getContent()
@@ -80,7 +93,7 @@ class Blockrss extends Module
 			elseif (!$nbr OR $nbr <= 0 OR !Validate::isInt($nbr))
 				$errors[] = $this->l('Invalid number of feeds');				
 			elseif (stristr($urlfeed, $_SERVER['HTTP_HOST'].__PS_BASE_URI__))
-				$errors[] = $this->l('You have selected a feed URL on your own website. Please choose another URL');
+				$errors[] = $this->l('You have selected a feed URL from your own website. Please choose another URL.');
 			elseif (!($contents = Tools::file_get_contents($urlfeed)))
 				$errors[] = $this->l('Feed is unreachable, check your URL');
 			/* Even if the feed was reachable, We need to make sure that the feed is well formated */
@@ -108,7 +121,7 @@ class Blockrss extends Module
 		{
 			$errors = array();
 			if (stristr(Configuration::get('RSS_FEED_URL'), $_SERVER['HTTP_HOST'].__PS_BASE_URI__))
-				$errors[] = $this->l('You have selected a feed URL on your own website. Please choose another URL');
+				$errors[] = $this->l('You have selected a feed URL from your own website. Please choose another URL.');
 			
 			if (sizeof($errors))
 				$output .= $this->displayError(implode('<br />', $errors));
@@ -179,25 +192,25 @@ class Blockrss extends Module
 						'type' => 'text',
 						'label' => $this->l('Block title'),
 						'name' => 'RSS_FEED_TITLE',
-						'desc' => $this->l('Create a title for the block (default: \'RSS feed\')'),
+						'desc' => $this->l('Create a title for the block (default: \'RSS feed\').'),
 					),
 					array(
 						'type' => 'text',
 						'label' => $this->l('Add a feed URL'),
 						'name' => 'RSS_FEED_URL',
-						'desc' => $this->l('Add the URL of the feed you want to use (sample: http://news.google.com/?output=rss)'),
+						'desc' => $this->l('Add the URL of the feed you want to use (sample: http://news.google.com/?output=rss).'),
 					),
 					array(
 						'type' => 'text',
 						'label' => $this->l('Number of threads displayed'),
 						'name' => 'RSS_FEED_NBR',
 						'class' => 'fixed-width-sm',
-						'desc' => $this->l('Number of threads displayed by the block (default value: 5)'),
+						'desc' => $this->l('Number of threads displayed in the block (default value: 5).'),
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

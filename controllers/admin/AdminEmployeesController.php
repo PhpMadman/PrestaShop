@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -109,7 +109,7 @@ class AdminEmployeesControllerCore extends AdminController
 						)
 					), 'visibility' => Shop::CONTEXT_ALL)
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			)
 		);
 
@@ -227,7 +227,7 @@ class AdminEmployeesControllerCore extends AdminController
 					'required' => true,
 					'hint' => ($obj->id ?
 								$this->l('Leave this field blank if you do not want to change your password.') :
-									$this->l('Minimum of eight characters'))
+									$this->l('Minimum of eight characters.'))
 				),
 				array(
 					'type' => 'text',
@@ -244,14 +244,14 @@ class AdminEmployeesControllerCore extends AdminController
 				),*/
 				array(
 					'type' => 'default_tab',
-					'label' => $this->l('Default page:'),
+					'label' => $this->l('Default page'),
 					'name' => 'default_tab',
-					'hint' => $this->l('This page will be displayed just after login'),
+					'hint' => $this->l('This page will be displayed just after login.'),
 					'options' => $this->tabs_list
 				),
 				array(
 					'type' => 'select',
-					'label' => $this->l('Language:'),
+					'label' => $this->l('Language'),
 					'name' => 'id_lang',
 					'required' => true,
 					'options' => array(
@@ -262,14 +262,14 @@ class AdminEmployeesControllerCore extends AdminController
 				),
 				array(
 					'type' => 'select_theme',
-					'label' => $this->l('Theme:'),
+					'label' => $this->l('Theme'),
 					'name' => 'bo_theme',
 					'options' => array('query' => $this->themes),
-					'hint' => $this->l('Back Office theme')
+					'hint' => $this->l('Back Office theme.')
 				),
 				array(
 					'type' => 'radio',
-					'label' => $this->l('Display admin menu:'),
+					'label' => $this->l('Admin menu orientation'),
 					'name' => 'bo_menu',
 					'required' => false,
 					'is_bool' => true,
@@ -293,7 +293,7 @@ class AdminEmployeesControllerCore extends AdminController
 		{
 			$this->fields_form['input'][] = array(
 				'type' => 'switch',
-				'label' => $this->l('Status:'),
+				'label' => $this->l('Status'),
 				'name' => 'active',
 				'required' => false,
 				'is_bool' => true,
@@ -322,7 +322,7 @@ class AdminEmployeesControllerCore extends AdminController
 					}
 			$this->fields_form['input'][] = array(
 				'type' => 'select',
-				'label' => $this->l('Profile Permission:'),
+				'label' => $this->l('Permission profile'),
 				'name' => 'id_profile',
 				'required' => true,
 				'options' => array(
@@ -342,15 +342,14 @@ class AdminEmployeesControllerCore extends AdminController
 				$this->fields_form['input'][] = array(
 					'type' => 'shop',
 					'label' => $this->l('Shop association:'),
-					'hint' => $this->l('Select the shops the employee is allowed to access'),
+					'hint' => $this->l('Select the shops the employee is allowed to access.'),
 					'name' => 'checkBoxShopAsso',
 				);
 			}
 		}
 
 		$this->fields_form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'btn btn-default'
+			'title' => $this->l('Save'),
 		);
 
 		$this->fields_value['passwd'] = false;
@@ -504,6 +503,11 @@ class AdminEmployeesControllerCore extends AdminController
 		die ('Form language updated.');
 	}
 	
+	protected function ajaxProcessToggleMenu()
+	{
+		$this->context->cookie->collapse_menu = (int)Tools::getValue('collapse');
+		$this->context->cookie->write();
+	}
 	public function ajaxProcessGetTabByIdProfile()
 	{
 		$id_profile = Tools::getValue('id_profile');

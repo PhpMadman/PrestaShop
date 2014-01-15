@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -40,20 +40,29 @@ class BlockPaymentLogo extends Module
 		$this->bootstrap = true;
 		parent::__construct();	
 
-		$this->displayName = $this->l('Payment logo block.');
-		$this->description = $this->l('This block will display all of your payment logos.');
+		$this->displayName = $this->l('Payment logos block.');
+		$this->description = $this->l('Adds a block which displays all of your payment logos.');
 	}
 
 	public function install()
 	{
 		Configuration::updateValue('PS_PAYMENT_LOGO_CMS_ID', 0);
-		if (!parent::install())
-			return false;
-		if (!$this->registerHook('leftColumn'))
-			return false;
-		if (!$this->registerHook('header'))
-			return false;
-		return true;
+		$success = (parent::install() && $this->registerHook('header'));
+
+		if ($success)
+		{
+			// Hook the module either on the left or right column
+			$theme = new Theme(Context::getContext()->shop->id_theme);
+			if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+				&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+			{
+				// If there are no colums implemented by the template, throw an error and uninstall the module
+				$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+				parent::uninstall();
+				return false;
+			}
+		}
+		return $success;
 	}
 
 	public function uninstall()
@@ -135,7 +144,7 @@ class BlockPaymentLogo extends Module
 				'input' => array(
 					array(
 						'type' => 'select',
-						'label' => $this->l('Page CMS for link:'),
+						'label' => $this->l('Destination page for the block\'s link'),
 						'name' => 'PS_PAYMENT_LOGO_CMS_ID',
 						'required' => false,
 						'default_value' => (int)$this->context->country->id,
@@ -146,9 +155,9 @@ class BlockPaymentLogo extends Module
 						)
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -51,16 +51,16 @@
 {block name=leadin}
 	{if isset($delete_category) && $delete_category}
 		<div class="panel">
+			<form action="{$REQUEST_URI}" method="post">
 			<div class="panel-heading">
 				{if $need_delete_mode}
 					{l s='What do you want to do with the products associated with this category?'}
 				{else}
-					{l s='Deleting this category will remove products linked only within this category and no others. Are you sure you want to continue?'}
+					{l s='Deleting multiple categories'}
 				{/if}
 			</div>
 
 			{if $need_delete_mode}
-			<form action="{$REQUEST_URI}" method="post">
 				<div class="radio">
 					<label for="deleteMode_linkanddisable">
 						<input type="radio" name="deleteMode" value="linkanddisable" id="deleteMode_linkanddisable" checked="checked" />
@@ -80,7 +80,9 @@
 					</label>
 				</div>
 			{else}
+				<div class="alert alert-warning">{l s='Deleting this category will remove products linked only within this category and no others. Are you sure you want to continue?'}</div>
 				<input type="hidden" name="deleteMode" value="delete" id="deleteMode_delete" />
+
 			{/if}
 			{foreach $POST as $key => $value}
 				{if $key != 'deleteMode'}
@@ -94,7 +96,7 @@
 				{/if}
 			{/foreach}
 				<div class="panel-footer">
-					<button type="button" name="cancel" class="btn btn-default">
+					<button type="submit" name="cancel" class="btn btn-default">
 						<i class="icon-remove"></i>
 						{l s='Cancel'}
 					</button>

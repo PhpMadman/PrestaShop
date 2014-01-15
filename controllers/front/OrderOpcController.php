@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -147,7 +147,7 @@ class OrderOpcControllerCore extends ParentOrderController
 								$wrapping_fees_tax_inc = $wrapping_fees = $this->context->cart->getGiftWrappingPrice();
 								$return = array_merge(array(
 									'order_opc_adress' => $this->context->smarty->fetch(_PS_THEME_DIR_.'order-address.tpl'),
-									'block_user_info' => (isset($blockUserInfo) ? $blockUserInfo->hookTop(array()) : ''),
+									'block_user_info' => (isset($blockUserInfo) ? $blockUserInfo->hookDisplayTop(array()) : ''),
 									'carrier_data' => $this->_getCarrierList(),
 									'HOOK_TOP_PAYMENT' => Hook::exec('displayPaymentTop'),
 									'HOOK_PAYMENT' => $this->_getPaymentMethods(),
@@ -309,7 +309,10 @@ class OrderOpcControllerCore extends ParentOrderController
 		}
 		else
 			$this->addJS(_THEME_MOBILE_JS_DIR_.'opc.js');
+
+		$this->addJS(_PS_JS_DIR_.'validate.js');
 		$this->addJS(_THEME_JS_DIR_.'tools/statesManagement.js');
+		$this->addJS(_THEME_JS_DIR_.'validate_fields.js');
 	}
 
 	/**

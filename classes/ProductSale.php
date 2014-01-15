@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -76,7 +76,7 @@ class ProductSaleCore
 		if (Group::isFeatureActive())
 		{
 			$groups = FrontController::getCurrentCustomerGroups();
-			$sql_groups = 'WHERE cg.`id_group` '.(count($groups) ? 'IN ('.implode(',', $groups).')' : '= 1');
+			$sql_groups = 'WHERE cp.`id_product` IS NOT NULL AND cg.`id_group` '.(count($groups) ? 'IN ('.implode(',', $groups).')' : '= 1');
 		}
 		$interval = Validate::isUnsignedInt(Configuration::get('PS_NB_DAYS_NEW_PRODUCT')) ? Configuration::get('PS_NB_DAYS_NEW_PRODUCT') : 20;
 
@@ -84,7 +84,7 @@ class ProductSaleCore
 		$products = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
 		SELECT cp.`id_product`
 		FROM `'._DB_PREFIX_.'category_group` cg
-		LEFT JOIN `'._DB_PREFIX_.'category_product` cp ON (cp.`id_category` = cg.`id_category`)
+		INNER JOIN `'._DB_PREFIX_.'category_product` cp ON (cp.`id_category` = cg.`id_category`)
 		'.$sql_groups);
 	
 		$ids = array();
@@ -161,16 +161,16 @@ class ProductSaleCore
 		//Subquery: get product ids in a separate query to (greatly!) improve performances and RAM usage
 		$products = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
 		SELECT cp.`id_product`
-		FROM `'._DB_PREFIX_.'category_group` cg
-		LEFT JOIN `'._DB_PREFIX_.'category_product` cp ON (cp.`id_category` = cg.`id_category`)
-		WHERE cp.`id_product` IS NOT NULL
-		'.$sql_groups);
+		FROM `'._DB_PREFIX_.'category_product` cp
+		LEFT JOIN `'._DB_PREFIX_.'category_group` cg ON (cg.`id_category` = cp.`id_category`)
+		WHERE cg.`id_group` '.$sql_groups);
+		
 		$ids = array();
 		foreach ($products as $product)
 			$ids[$product['id_product']] = 1;
-		$ids = array_keys($ids);
+
+		$ids = array_keys($ids);		
 		sort($ids);
-		$ids = array_filter($ids);
 		$ids = count($ids) > 0 ? implode(',', $ids) : 'NULL';
 
 		//Main query

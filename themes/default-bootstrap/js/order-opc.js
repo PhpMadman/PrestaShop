@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -770,10 +770,12 @@ function multishippingMode(it)
 		$('#link_multishipping_form').click(function() {return false;});
 		$('.address_add a').attr('href', addressMultishippingUrl);
 		
-		$('#link_multishipping_form').fancybox({
+		$('#link_multishipping_form').click(function(){
+			$.fancybox({
 			'transitionIn': 'elastic',
 			'transitionOut': 'elastic',
 			'type': 'ajax',
+			'href':     this.href,
 			'beforeClose': function()
 			{
 				// Reload the cart
@@ -799,14 +801,14 @@ function multishippingMode(it)
 					$(el).attr('id', '');
 				});
 			},
-			'onComplete': function()
+			'afterLoad': function()
 			{
-				$('#fancybox-content .cart_quantity_input').typeWatch({ highlight: true, wait: 600, captureLength: 0, callback: function(val) { updateQty(val, false, this.el);} });
+				$('.fancybox-inner .cart_quantity_input').typeWatch({ highlight: true, wait: 600, captureLength: 0, callback: function(val) { updateQty(val, false, this.el);} });
 				cleanSelectAddressDelivery();
-				$('#fancybox-content').append($('<div class="multishipping_close_container"><a id="multishipping-close" class="button_large btn btn-default" href="#">' + CloseTxt + '</a></div>'));
+				$('.fancybox-outer').append($('<div class="multishipping_close_container"><a id="multishipping-close" class="btn btn-default button button-small" href="#"><span>'+CloseTxt+'</span></a></div>'));
 				$('#multishipping-close').click(function() {
 					var newTotalQty = 0;
-					$('#fancybox-content .cart_quantity_input').each(function(){
+					$('.fancybox-inner .cart_quantity_input').each(function(){
 						newTotalQty += parseInt($(this).val());
 					});
 					if (newTotalQty !== totalQty) {
@@ -818,10 +820,11 @@ function multishippingMode(it)
 					return false;
 				});
 				totalQty = 0;
-				$('#fancybox-content .cart_quantity_input').each(function(){
+				$('.fancybox-inner .cart_quantity_input').each(function(){
 					totalQty += parseInt($(this).val());
 				});
 			}
+			})
 		});
 	}
 	else

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -33,7 +33,7 @@ class BlockManufacturer extends Module
     {
         $this->name = 'blockmanufacturer';
         $this->tab = 'front_office_features';
-        $this->version = 1.0;
+        $this->version = 1.1;
 		$this->author = 'PrestaShop';
 		$this->need_instance = 0;
 
@@ -48,13 +48,28 @@ class BlockManufacturer extends Module
 	{
 		Configuration::updateValue('MANUFACTURER_DISPLAY_TEXT', true);
 		Configuration::updateValue('MANUFACTURER_DISPLAY_TEXT_NB', 5);
-		Configuration::updateValue('MANUFACTURER_DISPLAY_FORM', true);
-		return parent::install() &&
-			$this->registerHook('leftColumn') && 
+		Configuration::updateValue('MANUFACTURER_DISPLAY_FORM', false);
+		$success = (parent::install() &&
 			$this->registerHook('header') &&
 			$this->registerHook('actionObjectManufacturerDeleteAfter') &&
 			$this->registerHook('actionObjectManufacturerAddAfter') &&
-			$this->registerHook('actionObjectManufacturerUpdateAfter');
+			$this->registerHook('actionObjectManufacturerUpdateAfter')
+		);
+
+		if ($success)
+		{
+			// Hook the module either on the left or right column
+			$theme = new Theme(Context::getContext()->shop->id_theme);
+			if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+				&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+			{
+				// If there are no colums implemented by the template, throw an error and uninstall the module
+				$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+				parent::uninstall();
+				return false;
+			}
+		}
+		return $success;
     }
 
 	public function hookLeftColumn($params)
@@ -94,7 +109,7 @@ class BlockManufacturer extends Module
 			$text_nb = (int)(Tools::getValue('MANUFACTURER_DISPLAY_TEXT_NB'));
 			$form_list = (int)(Tools::getValue('MANUFACTURER_DISPLAY_FORM'));
 			if ($text_list && !Validate::isUnsignedInt($text_nb))
-				$errors[] = $this->l('There is an invalid number of elements');
+				$errors[] = $this->l('There is an invalid number of elements.');
 			elseif (!$text_list && !$form_list)
 				$errors[] = $this->l('Please activate at least one system list.');
 			else
@@ -107,7 +122,7 @@ class BlockManufacturer extends Module
 			if (isset($errors) && count($errors))
 				$output .= $this->displayError(implode('<br />', $errors));
 			else
-				$output .= $this->displayConfirmation($this->l('Settings updated'));
+				$output .= $this->displayConfirmation($this->l('Settings updated.'));
 		}
 		return $output.$this->renderForm();
 	}
@@ -145,7 +160,7 @@ class BlockManufacturer extends Module
 						'type' => 'switch',
 						'label' => $this->l('Use a plain-text list'),
 						'name' => 'MANUFACTURER_DISPLAY_TEXT',
-						'desc' => $this->l('Display manufacturers in a plain-text list'),
+						'desc' => $this->l('Display manufacturers in a plain-text list.'),
 						'values' => array(
 									array(
 										'id' => 'active_on',
@@ -184,9 +199,9 @@ class BlockManufacturer extends Module
 								),
 					)
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

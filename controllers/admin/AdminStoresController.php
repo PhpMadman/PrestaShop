@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -69,37 +69,38 @@ class AdminStoresControllerCore extends AdminController
 				'fields' =>	array(
 					'PS_STORES_DISPLAY_FOOTER' => array(
 						'title' => $this->l('Display in the footer'),
-						'hint' => $this->l('Display a link to the store locator in the footer'),
+						'hint' => $this->l('Display a link to the store locator in the footer.'),
 						'cast' => 'intval',
 						'type' => 'bool'
 					),
 					'PS_STORES_DISPLAY_SITEMAP' => array(
 						'title' => $this->l('Display in the sitemap page'),
-						'hint' => $this->l('Display a link to the store locator in the sitemap page'),
+						'hint' => $this->l('Display a link to the store locator in the sitemap page.'),
 						'cast' => 'intval',
 						'type' => 'bool'
 					),
 					'PS_STORES_SIMPLIFIED' => array(
 						'title' => $this->l('Show a simplified store locator'),
-						'hint' => $this->l('No map, no search, only a store directory'),
+						'hint' => $this->l('No map, no search, only a store directory.'),
 						'cast' => 'intval',
 						'type' => 'bool'
 					),
 					'PS_STORES_CENTER_LAT' => array(
-						'title' => $this->l('Latitude by default'),
-						'hint' => $this->l('Used for the position by default of the map'),
+						'title' => $this->l('Default latitude'),
+						'hint' => $this->l('Used for the initial position of the map.'),
 						'cast' => 'floatval',
 						'type' => 'text',
 						'size' => '10'
 					),
 					'PS_STORES_CENTER_LONG' => array(
-						'title' => $this->l('Longitude by default'),
-						'hint' => $this->l('Used for the position by default of the map'),
+						'title' => $this->l('Default longitude'),
+						'hint' => $this->l('Used for the initial position of the map.'),
 						'cast' => 'floatval',
 						'type' => 'text',
 						'size' => '10'
 					)
-				)
+				),
+				'submit' => array('title' => $this->l('Save'))
 			)
 		);
 
@@ -133,8 +134,8 @@ class AdminStoresControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_store'] = array(
-				'href' => self::$currentIndex.'&amp;addstore&amp;token='.$this->token,
-				'desc' => $this->l('Add new store'),
+				'href' => self::$currentIndex.'&addstore&token='.$this->token,
+				'desc' => $this->l('Add new store', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		
@@ -183,8 +184,8 @@ class AdminStoresControllerCore extends AdminController
 					'name' => 'name',
 					'required' => false,
 					'hint' => array(
-						$this->l('Allowed characters: letters, spaces and %s'), '().-',
-						$this->l('Store name (e.g. City Center Mall Store)')
+						$this->l('Store name (e.g. City Center Mall Store).'),
+						$this->l('Allowed characters: letters, spaces and %s')
 					)
 				),
 				array(
@@ -239,7 +240,7 @@ class AdminStoresControllerCore extends AdminController
 					'name' => 'latitude',
 					'required' => true,
 					'maxlength' => 12,
-					'hint' => $this->l('Store coordinates (e.g. 45.265469/-47.226478)')
+					'hint' => $this->l('Store coordinates (e.g. 45.265469/-47.226478).')
 				),
 				array(
 					'type' => 'text',
@@ -281,7 +282,7 @@ class AdminStoresControllerCore extends AdminController
 							'label' => $this->l('Disabled')
 						)
 					),
-					'hint' => $this->l('Whether or not to display this store')
+					'hint' => $this->l('Whether or not to display this store.')
 				),
 				array(
 					'type' => 'file',
@@ -290,14 +291,13 @@ class AdminStoresControllerCore extends AdminController
 					'display_image' => true,
 					'image' => $image_url ? $image_url : false,
 					'size' => $image_size,
-					'hint' => $this->l('Storefront picture')
+					'hint' => $this->l('Storefront picture.')
 				)
 			),
 			'hours' => array(
 			),
 			'submit' => array(
-				'title' => $this->l('   Save   '),
-				'class' => 'btn btn-default'
+				'title' => $this->l('Save'),
 			)
 		);
 		
@@ -418,20 +418,20 @@ class AdminStoresControllerCore extends AdminController
 		$formFields = array(
 			'PS_SHOP_NAME' => array(
 				'title' => $this->l('Shop name'),
-				'hint' => $this->l('Displayed in emails and page titles'),
+				'hint' => $this->l('Displayed in emails and page titles.'),
 				'validation' => 'isGenericName',
 				'required' => true,
 				'type' => 'text'
 			),
 			'PS_SHOP_EMAIL' => array('title' => $this->l('Shop email'),
-				'hint' => $this->l('Displayed in emails sent to customers'),
+				'hint' => $this->l('Displayed in emails sent to customers.'),
 				'validation' => 'isEmail',
 				'required' => true,
 				'type' => 'text'
 			),
 			'PS_SHOP_DETAILS' => array(
 				'title' => $this->l('Registration'),
-				'hint' => $this->l('Shop registration information (e.g. SIRET or RCS)'),
+				'hint' => $this->l('Shop registration information (e.g. SIRET or RCS).'),
 				'validation' => 'isGenericName',
 				'type' => 'textarea',
 				'cols' => 30,
@@ -519,7 +519,7 @@ class AdminStoresControllerCore extends AdminController
 			'title' =>	$this->l('Contact details'),
 			'icon' =>	'icon-user',
 			'fields' =>	$fields,
-			'submit' => array('title' => $this->l('   Save   '), 'class' => 'button')
+			'submit' => array('title' => $this->l('Save'))
 		);
 	}
 

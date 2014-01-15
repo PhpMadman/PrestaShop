@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -52,7 +52,7 @@ class BlockAdvertising extends Module
 		$this->bootstrap = true;
 		parent::__construct();	
 
-		$this->displayName = $this->l('Block advertising');
+		$this->displayName = $this->l('Advertising block');
 		$this->description = $this->l('Adds an advertisement block to selected sections of your e-commerce webiste.');
 		
 		$this->initialize();
@@ -78,6 +78,20 @@ class BlockAdvertising extends Module
 	
 	public function install()
 	{
+		if (!parent::install())
+			return false;
+
+		// Hook the module either on the left or right column
+		$theme = new Theme(Context::getContext()->shop->id_theme);
+		if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+			&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+		{
+			// If there are no colums implemented by the template, throw an error and uninstall the module
+			$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+			parent::uninstall();
+			return false;
+		}
+
 		Configuration::updateGlobalValue('BLOCKADVERT_LINK', 'http://www.prestashop.com/');
 		Configuration::updateGlobalValue('BLOCKADVERT_TITLE', 'PrestaShop');
 		// Try to update with the extension of the image that exists in the module directory
@@ -85,7 +99,7 @@ class BlockAdvertising extends Module
 			if (in_array($file, array('advertising.jpg', 'advertising.gif', 'advertising.png')))
 				Configuration::updateGlobalValue('BLOCKADVERT_IMG_EXT', substr($file, strrpos($file, '.') + 1));
 
-		return (parent::install() && $this->registerHook('leftColumn'));
+		return true;
 	}
 	
 	public function uninstall()
@@ -210,14 +224,13 @@ class BlockAdvertising extends Module
 						'type' => 'file',
 						'label' => $this->l('Block image'),
 						'name' => 'adv_img',
-						'desc' => $this->l('Image will be displayed as 155x163'),
+						'desc' => $this->l('Image will be displayed as 155 pixels by 163 pixels.'),
 						'thumb' => '../modules/'.$this->name.'/advertising.jpg',
 					),
 					array(
 						'type' => 'text',
 						'label' => $this->l('Image link'),
 						'name' => 'adv_link',
-						'desc' => $this->l('Such as bank branch, IBAN number, BIC, etc...')
 					),
 					array(
 						'type' => 'text',
@@ -225,9 +238,9 @@ class BlockAdvertising extends Module
 						'name' => 'adv_title',
 					),
 				),
-			'submit' => array(
-				'title' => $this->l('Save'),
-				'class' => 'btn btn-default')
+				'submit' => array(
+					'title' => $this->l('Save'),
+				)
 			),
 		);
 		

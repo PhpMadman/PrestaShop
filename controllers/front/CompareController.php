@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -32,9 +32,6 @@ class CompareControllerCore extends FrontController
 	{
 		parent::setMedia();
 		$this->addCSS(_THEME_CSS_DIR_.'comparator.css');
-
-		if (Configuration::get('PS_COMPARATOR_MAX_ITEM') > 0)
-			$this->addJS(_THEME_JS_DIR_.'products-comparison.js');
 	}
 
 	/**
@@ -138,9 +135,10 @@ class CompareControllerCore extends FrontController
 						'product_features' => $listFeatures,
 						'products' => $listProducts,
 						'width' => $width,
+						'HOOK_COMPARE_EXTRA_INFORMATION' => Hook::exec('displayCompareExtraInformation', array('list_ids_product' => $ids)),
+						'HOOK_EXTRA_PRODUCT_COMPARISON' => Hook::exec('displayProductComparison', array('list_ids_product' => $ids)),
 						'homeSize' => Image::getSize(ImageType::getFormatedName('home'))
 					));
-					$this->context->smarty->assign('HOOK_EXTRA_PRODUCT_COMPARISON', Hook::exec('displayProductComparison', array('list_ids_product' => $ids)));
 				}
 				elseif (isset($this->context->cookie->id_compare))
 				{

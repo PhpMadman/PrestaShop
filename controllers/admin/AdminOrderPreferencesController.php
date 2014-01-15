@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -61,7 +61,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
 				'fields' =>	array(
 					'PS_ORDER_PROCESS_TYPE' => array(
 						'title' => $this->l('Order process type'),
-						'hint' => $this->l('Please choose either the five-step, or one-page, checkout process.'),
+						'hint' => $this->l('Please choose either the five-step or one-page checkout process.'),
 						'validation' => 'isInt',
 						'cast' => 'intval',
 						'type' => 'select',
@@ -70,14 +70,14 @@ class AdminOrderPreferencesControllerCore extends AdminController
 					),
 					'PS_GUEST_CHECKOUT_ENABLED' => array(
 						'title' => $this->l('Enable guest checkout'),
-						'hint' => $this->l('Guests can place an order without registering'),
+						'hint' => $this->l('Allow guest visitors to place an order without registering.'),
 						'validation' => 'isBool',
 						'cast' => 'intval',
 						'type' => 'bool'
 					),
 					'PS_PURCHASE_MINIMUM' => array(
 						'title' => $this->l('Minimum purchase total required in order to validate the order'),
-						'hint' => $this->l('Set to 0 to disable this feature'),
+						'hint' => $this->l('Set to 0 to disable this feature.'),
 						'validation' => 'isFloat',
 						'cast' => 'floatval',
 						'type' => 'price'
@@ -91,7 +91,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
 					),
 					'PS_SHIP_WHEN_AVAILABLE' => array(
 						'title' => $this->l('Delayed shipping'),
-						'hint' => $this->l('This option allows you to delay shipping at your customers\' request. '),
+						'hint' => $this->l('Allows you to delay shipping at your customers\' request. '),
 						'validation' => 'isBool',
 						'cast' => 'intval',
 						'type' => 'bool'
@@ -108,15 +108,16 @@ class AdminOrderPreferencesControllerCore extends AdminController
 						)
 					),
 					'PS_CONDITIONS_CMS_ID' => array(
-						'title' => $this->l('Conditions of use for the CMS page'),
-						'hint' => $this->l('Choose the conditions of use for the CMS page.'),
+						'title' => $this->l('CMS page for the Conditions of use'),
+						'hint' => $this->l('Choose the CMS page which contains your store\'s conditions of use.'),
 						'validation' => 'isInt',
 						'type' => 'select',
 						'list' => $cms_tab,
 						'identifier' => 'id',
 						'cast' => 'intval'
 					)
-				)
+				),
+				'submit' => array('title' => $this->l('Save'))
 			),
 			'eds' => array(
 				'title' => $this->l('Extended Delivery System 2.6'),
@@ -208,14 +209,14 @@ class AdminOrderPreferencesControllerCore extends AdminController
 					),
 					'PS_GIFT_WRAPPING_PRICE' => array(
 						'title' => $this->l('Gift-wrapping price'),
-						'hint' => $this->l('Set a price for gift wrapping'),
+						'hint' => $this->l('Set a price for gift wrapping.'),
 						'validation' => 'isPrice',
 						'cast' => 'floatval',
 						'type' => 'price'
 					),
 					'PS_GIFT_WRAPPING_TAX_RULES_GROUP' => array(
 						'title' => $this->l('Gift-wrapping tax'),
-						'hint' => $this->l('Set a tax for gift wrapping'),
+						'hint' => $this->l('Set a tax for gift wrapping.'),
 						'validation' => 'isInt',
 						'cast' => 'intval',
 						'type' => 'select',
@@ -224,15 +225,18 @@ class AdminOrderPreferencesControllerCore extends AdminController
 					),
 					'PS_RECYCLABLE_PACK' => array(
 						'title' => $this->l('Offer recycled packaging'),
-						'hint' => $this->l('Suggest recycled packaging to customer'),
+						'hint' => $this->l('Suggest recycled packaging to customer.'),
 						'validation' => 'isBool',
 						'cast' => 'intval',
 						'type' => 'bool'
 					),
 				),
-				'submit' => array('title' => $this->l('Save'), 'class' => 'button'),
+				'submit' => array('title' => $this->l('Save')),
 			),
 		);
+
+		if (!Configuration::get('PS_ALLOW_MULTISHIPPING'))
+			unset($this->fields_options['general']['fields']['PS_ALLOW_MULTISHIPPING']);
 	}
 
 	/**

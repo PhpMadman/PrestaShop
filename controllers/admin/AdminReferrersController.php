@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -157,8 +157,8 @@ class AdminReferrersControllerCore extends AdminController
 	{
 		if(empty($this->display))
 			$this->page_header_toolbar_btn['new_referrer'] = array(
-				'href' => self::$currentIndex.'&amp;addreferrer&amp;token='.$this->token,
-				'desc' => $this->l('Add new referrer'),
+				'href' => self::$currentIndex.'&addreferrer&token='.$this->token,
+				'desc' => $this->l('Add new referrer', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 		
@@ -297,8 +297,7 @@ class AdminReferrersControllerCore extends AdminController
 			'desc' => $this->l('If you know how to use MySQL regular expressions, you can use the').' 
 					<a style="cursor: pointer; font-weight: bold;" onclick="$(\'#tracking_expert\').slideToggle();">'.$this->l('expert mode').'.</a>',
 			'submit' => array(
-				'title' => $this->l('   Save   '),
-				'class' => 'button'
+				'title' => $this->l('Save'),
 			)
 		));
 

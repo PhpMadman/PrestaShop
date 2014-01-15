@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -49,7 +49,7 @@ class AdminDeliverySlipControllerCore extends AdminController
 						'type' => 'text'
 					)
 				),
-				'submit' => array()
+				'submit' => array('title' => $this->l('Save'))
 			)
 		);
 
@@ -83,8 +83,7 @@ class AdminDeliverySlipControllerCore extends AdminController
 			),
 			'submit' => array(
 				'title' => $this->l('Generate PDF file'),
-				'class' => 'btn btn-default',
-				'icon' => 'icon-download-alt'	
+				'icon' => 'process-icon-download-alt'	
 			)
 		);
 
@@ -118,6 +117,7 @@ class AdminDeliverySlipControllerCore extends AdminController
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		$this->initPageHeaderToolbar();
 		$this->show_toolbar = false;
 		$this->content .= $this->renderForm();		

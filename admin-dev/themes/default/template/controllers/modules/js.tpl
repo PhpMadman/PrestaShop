@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
@@ -26,7 +26,6 @@
 
 <script type="text/javascript">{$autocompleteList}</script>
 <script type="text/javascript">
-	var token = '{$token}';
 	var currentIndex = '{$currentIndex}';
 	var currentIndexWithToken = '{$currentIndex}&token={$token}';
 	var dirNameCurrentIndex = '{$dirNameCurrentIndex}';
@@ -36,6 +35,8 @@
 	var errorLogin = '{l s='PrestaShop was unable to login to Addons. Please check your credentials and your internet connection.'}';
 	var confirmPreferencesSaved = '{l s='Preferences saved'}';
 	{if isset($smarty.get.anchor) && !isset($error_module)}var anchor = '{$smarty.get.anchor|htmlentities|replace:'(':''|replace:')':''|replace:'{':''|replace:'}':''|replace:'\'':''|replace:'/':''}';{else}var anchor = '';{/if}
+
+	{if isset($smarty.get.module_name) && !isset($error_module)}var module_name = '{$smarty.get.module_name|htmlentities|replace:'(':''|replace:')':''|replace:'{':''|replace:'}':''|replace:'\'':''|replace:'/':''}';{else}var module_name = '';{/if}
 
 	{literal}
 
@@ -65,9 +66,15 @@
 		// ScrollTo
 		if (anchor != '')
 			$.uiTableFilter($('#moduleContainer').find('table'), anchor);
+
+		if (module_name != '')
+			$.uiTableFilter($('#moduleContainer').find('table'), module_name);
 		
-		$('#moduleQuicksearch').keyup(function() {
+		$('#moduleQuicksearch').on('keyup', function(){
 			$.uiTableFilter($('#moduleContainer').find('table'), this.value);
+		}).on('keydown', function(e){
+			if (e.keyCode == 13)
+				return false;
 		});
 		
 		$('input[name="filtername"]').result(function(event, data, formatted) {
@@ -272,7 +279,7 @@
 				},
 				success : function(data){
 					if (data == 'OK')
-						$('#r_' + module_pref).html(confirmPreferencesSaved);
+						showSuccessMessage(confirmPreferencesSaved);
 				}
 			});
 		});
@@ -301,7 +308,7 @@
 					},
 					success : function(data){
 						if (data == 'OK')
-							$('#r_' + module_pref).html(confirmPreferencesSaved);
+							showSuccessMessage(confirmPreferencesSaved);
 					}
 				});
 			}
@@ -315,6 +322,8 @@
 	      var value_pref = el.data('value');
 	      var module_pref = el.data('module');
 	      var action_pref = 'f';
+	      var total_favorites = parseInt($('#favorite-count').html());
+
 	      try
 	      {
 	        resAjax = $.ajax({
@@ -336,6 +345,12 @@
 	              if (data == 'OK')
 	              {
 	                el.parent('li').find('.toggle_favorite').toggle();
+
+
+					if (value_pref)
+						$('#favorite-count').html(total_favorites+1);
+					else
+						$('#favorite-count').html(total_favorites-1);
 	              }
 	                
 	            },

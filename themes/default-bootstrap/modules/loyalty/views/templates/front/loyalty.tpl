@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,12 +18,12 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-{capture name=path}<a href="{$link->getPageLink('my-account', true)|escape:'html'}" title="{l s='Manage my account' mod='loyalty'}" rel="nofollow">{l s='My account' mod='loyalty'}</a><span class="navigation-pipe">{$navigationPipe}</span><span class="navigation_page">{l s='My loyalty points' mod='loyalty'}</span>{/capture}
+{capture name=path}<a href="{$link->getPageLink('my-account', true)|escape:'html':'UTF-8'}" title="{l s='Manage my account' mod='loyalty'}" rel="nofollow">{l s='My account' mod='loyalty'}</a><span class="navigation-pipe">{$navigationPipe}</span><span class="navigation_page">{l s='My loyalty points' mod='loyalty'}</span>{/capture}
 
 <h1 class="page-heading">{l s='My loyalty points' mod='loyalty'}</h1>
 
@@ -59,7 +59,7 @@
 	</table>
 	<div id="block-order-detail" class="unvisible">&nbsp;</div>
 	{else}
-		<p class="alert alert-warning">{l s='You have not placed any orders.'}</p>
+		<p class="alert alert-warning">{l s='You have not placed any orders.' mod='loyalty'}</p>
 	{/if}
 </div>
 <div id="pagination" class="pagination">
@@ -103,7 +103,7 @@
 	{if $orders|@count > 10}
 		<form action="{$pagination_link}" method="get" class="pagination">
 			<p>
-				<input type="submit" class="button_mini" value="{l s='OK'}" />
+				<input type="submit" class="button_mini" value="{l s='OK'  mod='loyalty'}" />
 				<label for="nb_item">{l s='items:' mod='loyalty'}</label>
 				<select name="n" id="nb_item">
 				{foreach from=$nArray item=nValue}
@@ -123,7 +123,7 @@
 
 {if $transformation_allowed}
 <p class="text-center">
-	<a class="btn btn-default" href="{$link->getModuleLink('loyalty', 'default', ['process' => 'transformpoints'])|escape:'html'}" onclick="return confirm('{l s='Are you sure you want to transform your points into vouchers?' mod='loyalty' js=1}');">{l s='Transform my points into a voucher of' mod='loyalty'} <span class="price">{convertPrice price=$voucher}</span>.</a>
+	<a class="btn btn-default" href="{$link->getModuleLink('loyalty', 'default', ['process' => 'transformpoints'])|escape:'html':'UTF-8'}" onclick="return confirm('{l s='Are you sure you want to transform your points into vouchers?' mod='loyalty' js=1}');">{l s='Transform my points into a voucher of' mod='loyalty'} <span class="price">{convertPrice price=$voucher}</span>.</a>
 </p>
 {/if}
 
@@ -180,20 +180,20 @@
 	<div id="block-order-detail" class="unvisible">&nbsp;</div>
 </div>
 
-{if $minimalLoyalty > 0}<p>{l s='The minimum order amount in order to use these vouchers is:'} {convertPrice price=$minimalLoyalty}</p>{/if}
+{if $minimalLoyalty > 0}<p>{l s='The minimum order amount in order to use these vouchers is:' mod='loyalty'} {convertPrice price=$minimalLoyalty}</p>{/if}
 
 <script type="text/javascript">
-{literal}
-$(document).ready(function()
-{
-	$('.tips').popover({
-		placement : 'top',
-		title : false,
-		html: 'true'
-	});
+	{literal}
+		$(document).ready(function()
+		{
+			$('.tips').popover({
+				placement : 'top',
+				title : false,
+				html: 'true'
+			});
 
-});
-{/literal}
+		});
+	{/literal}
 </script>
 {else}
 <p class="alert alert-warning">{l s='No vouchers yet.' mod='loyalty'}</p>
@@ -204,7 +204,7 @@ $(document).ready(function()
 
 <ul class="footer_links clearfix">
 	<li>
-		<a class="btn btn-default button button-small" href="{$link->getPageLink('my-account', true)|escape:'html'}" title="{l s='Back to Your Account' mod='loyalty'}" rel="nofollow"><span><i class="icon-chevron-left"></i>{l s='Back to Your Account' mod='loyalty'}</span></a>
+		<a class="btn btn-default button button-small" href="{$link->getPageLink('my-account', true)|escape:'html':'UTF-8'}" title="{l s='Back to Your Account' mod='loyalty'}" rel="nofollow"><span><i class="icon-chevron-left"></i>{l s='Back to Your Account' mod='loyalty'}</span></a>
 	</li>
 	<li>
 		<a class="btn btn-default button button-small" href="{$base_dir}" title="{l s='Home' mod='loyalty'}"><span><i class="icon-chevron-left"></i>{l s='Home' mod='loyalty'}</span></a>

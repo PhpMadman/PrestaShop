@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -75,8 +75,9 @@ class AdminCmsContentControllerCore extends AdminController
 
 	public function initContent()
 	{
+		$this->initTabModuleList();
 		$this->content .= $this->renderPageHeaderToolbar();
-
+		
 		$this->admin_cms_categories->token = $this->token;
 		$this->admin_cms->token = $this->token;
 
@@ -99,13 +100,16 @@ class AdminCmsContentControllerCore extends AdminController
 			foreach ($cms_tabs as $tab)
 				if (Tools::getValue($tab.'Orderby') && Tools::getValue($tab.'Orderway'))
 					$cat_bar_index = preg_replace('/&'.$tab.'Orderby=([a-z _]*)&'.$tab.'Orderway=([a-z]*)/i', '', self::$currentIndex);
-
+			$this->context->smarty->assign(array(
+				'cms_breadcrumb' => getPath($cat_bar_index, $id_cms_category, '', '', 'cms'),
+				'page_header_toolbar_btn' => $this->page_header_toolbar_btn,
+				'page_header_toolbar_title' => $this->toolbar_title,
+			));
+			
 			$this->content .= $this->admin_cms_categories->renderList();
 			$this->admin_cms->id_cms_category = $id_cms_category;
 			$this->content .= $this->admin_cms->renderList();
-			$this->context->smarty->assign(array(
-				'cms_breadcrumb' => getPath($cat_bar_index, $id_cms_category, '', '', 'cms'),
-			));
+			
 		}
 
 		$this->context->smarty->assign(array(
@@ -127,7 +131,7 @@ class AdminCmsContentControllerCore extends AdminController
 		if ($this->display == 'edit_category')
 		{
 			if (Tools::getValue('addcms_category') !== false)
-				$this->toolbar_title[] =$this->l('Add new');
+				$this->toolbar_title[] = $this->l('Add new');
 			else
 				$this->toolbar_title[] = sprintf($this->l('Edit: %s'), $cms_category->name[$this->context->employee->id_lang]);
 		}
@@ -144,26 +148,19 @@ class AdminCmsContentControllerCore extends AdminController
 			}
 		}
 		else
-			$this->toolbar_title[] = $cms_category->name[$this->context->employee->id_lang];
+			$this->toolbar_title[] = $this->l('CMS');
 
 		if ($this->display == 'list')
 		{
 			$this->page_header_toolbar_btn['new_cms_category'] = array(
-				'href' => self::$currentIndex.'&amp;addcms_category&amp;token='.$this->token,
-				'desc' => $this->l('Add new CMS category'),
+				'href' => self::$currentIndex.'&addcms_category&token='.$this->token,
+				'desc' => $this->l('Add new CMS category', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 			$this->page_header_toolbar_btn['new_cms_page'] = array(
-				'href' => self::$currentIndex.'&amp;addcms&amp;id_cms_category='.$id_cms_category.'&amp;token='.$this->token,
-				'desc' => $this->l('Add new CMS page'),
+				'href' => self::$currentIndex.'&addcms&id_cms_category='.(int)$id_cms_category.'&token='.$this->token,
+				'desc' => $this->l('Add new CMS page', null, null, false),
 				'icon' => 'process-icon-new'
-			);
-		}
-		else
-		{
-			$this->page_header_toolbar_btn['cancel'] = array(
-				'href' => self::$currentIndex.'&amp;token='.$this->token,
-				'desc' => $this->l('Cancel')
 			);
 		}
 
@@ -181,7 +178,9 @@ class AdminCmsContentControllerCore extends AdminController
 		$this->context->smarty->assign(array(
 			'show_page_header_toolbar' => $this->show_page_header_toolbar,
 			'title' => $this->page_header_toolbar_title,
-			'toolbar_btn' => $this->page_header_toolbar_btn
+			'toolbar_btn' => $this->page_header_toolbar_btn,
+			'page_header_toolbar_btn' => $this->page_header_toolbar_btn,
+			'page_header_toolbar_title' => $this->toolbar_title,
 		));
 
 		return $template->fetch();

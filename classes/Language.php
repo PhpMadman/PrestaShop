@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -178,11 +178,12 @@ class LanguageCore extends ObjectModel
 	  * Return an array of theme 
 	  *
 	  * @return array([theme dir] => array('name' => [theme name]))
-		* @deprecated will be removed in 1.6
+	  * @deprecated
 	  */
 	protected function _getThemesList()
 	{
 		Tools::displayAsDeprecated();
+
 		static $themes = array();
 
 		if (empty($themes))
@@ -376,8 +377,8 @@ class LanguageCore extends ObjectModel
 
 			$module_theme_files = (file_exists($tPath_from.'modules/') ? scandir($tPath_from.'modules/') : array());
 			foreach ($module_theme_files as $module)
-				if ($module !== '.' && $module != '..' && $module !== '.svn' && file_exists($tPath_from.'modules/'.$module.'/'.(string)$iso_from.'.php'))
-					$files_theme[$tPath_from.'modules/'.$module.'/'.(string)$iso_from.'.php'] = ($copy ? $tPath_to.'modules/'.$module.'/'.(string)$iso_to.'.php' : ++$number);
+				if ($module !== '.' && $module != '..' && $module !== '.svn' && file_exists($tPath_from.'modules/'.$module.'/translations/'.(string)$iso_from.'.php'))
+					$files_theme[$tPath_from.'modules/'.$module.'/translations/'.(string)$iso_from.'.php'] = ($copy ? $tPath_to.'modules/'.$module.'/translations/'.(string)$iso_to.'.php' : ++$number);
 		}
 		if ($select == 'theme')
 			return $files_theme;
@@ -478,7 +479,7 @@ class LanguageCore extends ObjectModel
 			// Database translations deletion
 			$result = Db::getInstance()->executeS('SHOW TABLES FROM `'._DB_NAME_.'`');
 			foreach ($result as $row)
-				if (isset($row['Tables_in_'._DB_NAME_]) && !empty($row['Tables_in_'._DB_NAME_]) && preg_match('/_lang/', $row['Tables_in_'._DB_NAME_]))
+				if (isset($row['Tables_in_'._DB_NAME_]) && !empty($row['Tables_in_'._DB_NAME_]) && preg_match('/'.preg_quote(_DB_PREFIX_).'_lang/', $row['Tables_in_'._DB_NAME_]))
 					if (!Db::getInstance()->execute('DELETE FROM `'.$row['Tables_in_'._DB_NAME_].'` WHERE `id_lang` = '.(int)$this->id))
 						return false;
 	
@@ -806,10 +807,8 @@ class LanguageCore extends ObjectModel
 		return self::$countActiveLanguages[$id_shop];
 	}
 
-	public static function downloadAndInstallLanguagePack($iso, $version = null, $params = null)
+	public static function downloadAndInstallLanguagePack($iso, $version = null, $params = null, $install = true)
 	{
-		require_once(_PS_TOOL_DIR_.'tar/Archive_Tar.php');
-
 		if (!Validate::isLanguageIsoCode($iso))
 			return false;
 
@@ -835,12 +834,13 @@ class LanguageCore extends ObjectModel
 				elseif (!is_writable($file))
 					$errors[] = Tools::displayError('Server does not have permissions for writing.').' ('.$file.')';
 			}
-		if (file_exists($file))
+		if ($install && file_exists($file))
 		{
+			require_once(_PS_TOOL_DIR_.'tar/Archive_Tar.php');
 			$gz = new Archive_Tar($file, true);
-			$files_list = AdminTranslationsController::filterTranslationFiles($gz->listContent());
+			$files_list = AdminTranslationsController::filterTranslationFiles(Language::getLanguagePackListContent($iso, $gz));
 			if (!$gz->extractList(AdminTranslationsController::filesListToPaths($files_list), _PS_TRANSLATIONS_DIR_.'../'))
-				$errors[] = Tools::displayError('Cannot decompress the translation file for the following language: ').(string)$iso;
+				$errors[] = Tools::displayError('Cannot decompress the translation file for the following language:').' '.(string)$iso;
 			// Clear smarty modules cache
 			Tools::clearCache();
 			if (!Language::checkAndAddLanguage((string)$iso, $lang_pack, false, $params))
@@ -853,7 +853,6 @@ class LanguageCore extends ObjectModel
 				AdminTranslationsController::checkAndAddMailsFiles($iso, $files_list);
 				AdminTranslationsController::addNewTabs($iso, $files_list);
 			}
-			@unlink($file);
 		}
 		else
 			$errors[] = Tools::displayError('No language pack is available for your version.');
@@ -870,5 +869,47 @@ class LanguageCore extends ObjectModel
 	public static function isMultiLanguageActivated($id_shop = null)
 	{
 		return (Language::countActiveLanguages($id_shop) > 1);
+	}
+
+	public static function getLanguagePackListContent($iso, $tar)
+	{
+		$key = 'Language::getLanguagePackListContent_'.$iso;
+		if (!Cache::isStored($key))
+		{
+			if (!$tar instanceof Archive_Tar)
+				return false;
+			Cache::store($key, $tar->listContent());
+		}
+		return Cache::retrieve($key);
+	}
+
+	public static function updateModulesTranslations(Array $modules_list)
+	{
+		require_once(_PS_TOOL_DIR_.'tar/Archive_Tar.php');
+
+		$languages = Language::getLanguages(false);
+		foreach ($languages as $lang)
+		{
+			$files_listing = array();
+			foreach ($modules_list as $module_name)
+			{
+				$filegz = _PS_TRANSLATIONS_DIR_.$lang['iso_code'].'.gzip';
+
+				clearstatcache();
+				if (@filemtime($filegz) < (time() - (24 * 3600)))
+					Language::downloadAndInstallLanguagePack($lang['iso_code'], null, null, false);
+
+				$gz = new Archive_Tar($filegz, true);
+				$files_list = Language::getLanguagePackListContent($lang['iso_code'], $gz);
+				foreach ($files_list as $i => $file)
+					if (strpos($file['filename'], 'modules/'.$module_name.'/') !== 0)
+						unset($files_list[$i]);
+
+				foreach ($files_list as $file)
+					if (isset($file['filename']) && is_string($file['filename']))
+						$files_listing[] = $file['filename'];
+			}
+			$gz->extractList($files_listing, _PS_TRANSLATIONS_DIR_.'../', '');
+		}
 	}
 }

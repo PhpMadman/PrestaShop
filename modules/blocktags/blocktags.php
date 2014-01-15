@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -43,17 +43,27 @@ class BlockTags extends Module
 		parent::__construct();	
 
 		$this->displayName = $this->l('Tags block');
-		$this->description = $this->l('Adds a block containing product tags.');
+		$this->description = $this->l('Adds a block containing your product tags.');
 	}
 
 	function install()
 	{
-		if (parent::install() == false
-				|| $this->registerHook('leftColumn') == false
-				|| $this->registerHook('header') == false
-				|| Configuration::updateValue('BLOCKTAGS_NBR', 10) == false)
-			return false;
-		return true;
+		$success = (parent::install() && $this->registerHook('header') && Configuration::updateValue('BLOCKTAGS_NBR', 10));
+
+		if ($success)
+		{
+			// Hook the module either on the left or right column
+			$theme = new Theme(Context::getContext()->shop->id_theme);
+			if ((!$theme->default_left_column || !$this->registerHook('leftColumn'))
+				&& (!$theme->default_right_column || !$this->registerHook('rightColumn')))
+			{
+				// If there are no colums implemented by the template, throw an error and uninstall the module
+				$this->_errors[] = $this->l('This module need to be hooked in a column and your theme does not implement one');
+				parent::uninstall();
+				return false;
+			}
+		}
+		return $success;
 	}
 
 	public function getContent()
@@ -62,7 +72,7 @@ class BlockTags extends Module
 		if (Tools::isSubmit('submitBlockTags'))
 		{
 			if (!($tagsNbr = Tools::getValue('BLOCKTAGS_NBR')) || empty($tagsNbr))
-				$output .= $this->displayError($this->l('Please complete the "tags displayed" field.'));
+				$output .= $this->displayError($this->l('Please complete the "Displayed tags" field.'));
 			elseif ((int)($tagsNbr) == 0)
 				$output .= $this->displayError($this->l('Invalid number.'));
 			else
@@ -132,17 +142,17 @@ class BlockTags extends Module
 				'input' => array(
 					array(
 						'type' => 'text',
-						'label' => $this->l('Tags displayed'),
+						'label' => $this->l('Displayed tags'),
 						'name' => 'BLOCKTAGS_NBR',
 						'class' => 'fixed-width-xs',
-						'desc' => $this->l('Define the number of tags you would like displayed in this block.')
+						'desc' => $this->l('Set the number of tags you would like displayed in this block.')
 					),
 				),
 				'submit' => array(
 					'title' => $this->l('Save'),
-					'class' => 'btn btn-default')
-				),
-			);
+				)
+			),
+		);
 			
 		$helper = new HelperForm();
 		$helper->show_toolbar = false;

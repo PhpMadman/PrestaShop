@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -113,22 +113,22 @@ class AdminStockInstantStateControllerCore extends AdminController
 		if ($this->display == 'details')
 			$this->page_header_toolbar_btn['back_to_list'] = array(
 				'href' => Context::getContext()->link->getAdminLink('AdminStockInstantState').(Tools::getValue('id_warehouse') ? '&id_warehouse='.Tools::getValue('id_warehouse') : ''),
-				'desc' => $this->l('Back to list'),
+				'desc' => $this->l('Back to list', null, null, false),
 				'icon' => 'process-icon-back'
 			);
 		elseif (Tools::isSubmit('id_warehouse') && (int)Tools::getValue('id_warehouse') != -1)
 		{
 			$this->page_header_toolbar_btn['export-stock-state-quantities-csv'] = array(
-				'short' => 'Export this list as CSV',
-				'href' => $this->context->link->getAdminLink('AdminStockInstantState').'&amp;csv_quantities&amp;id_warehouse='.(int)$this->getCurrentCoverageWarehouse(),
-				'desc' => $this->l('Export Quantities (CSV)'),
+				'short' => $this->l('Export this list as CSV', null, null, false),
+				'href' => $this->context->link->getAdminLink('AdminStockInstantState').'&csv_quantities&id_warehouse='.(int)$this->getCurrentCoverageWarehouse(),
+				'desc' => $this->l('Export Quantities (CSV)', null, null, false),
 				'imgclass' => 'export'
 			);
 
 			$this->page_header_toolbar_btn['export-stock-state-prices-csv'] = array(
-				'short' => 'Export this list as CSV',
-				'href' => $this->context->link->getAdminLink('AdminStockInstantState').'&amp;csv_prices&amp;id_warehouse='.(int)$this->getCurrentCoverageWarehouse(),
-				'desc' => $this->l('Export Prices (CSV)'),
+				'short' => $this->l('Export this list as CSV', null, null, false),
+				'href' => $this->context->link->getAdminLink('AdminStockInstantState').'&csv_prices&id_warehouse='.(int)$this->getCurrentCoverageWarehouse(),
+				'desc' => $this->l('Export Prices (CSV)', null, null, false),
 				'imgclass' => 'export'
 			);
 		}

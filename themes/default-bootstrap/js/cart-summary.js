@@ -1,5 +1,5 @@
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -611,12 +611,13 @@ function updateCartSummary(json)
 		initial_price = '';
 		if (typeof(product_list[i].price_without_quantity_discount) !== 'undefined')
 			initial_price = formatCurrency(product_list[i].price_without_quantity_discount, currencyFormat, currencySign, currencyBlank);
-			priceReductionPercent = Math.floor((product_list[i].price_without_quantity_discount - product_list[i].price)/product_list[i].price_without_quantity_discount * -100);
+			priceReductionPercent = ps_round((ps_round(product_list[i].price_without_quantity_discount) - ps_round(product_list[i].price_wt))/ps_round(product_list[i].price_without_quantity_discount) * -100);
 		var current_price = '';
 		if (priceDisplayMethod !== 0)
 			current_price = formatCurrency(product_list[i].price, currencyFormat, currencySign, currencyBlank);
 		else
 			current_price = formatCurrency(product_list[i].price_wt, currencyFormat, currencySign, currencyBlank);
+
 		if (reduction && typeof(initial_price) !== 'undefined')
 			if (initial_price !== '' && product_list[i].price_without_quantity_discount > product_list[i].price)
 				initial_price_text = '<span class="price-percent-reduction small">'+priceReductionPercent+'%</span><span class="old-price">' + initial_price + '</span>';

@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,12 +19,10 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-
-require_once(_PS_TOOL_DIR_.'tar/Archive_Tar.php');
 
 class LocalizationPackCore
 {
@@ -42,9 +40,10 @@ class LocalizationPackCore
 		$main_attributes = $xml->attributes();
 		$this->name = (string)$main_attributes['name'];
 		$this->version = (string)$main_attributes['version'];
+		$res = true;
+
 		if (empty($selection))
 		{
-			$res = true;
 			$res &= $this->_installStates($xml);
 			$res &= $this->_installTaxes($xml);
 			$res &= $this->_installCurrencies($xml, $install_mode);
@@ -69,21 +68,13 @@ class LocalizationPackCore
 				Currency::refreshCurrencies();
 			}
 
-			return $res;
 		}
-		foreach ($selection as $selected)
-			if (strtolower((string)$selected) == 'currencies')
-			{
-				if (!Validate::isLocalizationPackSelection($selected) || !$this->{'_install'.ucfirst($selected)}($xml, true))
-					return false;
-			}
-			else
-			{
-				if (!Validate::isLocalizationPackSelection($selected) || !$this->{'_install'.ucfirst($selected)}($xml))
-					return false;
-			}
+		else
+			foreach ($selection as $selected)
+				// No need to specify the install_mode because if the selection mode is used, then it's not the install
+				$res &= Validate::isLocalizationPackSelection($selected) ? $this->{'_install'.$selected}($xml) : false;
 
-		return true;
+		return $res;
 	}
 
 	protected function _installStates($xml)
@@ -136,7 +127,9 @@ class LocalizationPackCore
 						$this->_errors[] = Tools::displayError('An error occurred while adding the state.');
 						return false;
 					}
-				} else {
+				}
+				else
+				{
 					$state = new State($id_state);
 					if (!Validate::isLoadedObject($state))
 					{
@@ -280,10 +273,9 @@ class LocalizationPackCore
 					PaymentModule::addCurrencyPermissions($currency->id);
 				}
 			}
-            if (!$feed = Tools::simplexml_load_file('http://api.prestashop.com/xml/currencies.xml'))
-                $this->_errors[] = Tools::displayError('Cannot parse the currencies XML feed.');
-            else
-			    Currency::refreshCurrencies();
+            
+			if (($error = Currency::refreshCurrencies()) !== null)
+                $this->_errors[] = $error;
 
 			if (!count($this->_errors) && $install_mode && isset($attributes['iso_code']) && count($xml->currencies->currency) == 1)
 				$this->iso_currency = $attributes['iso_code'];

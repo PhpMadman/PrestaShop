@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,10 +18,11 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
+<div class="clearfix"></div>
 <section id="dashactivity" class="panel widget{if $allow_push} allow_push{/if}">
 	<div class="panel-heading">
 		<i class="icon-time"></i> {l s='Activity overview' mod='dashactivity'}
@@ -44,7 +45,7 @@
 				<span class="data_label size_l">
 					{l s='Online Visitors' mod='dashactivity'}
 					<small class="text-muted"><br/>
-						{l s='In the last 30 minutes' mod='dashactivity'}
+						{l s='In the last  %d minutes:' sprintf=$DASHACTIVITY_VISITOR_ONLINE|intval mod='dashactivity'}
 					</small>
 				</span>
 				<span class="data_value size_xxl">
@@ -55,7 +56,7 @@
 				<span class="data_label size_l">
 					{l s='Active Shopping Carts' mod='dashactivity'}
 					<small class="text-muted"><br/>
-						{l s='In the last 30 minutes' mod='dashactivity'}
+						{l s='In the last  %d minutes:' sprintf=$DASHACTIVITY_CART_ACTIVE|intval mod='dashactivity'}
 					</small>
 				</span>
 				<span class="data_value size_xxl">
@@ -100,12 +101,6 @@
 				<span class="data_label">{l s='New Messages' mod='dashactivity'}</span>
 				<span class="data_value size_l">
 					<span id="new_messages"></span>
-				</span>
-			</li>
-			<li>
-				<span class="data_label">{l s='Order Inquiries' mod='dashactivity'}</span>
-				<span class="data_value size_l">
-					<span id="order_inquires"></span>
 				</span>
 			</li>
 			<li>

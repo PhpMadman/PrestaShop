@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,15 +18,15 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <div class="row">
 	<div class="col-xs-12 col-md-6">
         <p class="payment_module">
-            <a class="cheque" href="{$link->getModuleLink('cheque', 'payment', [], true)|escape:'html'}" title="{l s='Pay by check.' mod='cheque'}">
-                {l s='Pay by check' mod='cheque'} <span>({l s='order processing will take more time' mod='cheque'})</span>
+            <a class="cheque" href="{$link->getModuleLink('cheque', 'payment', [], true)|escape:'html':'UTF-8'}" title="{l s='Pay by check.' mod='cheque'}">
+                {l s='Pay by check' mod='cheque'} <span>{l s='(order processing will be longer)' mod='cheque'}</span>
             </a>
         </p>
     </div>

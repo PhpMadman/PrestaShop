@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -189,7 +189,7 @@
 						<label class="radio" for="{$module->name}_on"><i class="icon-check-sign color_success"></i> Yes</label>
 						<input type="radio" name="{$module->name}" id="{$module->name}_off" value="0">
 						<label class="radio" for="{$module->name}_off"><i class="icon-ban-circle color_danger"></i> No</label>
-						<a class="slide-button btn btn-default"></a>
+						<a class="slide-button btn"></a>
 					</span>
 					<input type="hidden" name="modulesBoxAuth[]" value="{$module->id}">
 				</div>
@@ -204,7 +204,7 @@
 						<label class="radio" for="{$module->name}_on"><i class="icon-check-sign color_success"></i> Yes</label>
 						<input type="radio" name="{$module->name}" id="{$module->name}_off" value="0" checked="checked">
 						<label class="radio" for="{$module->name}_off"><i class="icon-ban-circle color_danger"></i> No</label>
-						<a class="slide-button btn btn-default"></a>
+						<a class="slide-button btn"></a>
 					</span>
 					<input type="hidden" name="modulesBoxUnauth[]" value="{$module->id}">
 				</div>

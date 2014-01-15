@@ -1,5 +1,5 @@
 {*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -31,7 +31,7 @@
 		<textarea
 			id="{$input_name}_{$language.id_lang}"
 			name="{$input_name}_{$language.id_lang}"
-			class="{if isset($autosize_js)}textarea-autosize{else}autoload_rte{/if}">{if isset($input_value[$language.id_lang])}{$input_value[$language.id_lang]|htmlentitiesUTF8}{/if}</textarea>
+			class="{if isset($class)}{$class}{else}textarea-autosize{/if}">{if isset($input_value[$language.id_lang])}{$input_value[$language.id_lang]|htmlentitiesUTF8}{/if}</textarea>
 {if $languages|count > 1}
 	</div>
 	<div class="col-lg-2">
@@ -50,15 +50,10 @@
 <span class="counter" max="{if isset($max)}{$max}{else}none{/if}"></span>
 {/foreach}
 
-{if isset($autosize_js)}
-<script src="{$autosize_js}" type="text/javascript"></script>
-{/if}
 <script type="text/javascript">
-	var iso = '{$iso_tiny_mce}';
-	var pathCSS = '{$smarty.const._THEME_CSS_DIR_}';
-	var ad = '{$ad}';
+	var iso = '{$iso_tiny_mce|addslashes}';
+	var pathCSS = '{$smarty.const._THEME_CSS_DIR_|addslashes}';
+	var ad = '{$ad|addslashes}';
 
-	{if isset($autosize_js)}
 	$(".textarea-autosize").autosize();
-	{/if}
 </script>

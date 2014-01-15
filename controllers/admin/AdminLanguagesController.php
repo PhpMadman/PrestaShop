@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2013 PrestaShop
+* 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2013 PrestaShop SA
+*  @copyright  2007-2014 PrestaShop SA
 *  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -104,8 +104,8 @@ class AdminLanguagesControllerCore extends AdminController
 	{
 		if (empty($this->display))
 			$this->page_header_toolbar_btn['new_language'] = array(
-				'href' => self::$currentIndex.'&amp;addlang&amp;token='.$this->token,
-				'desc' => $this->l('Add new language'),
+				'href' => self::$currentIndex.'&addlang&token='.$this->token,
+				'desc' => $this->l('Add new language', null, null, false),
 				'icon' => 'process-icon-new'
 			);
 
@@ -253,8 +253,7 @@ class AdminLanguagesControllerCore extends AdminController
 		}
 
 		$this->fields_form['submit'] = array(
-			'title' => $this->l('Save   '),
-			'class' => 'button'
+			'title' => $this->l('Save'),
 		);
 
 		if (!($obj = $this->loadObject(true)))
@@ -284,11 +283,7 @@ class AdminLanguagesControllerCore extends AdminController
 			);
 		}
 
-		$this->fields_value = array(
-			'ps_version' => _PS_VERSION_
-		);
-
-		$this->addJS(_PS_JS_DIR_.'checkLangPack.js');
+		$this->fields_value = array('ps_version' => _PS_VERSION_);
 
 		return parent::renderForm();
 	}
