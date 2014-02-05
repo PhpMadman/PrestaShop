@@ -51,6 +51,11 @@ class AdminOrdersControllerCore extends AdminController
 		IF((SELECT COUNT(so.id_order) FROM `'._DB_PREFIX_.'orders` so WHERE so.id_customer = a.id_customer) > 1, 0, 1) as new,
 		country_lang.name as cname';
 
+		if (Configuration::get('PS_USE_REF_NR'))
+			$this->_select .= ', IFNULL(a.`reference_nr`, a.`reference`) as reference';
+		else
+			$this->_select .= ', a.`reference` as reference';
+
 		$this->_join = '
 		LEFT JOIN `'._DB_PREFIX_.'customer` c ON (c.`id_customer` = a.`id_customer`)
 		INNER JOIN `'._DB_PREFIX_.'address` address ON address.id_address = a.id_address_delivery

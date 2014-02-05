@@ -179,12 +179,25 @@ abstract class PaymentModuleCore extends Module
 
 			$order_list = array();
 			$order_detail_list = array();
-			
+
+			if (Configuration::get('PS_USE_REF_NR'))
+			{
+				$ref_nr = Configuration::get('PS_REF_NR')+1;
+				Configuration::updateValue('PS_REF_NR', $ref_nr);
+			}
+
 			do
+			{
 				$reference = Order::generateReference();
+				if (Configuration::get('PS_USE_REF_NR'))
+					$reference_nr = Order::generateReferenceNumber();
+			}
 			while(Order::getByReference($reference)->count());
-			
+
 			$this->currentOrderReference = $reference;
+
+			if (Configuration::get('PS_USE_REF_NR'))
+				$this->currentOrderReferenceNumber = $reference_nr;
 
 			$order_creation_failed = false;
 			$cart_total_paid = (float)Tools::ps_round((float)$this->context->cart->getOrderTotal(true, Cart::BOTH), 2);
@@ -232,6 +245,7 @@ abstract class PaymentModuleCore extends Module
 					$order->id_lang = (int)$this->context->cart->id_lang;
 					$order->id_cart = (int)$this->context->cart->id;
 					$order->reference = $reference;
+					$order->reference_nr = $reference_nr;
 					$order->id_shop = (int)$this->context->shop->id;
 					$order->id_shop_group = (int)$this->context->shop->id_shop_group;
 

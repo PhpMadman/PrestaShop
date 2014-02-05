@@ -155,6 +155,7 @@ class OrderCore extends ObjectModel
 	 * @var string Order reference, this reference is not unique, but unique for a payment
 	 */
 	public $reference;
+	public $reference_nr;
 
 	/**
 	 * @see ObjectModel::$definition
@@ -204,6 +205,7 @@ class OrderCore extends ObjectModel
 			'delivery_date' => 				array('type' => self::TYPE_DATE),
 			'valid' => 						array('type' => self::TYPE_BOOL),
 			'reference' => 					array('type' => self::TYPE_STRING),
+			'reference_nr' => 				array('type' => self::TYPE_STRING),
 			'date_add' => 					array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
 			'date_upd' => 					array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
 		),
@@ -1304,6 +1306,13 @@ class OrderCore extends ObjectModel
 		return $orders;
 	}
 
+	public static function getByReferenceNumber($reference_nr)
+	{
+		$orders = new PrestaShopCollection('Order');
+		$orders->where('reference_nr', '=', $reference_nr);
+		return $orders;
+	}
+
 	public function getTotalWeight()
 	{
 		$result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
@@ -1464,6 +1473,19 @@ class OrderCore extends ObjectModel
 	public static function generateReference()
 	{
 		return strtoupper(Tools::passwdGen(9, 'NO_NUMERIC'));
+	}
+
+	/**
+	 * Generate a unique reference for orders generated with the same cart id
+	 * This references, is usefull for check payment
+	 *
+	 * @return String
+	 */
+	public static function generateReferenceNumber()
+	{
+		$ref_nr = Configuration::get('PS_REF_NR')+1;
+		$len = Configuration::get('PS_REF_NR_LENGTH');
+		return sprintf('%0'.$len.'d', $ref_nr);
 	}
 
 	public function orderContainProduct($id_product)

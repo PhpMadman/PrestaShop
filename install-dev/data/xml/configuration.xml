@@ -790,5 +790,11 @@ Country</value>
     <configuration id="PS_QUICK_VIEW" name="PS_QUICK_VIEW">
     	<value>1</value>
     </configuration>
+    <configuration id="PS_REF_NR_LENGTH" name="PS_REF_NR_LENGTH">
+    	<value>6</value>
+    </configuration>
+    <configuration id="PS_REF_NR" name="PS_REF_NR">
+    	<value>0</value>
+    </configuration>
   </entities>
 </entity_configuration>
