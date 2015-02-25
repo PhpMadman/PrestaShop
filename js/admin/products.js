@@ -750,6 +750,7 @@ product_tabs['Prices'] = new function(){
 				data: {
 					ajax: true
 				},
+				context: document.body,
 				dataType: 'json',
 				context: this,
 				async: false,
